@@ -225,5 +225,5 @@ aircraft:
       mixture: 0.0                  # Idle cutoff (full lean)
       throttle: 0.0                 # Idle
     controls:
-      parking_brake: true           # Parking brake set
+      parking_brake: false           # Parking brake set
       gear_down: true               # Fixed gear (always down)
