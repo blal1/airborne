@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Analyze drag and deceleration for C172."""
 
-import math
 
 # C172 parameters
 wing_area_m2 = 174 * 0.092903  # 174 sqft to m²
@@ -56,27 +55,29 @@ friction_force_n = mu_rolling * weight_n
 print(f"Weight: {weight_n:.0f} N")
 print(f"Rolling friction coefficient (μ): {mu_rolling}")
 print(f"Rolling friction force: {friction_force_n:.0f} N")
-print(f"Deceleration from friction alone: {-friction_force_n/mass_kg:.3f} m/s²")
+print(f"Deceleration from friction alone: {-friction_force_n / mass_kg:.3f} m/s²")
 
 print()
 print("=" * 70)
 print("FINDINGS")
 print("=" * 70)
-print(f"1. At 40 knots ({40*0.514444:.1f} m/s):")
+print(f"1. At 40 knots ({40 * 0.514444:.1f} m/s):")
 v_40_ms = 40 * 0.514444
 q_40 = 0.5 * air_density * v_40_ms * v_40_ms
 drag_40 = q_40 * wing_area_m2 * drag_coefficient
 decel_40 = -drag_40 / mass_kg
 print(f"   - Aerodynamic drag: {drag_40:.1f} N")
-print(f"   - Deceleration (aero only): {decel_40:.3f} m/s² ({decel_40*3.6:.2f} km/h/s)")
-print(f"   - Deceleration (with ground friction): {(decel_40 - friction_force_n/mass_kg):.3f} m/s²")
+print(f"   - Deceleration (aero only): {decel_40:.3f} m/s² ({decel_40 * 3.6:.2f} km/h/s)")
+print(
+    f"   - Deceleration (with ground friction): {(decel_40 - friction_force_n / mass_kg):.3f} m/s²"
+)
 print()
-print(f"2. Time to decelerate from 40 to 0 knots (aero drag only):")
+print("2. Time to decelerate from 40 to 0 knots (aero drag only):")
 time_to_stop = v_40_ms / abs(decel_40)
 print(f"   - {time_to_stop:.1f} seconds")
 print()
-print(f"3. Time to decelerate from 40 to 0 knots (with ground friction):")
-total_decel = abs(decel_40) + friction_force_n/mass_kg
+print("3. Time to decelerate from 40 to 0 knots (with ground friction):")
+total_decel = abs(decel_40) + friction_force_n / mass_kg
 time_to_stop_total = v_40_ms / total_decel
 print(f"   - {time_to_stop_total:.1f} seconds")
 print()

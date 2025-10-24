@@ -258,9 +258,19 @@ class PhysicsPlugin(IPlugin):
                 self._terrain_elevation = float(data["elevation"])
 
         elif message.topic == "parking_brake":
-            # Toggle parking brake
-            self.parking_brake_engaged = not self.parking_brake_engaged
-            logger.info(f"Parking brake {'engaged' if self.parking_brake_engaged else 'released'}")
+            # Set or release parking brake
+            data = message.data
+            action = data.get("action", "toggle")  # Default to toggle for backward compatibility
+
+            if action == "set":
+                self.parking_brake_engaged = True
+                logger.info("Parking brake SET")
+            elif action == "release":
+                self.parking_brake_engaged = False
+                logger.info("Parking brake RELEASED")
+            else:  # toggle (backward compatibility)
+                self.parking_brake_engaged = not self.parking_brake_engaged
+                logger.info(f"Parking brake {'engaged' if self.parking_brake_engaged else 'released'}")
 
         elif message.topic == MessageTopic.ENGINE_STATE:
             # Update engine state for propeller thrust calculations

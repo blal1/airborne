@@ -92,7 +92,8 @@ class InputAction(Enum):
 
     # Brakes and gear
     BRAKES = "brakes"
-    PARKING_BRAKE = "parking_brake"
+    PARKING_BRAKE_SET = "parking_brake_set"
+    PARKING_BRAKE_RELEASE = "parking_brake_release"
     GEAR_TOGGLE = "gear_toggle"
 
     # Flaps
@@ -193,7 +194,7 @@ class InputConfig:
             pygame.K_END: InputAction.THROTTLE_DECREASE,
             # Brakes and gear
             pygame.K_b: InputAction.BRAKES,
-            pygame.K_p: InputAction.PARKING_BRAKE,
+            # Note: P key with modifiers handled specially (Shift+P=SET, Ctrl+P=RELEASE)
             pygame.K_g: InputAction.GEAR_TOGGLE,
             # Flaps
             pygame.K_LEFTBRACKET: InputAction.FLAPS_UP,
@@ -458,6 +459,17 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
                     self._handle_action_pressed(alt_number_actions[key])
                 return
 
+        # Special handling for Shift+P (parking brake SET) and Ctrl+P (parking brake RELEASE)
+        if key == pygame.K_p:
+            if mods & (pygame.KMOD_SHIFT | pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT):
+                if not is_repeat:
+                    self._handle_action_pressed(InputAction.PARKING_BRAKE_SET)
+                return
+            elif mods & (pygame.KMOD_CTRL | pygame.KMOD_LCTRL | pygame.KMOD_RCTRL):
+                if not is_repeat:
+                    self._handle_action_pressed(InputAction.PARKING_BRAKE_RELEASE)
+                return
+
         # Special handling for Control key alone to stop TTS
         if key in (pygame.K_LCTRL, pygame.K_RCTRL):
             if not is_repeat:
@@ -545,21 +557,22 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
         elif action == InputAction.FLAPS_DOWN:
             self.state.flaps = min(1.0, self.state.flaps + 0.25)
             self.event_bus.publish(InputActionEvent(action=action.value, value=self.state.flaps))
-        elif action == InputAction.PARKING_BRAKE:
-            # Toggle parking brake via message queue to physics plugin
+        elif action in (InputAction.PARKING_BRAKE_SET, InputAction.PARKING_BRAKE_RELEASE):
+            # Set or release parking brake via message queue to physics plugin
             if self.message_queue:
                 from airborne.core.messaging import Message, MessagePriority
 
+                brake_action = "set" if action == InputAction.PARKING_BRAKE_SET else "release"
                 self.message_queue.publish(
                     Message(
                         sender="input_manager",
                         recipients=["physics_plugin"],
                         topic="parking_brake",
-                        data={},
+                        data={"action": brake_action},
                         priority=MessagePriority.HIGH,
                     )
                 )
-                logger.debug("Parking brake toggle message sent")
+                logger.debug(f"Parking brake {brake_action} message sent")
             # Also publish to event bus for TTS feedback
             self.event_bus.publish(InputActionEvent(action=action.value))
         else:

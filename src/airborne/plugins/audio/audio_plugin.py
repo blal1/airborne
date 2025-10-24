@@ -649,6 +649,12 @@ class AudioPlugin(IPlugin):
                 )
             return
 
+        # Handle parking brake click sound (then continue to TTS)
+        if event.action in ("parking_brake_set", "parking_brake_release"):
+            if self.sound_manager:
+                sound_file = str(get_resource_path("assets/sounds/aircraft/click_switch.mp3"))
+                self.sound_manager.play_sound_2d(sound_file, volume=0.8)
+
         # Handle throttle released (announce percent)
         if event.action == "throttle_released" and event.value is not None:
             if self.tts_provider:
@@ -776,7 +782,8 @@ class AudioPlugin(IPlugin):
                     "throttle_full": "Full throttle",
                     "throttle_idle": "Throttle idle",
                     "brakes_on": "Brakes on",
-                    "parking_brake": "Parking brake",
+                    "parking_brake_set": "Parking brake set",
+                    "parking_brake_release": "Parking brake released",
                     "pause": "Paused",
                     "tts_next": "Next",
                 }
