@@ -80,6 +80,11 @@ class AircraftState:
     fuel: float = 100.0
     on_ground: bool = False
 
+    # Trim positions (-1.0 to 1.0)
+    pitch_trim: float = 0.0  # Elevator trim (-1.0 = nose down, 1.0 = nose up)
+    rudder_trim: float = 0.0  # Rudder trim (-1.0 = left, 1.0 = right)
+    aileron_trim: float = 0.0  # Aileron trim (-1.0 = left wing down, 1.0 = right wing down)
+
     # Cached properties for efficiency
     _airspeed: float = field(default=0.0, init=False, repr=False)
     _airspeed_dirty: bool = field(default=True, init=False, repr=False)

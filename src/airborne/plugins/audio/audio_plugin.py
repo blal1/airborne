@@ -107,6 +107,24 @@ class AudioPlugin(IPlugin):
         self._fuel_quantity = 0.0  # Gallons
         self._fuel_remaining_minutes = 0.0  # Minutes
 
+        # Stall warning state
+        self._angle_of_attack = 0.0  # degrees
+        self._stall_warning_active = False
+        self._stall_warning_sound_id: int | None = None
+        self._stall_announced = False  # Track if we've announced "Stall!" for current stall event
+        self._stall_warn_aoa_threshold = 14.0  # Start warning at 14° AOA
+        self._stall_aoa_threshold = 16.0  # Full stall at 16° AOA
+
+        # Trim state for readouts
+        self._pitch_trim = 0.0  # -1.0 to 1.0 (0.0 = neutral)
+        self._rudder_trim = 0.0  # -1.0 to 1.0 (0.0 = neutral)
+
+        # Pitch control feedback - continuous sweeping tone
+        self._last_pitch_control = 0.0  # Track pitch control position
+        self._pitch_tone_channel: int | None = None  # Currently playing tone
+        self._pitch_tone_active = False  # Whether tone is currently playing
+        self._last_pitch_freq = 440.0  # Last frequency played (for change detection)
+
     def get_metadata(self) -> PluginMetadata:
         """Return plugin metadata.
 
@@ -241,12 +259,29 @@ class AudioPlugin(IPlugin):
                 self.sound_manager.set_engine_pitch_range(pitch_idle, pitch_full)
                 logger.info(f"Engine pitch range configured: {pitch_idle} to {pitch_full}")
 
-                # Store custom engine sound file path for later use
-                engine_sound_relative = engine_sounds.get(
-                    "running", "assets/sounds/aircraft/engine.wav"
-                )
-                self._engine_sound_path = str(get_resource_path(engine_sound_relative))
-                logger.info(f"Engine sound configured: {self._engine_sound_path}")
+                # Check if we have start/idle/shutdown sound structure (new format)
+                if "start" in engine_sounds and "idle" in engine_sounds:
+                    # New format: start/idle/shutdown sequence
+                    start_path = str(get_resource_path(engine_sounds.get("start")))
+                    idle_path = str(get_resource_path(engine_sounds.get("idle")))
+                    shutdown_path = (
+                        str(get_resource_path(engine_sounds.get("shutdown", "")))
+                        if "shutdown" in engine_sounds
+                        else None
+                    )
+
+                    self.sound_manager.set_engine_sound_paths(start_path, idle_path, shutdown_path)
+                    self._engine_sound_path = idle_path  # Store idle path for compatibility
+                    logger.info(
+                        f"Engine sound sequence configured: start={start_path}, idle={idle_path}, shutdown={shutdown_path}"
+                    )
+                else:
+                    # Old format: single running sound
+                    engine_sound_relative = engine_sounds.get(
+                        "running", "assets/sounds/aircraft/engine.wav"
+                    )
+                    self._engine_sound_path = str(get_resource_path(engine_sound_relative))
+                    logger.info(f"Engine sound configured: {self._engine_sound_path}")
             else:
                 self._engine_sound_path = str(
                     get_resource_path("assets/sounds/aircraft/engine.wav")
@@ -279,6 +314,9 @@ class AudioPlugin(IPlugin):
         if self.tts_provider and hasattr(self.tts_provider, "update"):
             self.tts_provider.update()
 
+        # Update stall warning system
+        self._update_stall_warning()
+
         # Update listener position (once per frame is fine)
         self.sound_manager.update_listener(
             position=self._listener_position,
@@ -286,6 +324,157 @@ class AudioPlugin(IPlugin):
             up=self._listener_up,
             velocity=self._listener_velocity,
         )
+
+    def _update_stall_warning(self) -> None:
+        """Update stall warning sound based on angle of attack."""
+        if not self.audio_engine:
+            return
+
+        aoa = abs(self._angle_of_attack)  # Use absolute value for both positive and negative AOA
+
+        # Determine if we should play stall warning
+        should_warn = aoa >= self._stall_warn_aoa_threshold
+        is_stalling = aoa >= self._stall_aoa_threshold
+
+        # Start/stop stall warning sound (looping)
+        if should_warn and not self._stall_warning_active:
+            # Start playing stall warning sound (looping)
+            logger.info(f"Stall warning activated (AOA={aoa:.1f}°)")
+            sound_path = str(get_resource_path("assets/sounds/aircraft/stall_warn.mp3"))
+            try:
+                self._stall_warning_sound_id = self.audio_engine.load_sound(sound_path)
+                if self._stall_warning_sound_id is not None:
+                    self.audio_engine.play_sound(
+                        self._stall_warning_sound_id, loop=True, volume=0.7
+                    )
+                    self._stall_warning_active = True
+            except Exception as e:
+                logger.error(f"Failed to play stall warning sound: {e}")
+
+        elif not should_warn and self._stall_warning_active:
+            # Stop playing stall warning sound
+            logger.info(f"Stall warning deactivated (AOA={aoa:.1f}°)")
+            if self._stall_warning_sound_id is not None:
+                self.audio_engine.stop_sound(self._stall_warning_sound_id)
+                self._stall_warning_sound_id = None
+            self._stall_warning_active = False
+            self._stall_announced = False  # Reset announcement flag when exiting stall
+
+        # Announce "Stall!" once when entering full stall
+        if is_stalling and not self._stall_announced and self.tts_provider:
+            logger.info(f"STALL! (AOA={aoa:.1f}°)")
+            # Play "Stall!" message with high priority, interrupting other speech
+            from airborne.audio.tts.base import TTSPriority
+
+            stall_message = ["MSG_WORD_STALL", "MSG_WORD_STALL"]  # "Stall! Stall!"
+            self.tts_provider.speak(
+                stall_message, priority=TTSPriority.CRITICAL, interrupt=True
+            )
+            self._stall_announced = True
+
+    def _update_pitch_feedback_tone(self, pitch: float) -> None:
+        """Update sweeping tone to indicate pitch control position.
+
+        Uses rapid short beeps that change frequency, creating a sweeping effect:
+        - pitch = 0.0 (neutral): SILENT (no tone)
+        - pitch = +0.05 to +1.0 (forward/nose down): 330-220 Hz (falling sweep)
+        - pitch = -0.05 to -1.0 (back/nose up): 550-880 Hz (rising sweep)
+
+        Args:
+            pitch: Pitch control position (-1.0 to 1.0).
+        """
+        if not self.audio_engine:
+            return
+
+        # Threshold for silence (dead zone around neutral)
+        silence_threshold = 0.05
+
+        # If pitch is near neutral, stop any active tone
+        if abs(pitch) < silence_threshold:
+            if self._pitch_tone_active:
+                if self._pitch_tone_channel is not None:
+                    from contextlib import suppress
+                    with suppress(Exception):
+                        self.audio_engine.stop_source(self._pitch_tone_channel)
+                    self._pitch_tone_channel = None
+                self._pitch_tone_active = False
+                self._last_pitch_freq = 440.0
+            return
+
+        # Calculate frequency based on pitch position
+        # Base frequency is 440 Hz (A4)
+        # Range: 220 Hz (pitch = +1.0) to 880 Hz (pitch = -1.0)
+        base_freq = 440.0
+        # Map pitch from [-1.0, 1.0] to frequency [880, 220]
+        # Higher pitch (nose up) = higher frequency
+        freq = base_freq * (2.0 ** (-pitch))  # Exponential mapping for musical scale
+
+        # Only update if frequency changed significantly (creates sweeping effect)
+        freq_change_threshold = 10.0  # Hz
+        if abs(freq - self._last_pitch_freq) < freq_change_threshold:
+            return  # No significant change, don't restart beep
+
+        self._last_pitch_freq = freq
+
+        # Stop previous beep
+        if self._pitch_tone_channel is not None:
+            from contextlib import suppress
+            with suppress(Exception):
+                self.audio_engine.stop_source(self._pitch_tone_channel)
+            self._pitch_tone_channel = None
+
+        # Generate and play new beep at current frequency
+        import numpy as np
+        import tempfile
+        import wave
+
+        # Generate short beep (100ms for rapid updates)
+        sample_rate = 44100
+        duration = 0.1  # 100ms beep
+        samples = int(sample_rate * duration)
+
+        # Create sine wave at current frequency
+        t = np.linspace(0, duration, samples, False)
+        tone = np.sin(2 * np.pi * freq * t)
+
+        # Apply envelope (fade in/out to avoid clicks)
+        fade_samples = int(sample_rate * 0.01)  # 10ms fade
+        fade_in = np.linspace(0, 1, fade_samples)
+        fade_out = np.linspace(1, 0, fade_samples)
+        tone[:fade_samples] *= fade_in
+        tone[-fade_samples:] *= fade_out
+
+        # Convert to float32
+        tone = tone.astype(np.float32) * 0.25  # Volume
+
+        try:
+            # Create temporary WAV file
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_wav:
+                temp_path = temp_wav.name
+
+            # Write WAV file
+            with wave.open(temp_path, 'wb') as wav_file:
+                wav_file.setnchannels(1)  # Mono
+                wav_file.setsampwidth(2)  # 16-bit
+                wav_file.setframerate(sample_rate)
+                tone_int16 = (tone * 32767).astype(np.int16)
+                wav_file.writeframes(tone_int16.tobytes())
+
+            # Load and play the sound (non-looping)
+            sound = self.audio_engine.load_sound(temp_path)
+            if sound is not None:
+                self._pitch_tone_channel = self.audio_engine.play_2d(sound, loop=False, volume=0.5)
+                self._pitch_tone_active = True
+                logger.debug(f"Pitch sweep: {freq:.1f} Hz (pitch={pitch:.2f})")
+
+            # Clean up temp file
+            import os
+            from contextlib import suppress
+            with suppress(Exception):
+                os.unlink(temp_path)
+
+        except Exception as e:
+            logger.warning(f"Failed to play pitch sweep tone: {e}")
 
     def shutdown(self) -> None:
         """Shutdown the audio plugin."""
@@ -348,6 +537,15 @@ class AudioPlugin(IPlugin):
                 if brakes != self._last_brakes_state:
                     self.sound_manager.play_brakes_sound(brakes > 0.0)
                     self._last_brakes_state = brakes
+
+            # Pitch control feedback with continuous tone
+            # Tone plays continuously while yoke is deflected, stops at neutral
+            if "pitch" in data and self.audio_engine:
+                pitch = data["pitch"]
+                # Update tone frequency to match current pitch position
+                # Tone starts when pitch moves away from neutral, stops when returning to neutral
+                self._update_pitch_feedback_tone(pitch)
+                self._last_pitch_control = pitch
 
             # Note: Engine sound is now updated by RPM in ENGINE_STATE handler, not throttle
 
@@ -424,6 +622,10 @@ class AudioPlugin(IPlugin):
                 self._bank = data["bank"]
             if "pitch" in data:
                 self._pitch = data["pitch"]
+            if "angle_of_attack_deg" in data:
+                aoa_value = data["angle_of_attack_deg"]
+                if aoa_value is not None:
+                    self._angle_of_attack = aoa_value
 
             # Update wind sound based on airspeed
             if "airspeed" in data and self.sound_manager:
@@ -478,27 +680,44 @@ class AudioPlugin(IPlugin):
             engine_running = data.get("running", False)
             engine_rpm = data.get("rpm", 0.0)
 
-            # Start/stop engine sound based on RPM (not just running state)
-            # This allows sound during cranking and gradual wind-down
+            # Start/stop engine sound based on ENGINE RUNNING state
+            # Only play engine sounds when the engine actually catches and runs
+            # Do NOT play sounds just from starter cranking
             if self.sound_manager and hasattr(self, "_engine_sound_active"):
-                if engine_rpm > 0 and not self._engine_sound_active:
-                    # RPM > 0: Start engine sound (starter engaged or running)
-                    engine_sound_path = getattr(
-                        self, "_engine_sound_path", "assets/sounds/aircraft/engine.wav"
-                    )
-                    self.sound_manager.start_engine_sound(engine_sound_path)
-                    self._engine_sound_active = True
-                    logger.info(f"Engine sound started at {engine_rpm:.0f} RPM")
-                elif engine_rpm <= 0 and self._engine_sound_active:
-                    # RPM = 0: Stop engine sound (fully stopped)
+                if engine_running and not self._engine_sound_active:
+                    # Engine started: Play start.wav -> idle.wav sequence
+                    # Check if we have the new sound sequence configured
                     if (
-                        hasattr(self.sound_manager, "_engine_source_id")
-                        and self.sound_manager._engine_source_id is not None
+                        hasattr(self.sound_manager, "_engine_start_path")
+                        and self.sound_manager._engine_start_path
                     ):
-                        self.sound_manager.stop_sound(self.sound_manager._engine_source_id)
-                        self.sound_manager._engine_source_id = None
-                        self._engine_sound_active = False
-                        logger.info("Engine sound stopped (RPM = 0)")
+                        # New format: use start_engine_sequence (start.wav -> idle.wav)
+                        self.sound_manager.start_engine_sequence()
+                        logger.info(f"Engine started: sound sequence playing (RPM = {engine_rpm:.0f})")
+                    else:
+                        # Old format: use single engine sound
+                        engine_sound_path = getattr(
+                            self, "_engine_sound_path", "assets/sounds/aircraft/engine.wav"
+                        )
+                        self.sound_manager.start_engine_sound(engine_sound_path)
+                        logger.info(f"Engine started: sound playing (RPM = {engine_rpm:.0f})")
+                    self._engine_sound_active = True
+                elif not engine_running and self._engine_sound_active:
+                    # Engine stopped: Play shutdown.wav and stop idle loop
+                    if hasattr(self.sound_manager, "stop_engine_sound"):
+                        # New format: stop with shutdown.wav
+                        self.sound_manager.stop_engine_sound(play_shutdown=True)
+                        logger.info("Engine stopped: shutdown sound playing")
+                    else:
+                        # Old format: just stop the sound
+                        if (
+                            hasattr(self.sound_manager, "_engine_source_id")
+                            and self.sound_manager._engine_source_id is not None
+                        ):
+                            self.sound_manager.stop_sound(self.sound_manager._engine_source_id)
+                            self.sound_manager._engine_source_id = None
+                        logger.info("Engine stopped: sound stopped")
+                    self._engine_sound_active = False
 
                 # Update engine sound pitch based on RPM
                 if self._engine_sound_active and engine_rpm > 0:
@@ -649,6 +868,46 @@ class AudioPlugin(IPlugin):
                 )
             return
 
+        # Handle trim adjustment sound and TTS
+        if event.action == "trim_pitch_adjusted":
+            # Store trim value (convert from 0-100 percentage to -1.0 to 1.0 scale)
+            if event.value is not None:
+                trim_percent = int(event.value)
+                self._pitch_trim = (trim_percent - 50) / 50.0  # 0->-1.0, 50->0.0, 100->1.0
+            # Play click sound
+            if self.sound_manager:
+                self.sound_manager.play_sound_2d(
+                    "assets/sounds/aircraft/click_knob.mp3", volume=0.3
+                )
+            # Announce trim position (HIGH priority + interrupt to stop previous announcements)
+            if self.tts_provider and event.value is not None:
+                trim_percent = int(event.value)
+                message_keys = SpeechMessages.trim_position(trim_percent)
+                from airborne.audio.tts.base import TTSPriority
+
+                self.tts_provider.speak(message_keys, priority=TTSPriority.HIGH, interrupt=True)  # type: ignore[arg-type]
+            return
+
+        # Handle rudder trim adjustment sound and TTS
+        if event.action == "trim_rudder_adjusted":
+            # Store trim value (convert from 0-100 percentage to -1.0 to 1.0 scale)
+            if event.value is not None:
+                trim_percent = int(event.value)
+                self._rudder_trim = (trim_percent - 50) / 50.0  # 0->-1.0, 50->0.0, 100->1.0
+            # Play click sound
+            if self.sound_manager:
+                self.sound_manager.play_sound_2d(
+                    "assets/sounds/aircraft/click_knob.mp3", volume=0.3
+                )
+            # Announce rudder trim position (HIGH priority + interrupt to stop previous announcements)
+            if self.tts_provider and event.value is not None:
+                trim_percent = int(event.value)
+                message_keys = SpeechMessages.rudder_trim_position(trim_percent)
+                from airborne.audio.tts.base import TTSPriority
+
+                self.tts_provider.speak(message_keys, priority=TTSPriority.HIGH, interrupt=True)  # type: ignore[arg-type]
+            return
+
         # Handle parking brake click sound (then continue to TTS)
         if event.action in ("parking_brake_set", "parking_brake_release"):
             if self.sound_manager:
@@ -672,20 +931,31 @@ class AudioPlugin(IPlugin):
 
         # Handle instrument readouts
         if event.action == "read_airspeed":
-            message = f"Airspeed {int(self._airspeed)} knots"
+            import math
+
+            airspeed_val = 0 if math.isnan(self._airspeed) else int(self._airspeed)
+            message = f"{airspeed_val} knots"  # Removed "Airspeed" prefix
         elif event.action == "read_altitude":
-            message = f"Altitude {int(self._altitude)} feet"
+            import math
+
+            altitude_val = 0 if math.isnan(self._altitude) else int(self._altitude)
+            message = f"{altitude_val} feet"  # Removed "Altitude" prefix
         elif event.action == "read_heading":
-            message = f"Heading {int(self._heading)} degrees"
+            import math
+
+            heading_val = 0 if math.isnan(self._heading) else int(self._heading)
+            message = f"Heading {heading_val} degrees"
         elif event.action == "read_vspeed":
-            # Format vertical speed with sign
-            vspeed_int = int(self._vspeed)
+            # Format vertical speed with sign (removed "Vertical speed" prefix)
+            import math
+
+            vspeed_int = 0 if math.isnan(self._vspeed) else int(self._vspeed)
             if vspeed_int > 0:
-                message = f"Climbing {vspeed_int} feet per minute"
+                message = f"Climbing {vspeed_int}"  # Removed "feet per minute"
             elif vspeed_int < 0:
-                message = f"Descending {abs(vspeed_int)} feet per minute"
+                message = f"Descending {abs(vspeed_int)}"  # Removed "feet per minute"
             else:
-                message = "Level flight"
+                message = "Level"  # Removed "flight"
         elif event.action == "read_attitude":
             # Format bank and pitch angles
             bank_int = int(self._bank)
@@ -764,6 +1034,16 @@ class AudioPlugin(IPlugin):
             else:
                 message = f"Fuel {self._fuel_quantity:.1f} gallons remaining {minutes} minutes"
 
+        # Trim readouts
+        elif event.action == "read_pitch_trim":
+            # Convert trim value (-1.0 to 1.0) to percentage (0-100) for announcement
+            trim_percent = int((self._pitch_trim + 1.0) * 50)
+            message = f"Pitch trim {trim_percent} percent"
+        elif event.action == "read_rudder_trim":
+            # Convert trim value (-1.0 to 1.0) to percentage (0-100) for announcement
+            trim_percent = int((self._rudder_trim + 1.0) * 50)
+            message = f"Rudder trim {trim_percent} percent"
+
         else:
             # Map actions to TTS announcements
             # Skip gear_toggle announcement for fixed gear aircraft
@@ -800,15 +1080,32 @@ class AudioPlugin(IPlugin):
         # Convert message to message key
         message_key = self._get_message_key(message, event.action)
 
+        # Determine priority: instrument readouts should interrupt previous readouts
+        is_instrument_readout = event.action in (
+            "read_airspeed",
+            "read_altitude",
+            "read_heading",
+            "read_vspeed",
+            "read_engine",
+            "read_electrical",
+            "read_fuel",
+            "read_attitude",
+            "read_pitch_trim",
+            "read_rudder_trim",
+        )
+        priority = TTSPriority.HIGH if is_instrument_readout else TTSPriority.NORMAL
+        # Interrupt previous speech for instrument readouts
+        interrupt = is_instrument_readout
+
         # Handle both str and list[str] cases
         if isinstance(message_key, list):
             # Log the list of keys for debugging
             logger.info(f"Speaking: {' '.join(message_key)} ({message})")
             # Pass the list directly to TTS provider for composable playback
-            self.tts_provider.speak(message_key, priority=TTSPriority.NORMAL)  # type: ignore[arg-type]
+            self.tts_provider.speak(message_key, priority=priority, interrupt=interrupt)  # type: ignore[arg-type]
         else:
             logger.info(f"Speaking: {message_key} ({message})")
-            self.tts_provider.speak(message_key, priority=TTSPriority.NORMAL)
+            self.tts_provider.speak(message_key, priority=priority, interrupt=interrupt)
 
     def _get_message_key(self, message: str, action: str) -> str | list[str]:
         """Convert human-readable message to message key.
@@ -823,14 +1120,30 @@ class AudioPlugin(IPlugin):
         from airborne.audio.tts.speech_messages import SpeechMessages
 
         # Map instrument reading actions to helper methods
+        # Use concise format (no prefixes) for airspeed, altitude, and vertical speed
         if action == "read_airspeed":
-            return SpeechMessages.airspeed(int(self._airspeed))
+            # Concise: just number + "knots" (no "Airspeed" prefix)
+            exact_knots = int(round(self._airspeed))
+            exact_knots = max(0, min(300, exact_knots))
+            return [
+                f"cockpit/number_{exact_knots}_autogen",
+                SpeechMessages.MSG_WORD_KNOTS,
+            ]
         elif action == "read_altitude":
-            return SpeechMessages.altitude(int(self._altitude))
+            # Concise: just number + "feet" (no "Altitude" prefix)
+            feet = int(self._altitude)
+            return SpeechMessages._digits_to_keys(feet) + [SpeechMessages.MSG_WORD_FEET]
         elif action == "read_heading":
             return SpeechMessages.heading(int(self._heading))
         elif action == "read_vspeed":
-            return SpeechMessages.vertical_speed(int(self._vspeed))
+            # Concise: just "climbing/descending" + number (no "Vertical speed" prefix, no "feet per minute" suffix)
+            fpm = int(self._vspeed)
+            if abs(fpm) < 50:
+                return [SpeechMessages.MSG_LEVEL_FLIGHT]
+            direction_word = (
+                SpeechMessages.MSG_WORD_CLIMBING if fpm > 0 else SpeechMessages.MSG_WORD_DESCENDING
+            )
+            return [direction_word] + SpeechMessages._digits_to_keys(abs(fpm))
         elif action == "read_attitude":
             # For attitude, we read pitch first, then bank
             # Always include instrument names
@@ -898,6 +1211,16 @@ class AudioPlugin(IPlugin):
                 self._fuel_quantity, self._fuel_remaining_minutes or 0.0
             )
 
+        # Trim readouts
+        elif action == "read_pitch_trim":
+            # Convert trim value (-1.0 to 1.0) to percentage (0-100)
+            trim_percent = int((self._pitch_trim + 1.0) * 50)
+            return SpeechMessages.trim_position(trim_percent)
+        elif action == "read_rudder_trim":
+            # Convert trim value (-1.0 to 1.0) to percentage (0-100)
+            trim_percent = int((self._rudder_trim + 1.0) * 50)
+            return SpeechMessages.rudder_trim_position(trim_percent)
+
         # Map action messages to constants
         action_to_key = {
             "Gear down": SpeechMessages.MSG_GEAR_DOWN,
@@ -909,6 +1232,8 @@ class AudioPlugin(IPlugin):
             "Full throttle": SpeechMessages.MSG_FULL_THROTTLE,
             "Throttle idle": SpeechMessages.MSG_THROTTLE_IDLE,
             "Brakes on": SpeechMessages.MSG_BRAKES_ON,
+            "Parking brake set": SpeechMessages.MSG_PARKING_BRAKE_SET,
+            "Parking brake released": SpeechMessages.MSG_PARKING_BRAKE_RELEASED,
             "Paused": SpeechMessages.MSG_PAUSED,
             "Next": SpeechMessages.MSG_NEXT,
             "Level flight": SpeechMessages.MSG_LEVEL_FLIGHT,

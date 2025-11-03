@@ -69,3 +69,4 @@ assets/models/*.onnx
 assets/models/*.bin
 data/speech
 logs
+.aider*

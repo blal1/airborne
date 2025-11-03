@@ -182,6 +182,19 @@ class SimplePistonEngine(IPlugin):
         self._update_pressures()
         self._update_fuel_flow()
 
+        # Diagnostic telemetry - log every second during takeoff
+        if not hasattr(self, '_telemetry_counter'):
+            self._telemetry_counter = 0
+        self._telemetry_counter += 1
+
+        # Log every 60 frames (~1 second at 60 FPS) when engine is running
+        if self.running and self._telemetry_counter % 60 == 0:
+            power_hp = self._calculate_power()
+            logger.info(f"[ENGINE TELEMETRY] throttle={self.throttle:.2f} rpm={self.rpm:.0f} "
+                       f"power={power_hp:.1f}HP combustion={self._combustion_energy:.1f} "
+                       f"fuel={self._fuel_available} elec={self._electrical_available} "
+                       f"mixture={self.mixture:.2f}")
+
         # Publish state event
         self.context.event_bus.publish(
             EngineStateEvent(
@@ -389,6 +402,24 @@ class SimplePistonEngine(IPlugin):
         else:
             has_fuel = True  # Some engines don't require fuel (e.g., electric motors)
 
+        # REALISTIC BEHAVIOR: Engine dies immediately when fuel or ignition is lost
+        if self.running:
+            if not has_fuel:
+                logger.warning("Engine shutdown: Fuel starvation (fuel selector OFF or tanks empty)")
+                self.running = False
+                self.starter_engaged = False
+                # Combustion stops immediately, RPM will windmill down
+                self._combustion_energy = 0.0
+                return
+
+            if not has_ignition:
+                logger.warning("Engine shutdown: Both magnetos OFF")
+                self.running = False
+                self.starter_engaged = False
+                # Combustion stops immediately, RPM will windmill down
+                self._combustion_energy = 0.0
+                return
+
         # Starter check with electrical power requirement
         # Engine can run if:
         # 1. RPM is high enough that engine is spinning (from inertia or combustion)
@@ -404,6 +435,7 @@ class SimplePistonEngine(IPlugin):
             # Engine is running or starting
             if not self.running and self.rpm > 400:
                 self.running = True
+                logger.info(f"Engine started! RPM: {self.rpm:.0f}, throttle: {self.throttle:.2f}")
 
             # Calculate combustion efficiency based on mixture
             # Best mixture is around 0.8 (slightly rich)
@@ -428,6 +460,28 @@ class SimplePistonEngine(IPlugin):
             max_change = energy_rate * dt
             self._combustion_energy += max(-max_change, min(max_change, energy_delta))
         else:
+            # Engine cannot start or is stopping - log the reason if starter is engaged
+            if self.starter_engaged and not self.running:
+                reasons = []
+                if not has_ignition:
+                    reasons.append("no magnetos")
+                if not has_fuel:
+                    reasons.append("no fuel")
+                if not can_start and not self._electrical_available:
+                    reasons.append("no electrical power")
+
+                if reasons and not hasattr(self, '_last_start_warning_time'):
+                    self._last_start_warning_time = 0.0
+
+                # Log warning once per second to avoid spam
+                if not hasattr(self, '_warning_timer'):
+                    self._warning_timer = 0.0
+                self._warning_timer += dt
+
+                if self._warning_timer >= 1.0:
+                    logger.warning(f"Engine cannot start: {', '.join(reasons)}")
+                    self._warning_timer = 0.0
+
             # Engine is stopping
             if self.running and self.rpm < 200:
                 self.running = False
@@ -447,10 +501,21 @@ class SimplePistonEngine(IPlugin):
             # Running: RPM based on throttle and combustion
             # Need combustion energy to maintain RPM
             if self._combustion_energy > 10.0:
+                # Normal operation: full power available
                 target_rpm = self.idle_rpm + (self.max_rpm - self.idle_rpm) * self.throttle
             else:
-                # Not enough combustion, engine dying
-                target_rpm = self._combustion_energy * 20.0
+                # Low combustion energy - but check if user wants power
+                if self.throttle > 0.5:
+                    # User wants power - give RPM based on throttle
+                    # This allows acceleration even with low combustion energy
+                    target_rpm = self.idle_rpm + (self.max_rpm - self.idle_rpm) * self.throttle
+                    # Warn if combustion is critically low
+                    if self._combustion_energy < 5.0:
+                        logger.warning(f"Engine low combustion energy: {self._combustion_energy:.1f}, RPM: {self.rpm:.0f}, throttle: {self.throttle:.2f}, mixture: {self.mixture:.2f}")
+                else:
+                    # Throttle low - use combustion energy to determine RPM
+                    # Maintain at least idle RPM if marked as running
+                    target_rpm = max(self.idle_rpm * 0.5, self._combustion_energy * 20.0)
         elif self.starter_engaged:
             # Starter cranking
             target_rpm = 200.0 + self._combustion_energy * 5.0
@@ -547,4 +612,16 @@ class SimplePistonEngine(IPlugin):
         mixture_efficiency = max(0.5, min(1.0, mixture_efficiency))
 
         power = max_power * rpm_factor * throttle_factor * mixture_efficiency
+
+        # DIAGNOSTIC: Log power calculation details at high throttle
+        if not hasattr(self, '_power_log_counter'):
+            self._power_log_counter = 0
+        self._power_log_counter += 1
+
+        # Log every 60 frames when throttle > 90%
+        if self.throttle > 0.9 and self._power_log_counter % 60 == 0:
+            logger.info(f"[POWER CALC] max_power={max_power:.1f} rpm_factor={rpm_factor:.3f} "
+                       f"throttle_factor={throttle_factor:.3f} mixture_eff={mixture_efficiency:.3f} "
+                       f"RESULT={power:.1f}HP")
+
         return max(0.0, power)

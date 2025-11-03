@@ -13,17 +13,25 @@ aircraft:
     wing_area_sqft: 174.0        # Wing area in square feet
     weight_lbs: 2450.0            # Empty weight + pilot + fuel
     max_thrust_lbs: 180.0         # Maximum thrust from engine (HP converted) - DEPRECATED, using propeller model now
-    drag_coefficient: 0.042       # Cd0 - parasite drag (includes gear, struts, fuselage)
+    drag_coefficient: 0.035       # Cd0 - parasite drag (realistic for C172 with fixed gear)
     lift_coefficient_slope: 0.09  # Cl_alpha - lift curve slope
+
+    # Stability and damping coefficients (for improved keyboard control)
+    pitch_damping_coefficient: -25.0  # Cmq - pitch rate damping (increased from -18 for better altitude hold)
+    roll_damping_coefficient: -8.0    # Clp - roll rate damping
+    yaw_damping_coefficient: -6.0     # Cnr - yaw rate damping
 
   # Propeller configuration
   propeller:
     type: "fixed_pitch"           # Fixed-pitch propeller (typical for C172)
     diameter_m: 1.905             # 75 inches = 1.905 meters
     pitch_ratio: 0.6              # Pitch/diameter ratio (0.6 = climb prop)
-    efficiency_static: 0.72       # Efficiency at v=0 (tuned for realistic T/W ~0.10)
-    efficiency_cruise: 0.85       # Peak efficiency at cruise speed
-    cruise_advance_ratio: 0.6     # Advance ratio where efficiency peaks
+    efficiency_static: 0.75       # Efficiency at v=0 (realistic for fixed-pitch climb prop: 0.75-0.80)
+    efficiency_cruise: 0.88       # Peak efficiency at cruise speed (increased for better climb)
+    cruise_advance_ratio: 0.5     # Advance ratio where efficiency peaks (moved closer to climb speed)
+    static_thrust_multiplier: 5.8   # Empirical correction for momentum theory
+                                    # Increased to provide adequate climb thrust at J=0.3-0.5
+                                    # Real C172 maintains ~2,400N thrust through climb regime
 
   # Aircraft systems plugins
   plugins:
@@ -139,9 +147,11 @@ aircraft:
   # Audio configuration
   audio:
     engine_sounds:
-      running: "assets/sounds/aircraft/ef3_engine.wav"  # Eurofly 3 engine recording
-      pitch_idle: 0.7       # Audio pitch at 0% throttle
-      pitch_full: 1.3       # Audio pitch at 100% throttle
+      start: "assets/sounds/aircraft/cessna172_start.wav"      # Engine start/crank sound
+      idle: "assets/sounds/aircraft/cessna172_idle.wav"        # Engine running/idle (looping)
+      shutdown: "assets/sounds/aircraft/cessna172_shutdown.wav"  # Engine shutdown sound
+      pitch_idle: 1.0       # Audio pitch at 0% throttle
+      pitch_full: 1.9       # Audio pitch at 100% throttle
     click_sounds:
       switch_on: "assets/sounds/aircraft/click_switch_on.mp3"
       switch_off: "assets/sounds/aircraft/click_switch_off.mp3"
@@ -225,5 +235,5 @@ aircraft:
       mixture: 0.0                  # Idle cutoff (full lean)
       throttle: 0.0                 # Idle
     controls:
-      parking_brake: false           # Parking brake set
+      parking_brake: true           # Parking brake set
       gear_down: true               # Fixed gear (always down)

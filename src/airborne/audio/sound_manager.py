@@ -48,13 +48,23 @@ class SoundManager:
 
         # Active sound sources (for continuous sounds like engine)
         self._engine_source_id: int | None = None
+        self._engine_start_source_id: int | None = None  # For engine start sound
         self._wind_source_id: int | None = None
         self._battery_loop_source_id: int | None = None
         self._battery_on_source_id: int | None = None  # For batteryon1.mp3 one-shot
 
+        # Engine sound paths (start/idle/shutdown)
+        self._engine_start_path: str | None = None
+        self._engine_idle_path: str | None = None
+        self._engine_shutdown_path: str | None = None
+
         # Engine sound pitch configuration (can be overridden per aircraft)
         self._engine_pitch_idle = 0.7  # Pitch at 0% throttle
         self._engine_pitch_full = 1.3  # Pitch at 100% throttle
+
+        # Engine sound sequence state
+        self._engine_sequence_active = False
+        self._engine_sequence_callback: Any = None  # Callback when idle sound starts
 
         # Battery sound sequence state
         self._battery_sequence_active = False
@@ -260,6 +270,21 @@ class SoundManager:
             return self._tts_provider.is_speaking()
         return False
 
+    def set_engine_sound_paths(
+        self, start_path: str | None = None, idle_path: str | None = None, shutdown_path: str | None = None
+    ) -> None:
+        """Configure engine sound file paths.
+
+        Args:
+            start_path: Path to engine start sound (plays once).
+            idle_path: Path to engine idle/running sound (loops).
+            shutdown_path: Path to engine shutdown sound (plays once).
+        """
+        self._engine_start_path = start_path
+        self._engine_idle_path = idle_path
+        self._engine_shutdown_path = shutdown_path
+        logger.debug(f"Engine sound paths configured: start={start_path}, idle={idle_path}, shutdown={shutdown_path}")
+
     def start_engine_sound(self, path: str | None = None) -> None:
         """Start looping engine sound.
 
@@ -282,6 +307,106 @@ class SoundManager:
             logger.debug("Engine sound started")
         except FileNotFoundError:
             logger.warning(f"Engine sound not found: {path}")
+
+    def start_engine_sequence(self, on_idle_callback: Any = None) -> None:
+        """Start engine sound sequence: start.wav -> idle.wav (looping).
+
+        Plays the start sound once, then transitions to the idle sound (looping).
+        Calls on_idle_callback when idle sound starts.
+
+        Args:
+            on_idle_callback: Callback to call when idle sound starts (engine running).
+        """
+        if not self._audio_engine:
+            return
+
+        # If we have configured sound paths, use the sequence
+        if self._engine_start_path and self._engine_idle_path:
+            # Stop any existing engine sounds
+            if self._engine_source_id is not None:
+                self._audio_engine.stop_source(self._engine_source_id)
+                self._engine_source_id = None
+            if self._engine_start_source_id is not None:
+                self._audio_engine.stop_source(self._engine_start_source_id)
+                self._engine_start_source_id = None
+
+            # Start the start sound (one-shot)
+            try:
+                self._engine_start_source_id = self.play_sound_2d(
+                    self._engine_start_path, volume=0.8, pitch=1.0, loop=False
+                )
+                self._engine_sequence_active = True
+                self._engine_sequence_callback = on_idle_callback
+                logger.info("Engine start sequence initiated (start sound playing)")
+            except FileNotFoundError:
+                logger.warning(f"Engine start sound not found: {self._engine_start_path}")
+                # Fall back to starting idle immediately
+                self._start_engine_idle()
+        else:
+            # Fall back to old behavior (use idle path directly)
+            self.start_engine_sound(self._engine_idle_path)
+
+    def _start_engine_idle(self) -> None:
+        """Start the engine idle sound (internal helper)."""
+        if not self._audio_engine or not self._engine_idle_path:
+            return
+
+        # Stop start sound if still playing
+        if self._engine_start_source_id is not None:
+            self._audio_engine.stop_source(self._engine_start_source_id)
+            self._engine_start_source_id = None
+
+        # Start idle sound (looping)
+        try:
+            # Load with loop mode enabled (like battery loop)
+            idle_sound = self._audio_engine.load_sound(
+                self._engine_idle_path,
+                preload=True,
+                loop_mode=True,
+            )
+            self._engine_source_id = self._audio_engine.play_2d(
+                idle_sound, volume=0.3, pitch=self._engine_pitch_idle, loop=True
+            )
+            logger.info("Engine idle sound started (looping)")
+
+            # Call callback if registered
+            if self._engine_sequence_callback:
+                callback = self._engine_sequence_callback
+                self._engine_sequence_callback = None
+                callback()
+        except FileNotFoundError:
+            logger.warning(f"Engine idle sound not found: {self._engine_idle_path}")
+
+        self._engine_sequence_active = False
+
+    def stop_engine_sound(self, play_shutdown: bool = True) -> None:
+        """Stop engine sound and optionally play shutdown sound.
+
+        Args:
+            play_shutdown: Whether to play the shutdown sound.
+        """
+        if not self._audio_engine:
+            return
+
+        # Stop any active engine sounds
+        if self._engine_source_id is not None:
+            self._audio_engine.stop_source(self._engine_source_id)
+            self._engine_source_id = None
+
+        if self._engine_start_source_id is not None:
+            self._audio_engine.stop_source(self._engine_start_source_id)
+            self._engine_start_source_id = None
+
+        # Play shutdown sound if configured and requested
+        if play_shutdown and self._engine_shutdown_path:
+            try:
+                self.play_sound_2d(self._engine_shutdown_path, volume=0.8, pitch=1.0, loop=False)
+                logger.info("Engine shutdown sound playing")
+            except FileNotFoundError:
+                logger.warning(f"Engine shutdown sound not found: {self._engine_shutdown_path}")
+
+        self._engine_sequence_active = False
+        self._engine_sequence_callback = None
 
     def update_engine_sound(self, throttle: float) -> None:
         """Update engine sound based on throttle.
@@ -561,6 +686,7 @@ class SoundManager:
 
         Should be called each frame to:
         - Update audio engine
+        - Monitor engine sound sequence
         - Monitor battery sound sequence
         - Clean up finished sounds
         """
@@ -569,6 +695,17 @@ class SoundManager:
 
         # Update audio engine
         self._audio_engine.update()
+
+        # Check engine sound sequence (start -> idle transition)
+        if self._engine_sequence_active and self._engine_start_source_id is not None:
+            # Check if engine start sound has finished
+            from airborne.audio.engine.base import SourceState
+
+            state = self._audio_engine.get_source_state(self._engine_start_source_id)
+            if state == SourceState.STOPPED:
+                # Start sound finished, transition to idle
+                logger.info("Engine start sound finished, starting idle sound")
+                self._start_engine_idle()
 
         # Check battery sound sequence
         if self._battery_sequence_active and self._battery_on_source_id is not None:

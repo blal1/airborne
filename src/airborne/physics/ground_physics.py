@@ -87,16 +87,19 @@ class GroundPhysics:
     }
 
     # Rolling resistance coefficients (dimensionless)
+    # These represent tire deformation and surface interaction for ROLLING wheels
+    # NOT sliding friction (which is 40-50x higher)
+    # Reference: Aircraft tires on paved runways have C_rr = 0.008-0.012
     ROLLING_RESISTANCE = {
-        "asphalt": 0.02,
-        "concrete": 0.015,
-        "grass": 0.08,
-        "dirt": 0.10,
-        "gravel": 0.06,
-        "snow": 0.05,
-        "ice": 0.02,
-        "water": 0.04,
-        "unknown": 0.03,
+        "asphalt": 0.010,      # Aircraft tires on smooth asphalt runway
+        "concrete": 0.010,     # Aircraft tires on smooth concrete runway
+        "grass": 0.06,         # Short grass (significantly higher)
+        "dirt": 0.08,          # Packed dirt
+        "gravel": 0.05,        # Loose stones
+        "snow": 0.04,          # Packed snow
+        "ice": 0.015,          # Smooth ice
+        "water": 0.03,         # Wet runway (hydroplaning risk)
+        "unknown": 0.020,      # Conservative default
     }
 
     def __init__(
@@ -144,6 +147,11 @@ class GroundPhysics:
         if not contact.on_ground:
             return forces
 
+        # Require minimum gear compression to apply ground forces
+        # When aircraft rotates for takeoff, weight transfers off wheels
+        if contact.gear_compression < 0.1:
+            return forces
+
         # Use provided velocity or create from ground speed and heading
         if velocity is None:
             heading_rad = math.radians(contact.heading_deg)
@@ -155,15 +163,11 @@ class GroundPhysics:
 
         speed = velocity.magnitude()
 
-        # Calculate friction force (opposes motion)
-        if speed > 0.01:
-            friction_coef = self._get_friction_coefficient(contact.surface_type)
-            normal_force = self.mass_kg * 9.81 * contact.gear_compression
-
-            friction_magnitude = friction_coef * normal_force
-            friction_direction = velocity.normalized() * -1
-
-            forces.friction_force = friction_direction * friction_magnitude
+        # NOTE: Friction force is NOT applied during normal rolling!
+        # Aircraft wheels ROLL, they don't slide. Sliding friction (μ=0.8) only
+        # applies when wheels are locked (braking) or skidding.
+        # Normal rolling resistance is handled separately below.
+        # Friction force is implicitly included in brake force calculation.
 
         # Calculate rolling resistance (always opposes motion)
         if speed > 0.01:

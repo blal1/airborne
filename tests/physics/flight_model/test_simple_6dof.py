@@ -537,3 +537,230 @@ class TestSimple6DOFPerformance:
 
         # Counter should increment correctly
         assert model.get_update_count() == initial + num_updates
+
+
+class TestSimple6DOFAngleOfAttack:
+    """Test angle of attack calculation."""
+
+    @pytest.fixture
+    def model(self) -> Simple6DOFFlightModel:
+        """Create and initialize a flight model."""
+        model = Simple6DOFFlightModel()
+        config = {
+            "wing_area_sqft": 174.0,
+            "weight_lbs": 2400.0,
+            "max_thrust_lbs": 300.0,
+        }
+        model.initialize(config)
+        return model
+
+    def test_aoa_level_flight(self, model: Simple6DOFFlightModel) -> None:
+        """Test AOA in level flight with zero pitch."""
+        # Level flight: velocity horizontal, pitch zero
+        state = AircraftState(
+            position=Vector3(0.0, 1000.0, 0.0),
+            velocity=Vector3(50.0, 0.0, 0.0),  # Horizontal velocity
+            rotation=Vector3(0.0, 0.0, 0.0),  # Zero pitch
+        )
+        model.reset(state)
+
+        # Calculate AOA directly
+        aoa = model._calculate_angle_of_attack()
+
+        # In level flight with zero pitch, AOA should be approximately zero
+        assert aoa == pytest.approx(0.0, abs=0.01)
+
+    def test_aoa_climbing_flight(self, model: Simple6DOFFlightModel) -> None:
+        """Test AOA during climbing flight."""
+        # Climbing: velocity vector pointing up, pitch pointing up more
+        # Pitch = 10°, flight path = 5°, so AOA = 5°
+        pitch_deg = 10.0
+        flight_path_deg = 5.0
+
+        pitch_rad = math.radians(pitch_deg)
+        flight_path_rad = math.radians(flight_path_deg)
+
+        # Velocity: horizontal component and vertical component
+        v_horizontal = 50.0  # m/s
+        v_vertical = v_horizontal * math.tan(flight_path_rad)
+
+        state = AircraftState(
+            position=Vector3(0.0, 1000.0, 0.0),
+            velocity=Vector3(v_horizontal, v_vertical, 0.0),
+            rotation=Vector3(pitch_rad, 0.0, 0.0),
+        )
+        model.reset(state)
+
+        # Calculate AOA
+        aoa = model._calculate_angle_of_attack()
+        aoa_deg = math.degrees(aoa)
+
+        # Expected AOA = pitch - flight_path = 10° - 5° = 5°
+        expected_aoa_deg = pitch_deg - flight_path_deg
+        assert aoa_deg == pytest.approx(expected_aoa_deg, abs=0.5)
+
+    def test_aoa_descending_flight(self, model: Simple6DOFFlightModel) -> None:
+        """Test AOA during descending flight."""
+        # Descending: velocity vector pointing down, pitch relatively level
+        # Pitch = 0°, flight path = -5° (descending), so AOA = 5°
+        pitch_deg = 0.0
+        flight_path_deg = -5.0
+
+        pitch_rad = math.radians(pitch_deg)
+        flight_path_rad = math.radians(flight_path_deg)
+
+        # Velocity: horizontal and downward
+        v_horizontal = 50.0  # m/s
+        v_vertical = v_horizontal * math.tan(flight_path_rad)
+
+        state = AircraftState(
+            position=Vector3(0.0, 1000.0, 0.0),
+            velocity=Vector3(v_horizontal, v_vertical, 0.0),
+            rotation=Vector3(pitch_rad, 0.0, 0.0),
+        )
+        model.reset(state)
+
+        # Calculate AOA
+        aoa = model._calculate_angle_of_attack()
+        aoa_deg = math.degrees(aoa)
+
+        # Expected AOA = pitch - flight_path = 0° - (-5°) = 5°
+        expected_aoa_deg = pitch_deg - flight_path_deg
+        assert aoa_deg == pytest.approx(expected_aoa_deg, abs=0.5)
+
+    def test_aoa_not_equal_to_pitch(self, model: Simple6DOFFlightModel) -> None:
+        """Test that AOA is NOT equal to pitch angle."""
+        # This was the bug: AOA was incorrectly set to pitch
+        # In climbing flight, AOA should be less than pitch
+
+        pitch_deg = 15.0
+        pitch_rad = math.radians(pitch_deg)
+
+        # Climbing at 8° flight path angle
+        flight_path_deg = 8.0
+        flight_path_rad = math.radians(flight_path_deg)
+
+        v_horizontal = 50.0
+        v_vertical = v_horizontal * math.tan(flight_path_rad)
+
+        state = AircraftState(
+            position=Vector3(0.0, 1000.0, 0.0),
+            velocity=Vector3(v_horizontal, v_vertical, 0.0),
+            rotation=Vector3(pitch_rad, 0.0, 0.0),
+        )
+        model.reset(state)
+
+        # Calculate AOA
+        aoa = model._calculate_angle_of_attack()
+        aoa_deg = math.degrees(aoa)
+
+        # AOA should NOT equal pitch
+        assert abs(aoa_deg - pitch_deg) > 1.0  # At least 1° difference
+
+        # AOA should equal pitch - flight_path
+        expected_aoa_deg = pitch_deg - flight_path_deg
+        assert aoa_deg == pytest.approx(expected_aoa_deg, abs=0.5)
+
+    def test_aoa_low_speed_approximation(self, model: Simple6DOFFlightModel) -> None:
+        """Test AOA at very low speeds approximates pitch."""
+        # At very low horizontal velocity, AOA should approximate pitch
+        pitch_deg = 5.0
+        pitch_rad = math.radians(pitch_deg)
+
+        state = AircraftState(
+            position=Vector3(0.0, 1000.0, 0.0),
+            velocity=Vector3(0.05, 0.0, 0.0),  # Very low velocity
+            rotation=Vector3(pitch_rad, 0.0, 0.0),
+        )
+        model.reset(state)
+
+        # Calculate AOA
+        aoa = model._calculate_angle_of_attack()
+        aoa_deg = math.degrees(aoa)
+
+        # At very low speed, AOA should approximate pitch
+        assert aoa_deg == pytest.approx(pitch_deg, abs=0.1)
+
+    def test_aoa_high_pitch_low_speed(self, model: Simple6DOFFlightModel) -> None:
+        """Test AOA with high pitch and low speed (stall scenario)."""
+        # This is the scenario from the bug report:
+        # High pitch (28°) with low speed (46 kts = 23.7 m/s)
+        pitch_deg = 28.0
+        pitch_rad = math.radians(pitch_deg)
+
+        # Low airspeed, aircraft climbing slowly
+        v_horizontal = 23.7  # m/s (46 kts)
+        v_vertical = 5.0  # m/s (slow climb)
+
+        state = AircraftState(
+            position=Vector3(0.0, 1000.0, 0.0),
+            velocity=Vector3(v_horizontal, v_vertical, 0.0),
+            rotation=Vector3(pitch_rad, 0.0, 0.0),
+        )
+        model.reset(state)
+
+        # Calculate AOA
+        aoa = model._calculate_angle_of_attack()
+        aoa_deg = math.degrees(aoa)
+
+        # Calculate expected flight path angle
+        flight_path_deg = math.degrees(math.atan2(v_vertical, v_horizontal))
+
+        # AOA should equal pitch - flight_path
+        expected_aoa_deg = pitch_deg - flight_path_deg
+        assert aoa_deg == pytest.approx(expected_aoa_deg, abs=0.5)
+
+        # AOA should be significantly LESS than pitch (not equal)
+        assert aoa_deg < pitch_deg - 5.0
+
+        # AOA should be in realistic stall range (16-20° for this scenario)
+        assert 10.0 < aoa_deg < 25.0
+
+    def test_aoa_integrated_in_forces(self, model: Simple6DOFFlightModel) -> None:
+        """Test AOA is correctly used in force calculations."""
+        # Setup climbing flight
+        pitch_deg = 12.0
+        pitch_rad = math.radians(pitch_deg)
+
+        v_horizontal = 40.0  # m/s
+        v_vertical = 8.0  # m/s (climbing)
+
+        state = AircraftState(
+            position=Vector3(0.0, 1000.0, 0.0),
+            velocity=Vector3(v_horizontal, v_vertical, 0.0),
+            rotation=Vector3(pitch_rad, 0.0, 0.0),
+        )
+        model.reset(state)
+
+        # Update to calculate forces
+        model.update(dt=0.016, inputs=ControlInputs())
+
+        # Check that angle_of_attack_deg is set correctly
+        aoa_deg = model.angle_of_attack_deg
+
+        # Should not be equal to pitch
+        assert abs(aoa_deg - pitch_deg) > 1.0
+
+        # Should be positive and reasonable
+        assert 0.0 < aoa_deg < 15.0
+
+        # Forces should be calculated based on correct AOA
+        forces = model.get_forces()
+        assert forces.lift.magnitude() > 0.0
+
+    def test_aoa_zero_velocity(self, model: Simple6DOFFlightModel) -> None:
+        """Test AOA calculation with zero velocity."""
+        # Aircraft at rest
+        state = AircraftState(
+            position=Vector3(0.0, 0.0, 0.0),
+            velocity=Vector3.zero(),
+            rotation=Vector3(math.radians(5.0), 0.0, 0.0),  # 5° pitch
+        )
+        model.reset(state)
+
+        # Calculate AOA
+        aoa = model._calculate_angle_of_attack()
+        aoa_deg = math.degrees(aoa)
+
+        # At zero velocity, AOA should equal pitch
+        assert aoa_deg == pytest.approx(5.0, abs=0.1)

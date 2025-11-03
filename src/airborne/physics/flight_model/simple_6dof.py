@@ -73,6 +73,11 @@ class Simple6DOFFlightModel(IFlightModel):
         self.lift_coefficient_slope = 0.1  # CL per degree AOA
         self.max_fuel = 100.0  # kg
 
+        # Stability and damping coefficients (configurable)
+        self.pitch_damping_coefficient = -25.0  # Cmq - pitch rate damping (increased for keyboard control)
+        self.roll_damping_coefficient = -8.0    # Clp - roll rate damping
+        self.yaw_damping_coefficient = -6.0     # Cnr - yaw rate damping
+
         # Propeller model (optional - if present, overrides max_thrust)
         self.propeller: IPropeller | None = None
         self.engine_power_hp = 0.0  # Current engine power (from ENGINE_STATE)
@@ -96,6 +101,12 @@ class Simple6DOFFlightModel(IFlightModel):
 
         # Performance counters
         self._updates = 0
+
+        # Force components (for telemetry)
+        self.drag_parasite_n = 0.0
+        self.drag_induced_n = 0.0
+        self.lift_coefficient = 0.0
+        self.angle_of_attack_deg = 0.0
 
     def initialize(self, config: dict) -> None:
         """Initialize flight model from configuration.
@@ -129,15 +140,21 @@ class Simple6DOFFlightModel(IFlightModel):
         fuel_capacity_lbs = config.get("fuel_capacity_lbs", 220.0)
         self.max_fuel = fuel_capacity_lbs * 0.453592
 
+        # Stability and damping parameters (optional, with defaults optimized for keyboard control)
+        self.pitch_damping_coefficient = config.get("pitch_damping_coefficient", -25.0)
+        self.roll_damping_coefficient = config.get("roll_damping_coefficient", -8.0)
+        self.yaw_damping_coefficient = config.get("yaw_damping_coefficient", -6.0)
+
         # Initialize state
         self.state.mass = self.empty_mass + self.max_fuel
         self.state.fuel = self.max_fuel
 
         logger.info(
-            "Initialized 6DOF model: wing_area=%.2fm², mass=%.1fkg, thrust=%.0fN",
+            "Initialized 6DOF model: wing_area=%.2fm², mass=%.1fkg, thrust=%.0fN, Cmq=%.1f",
             self.wing_area,
             self.state.mass,
             self.max_thrust,
+            self.pitch_damping_coefficient,
         )
 
     def update(self, dt: float, inputs: ControlInputs) -> AircraftState:
@@ -161,11 +178,12 @@ class Simple6DOFFlightModel(IFlightModel):
         # Calculate forces (updates self.forces in-place)
         self._calculate_forces(inputs)
 
-        # Apply external forces
+        # Apply external forces (including ground forces)
         if self.external_force.magnitude_squared() > 0.001:
             self.forces.total = self.forces.total + self.external_force
-            # Decay external forces
-            self.external_force = self.external_force * 0.9
+
+        # Clear external forces after integration (they must be reapplied each frame)
+        self.external_force = Vector3.zero()
 
         # Update acceleration: F = ma => a = F/m
         self.state.acceleration = self.forces.total / self.state.mass
@@ -183,10 +201,22 @@ class Simple6DOFFlightModel(IFlightModel):
         # Ground collision check (simple altitude check)
         if self.state.position.y <= 0.0:
             self.state.position.y = 0.0
-            self.state.velocity.y = max(0.0, self.state.velocity.y)
+            # Only clamp downward velocity (don't prevent upward velocity for takeoff)
+            # Allow aircraft to build upward velocity when lift > weight
+            if self.state.velocity.y < 0.0:
+                self.state.velocity.y = 0.0
             self.state.on_ground = True
+
+            # DIAGNOSTIC: Log when we hit ground
+            if not hasattr(self, "_ground_hit_logged"):
+                logger.info(
+                    f"[FLIGHT_MODEL] Aircraft hit ground: position.y={self.state.position.y:.2f}m, setting on_ground=True"
+                )
+                self._ground_hit_logged = True
         else:
             self.state.on_ground = False
+            if hasattr(self, "_ground_hit_logged"):
+                delattr(self, "_ground_hit_logged")  # Reset for next ground contact
 
         # Consume fuel (simplified)
         fuel_flow = inputs.throttle * 0.01 * dt  # kg/s at full throttle
@@ -194,6 +224,124 @@ class Simple6DOFFlightModel(IFlightModel):
         self.state.mass = self.empty_mass + self.state.fuel
 
         return self.state
+
+    def _calculate_angle_of_attack(self) -> float:
+        """Calculate angle of attack from velocity and pitch.
+
+        AOA is the angle between the aircraft's longitudinal axis and the velocity vector.
+        This is different from pitch angle, which is relative to the horizon.
+
+        AOA = pitch - flight_path_angle
+
+        Returns:
+            Angle of attack in radians.
+        """
+        pitch = self.state.get_pitch()  # radians
+        velocity = self.state.velocity
+
+        # Calculate flight path angle (gamma)
+        # gamma = arctan(vertical_velocity / horizontal_velocity)
+        velocity_horizontal = math.sqrt(velocity.x**2 + velocity.z**2)
+
+        # At very low speeds, AOA approximates pitch (no significant flight path)
+        if velocity_horizontal < 0.1:  # m/s
+            return pitch
+
+        # Flight path angle (positive = climbing)
+        flight_path_angle = math.atan2(velocity.y, velocity_horizontal)
+
+        # AOA = pitch - flight path angle
+        angle_of_attack = pitch - flight_path_angle
+
+        return angle_of_attack
+
+    def _calculate_lift_coefficient(self, angle_of_attack_rad: float) -> float:
+        """Calculate lift coefficient with realistic stall behavior.
+
+        Uses a realistic lift curve for Cessna 172:
+        - Linear region: CL increases with AOA up to stall angle
+        - Stall region: CL drops dramatically above stall AOA
+        - Post-stall: Reduced lift with exponential decay
+
+        Args:
+            angle_of_attack_rad: Angle of attack in radians
+
+        Returns:
+            Lift coefficient (dimensionless)
+
+        Note:
+            Cessna 172 stalls at approximately 16-18° AOA with max CL ≈ 1.6
+        """
+        aoa_deg = angle_of_attack_rad * RADIANS_TO_DEGREES
+
+        # Cessna 172 aerodynamic parameters
+        CL_0 = 0.2  # Zero-lift coefficient (due to camber)
+        CL_alpha = 0.09  # Lift curve slope (per degree)
+        stall_aoa_deg = 17.0  # Stall angle of attack (degrees)
+        max_cl = 1.6  # Maximum CL at stall
+
+        if aoa_deg < stall_aoa_deg:
+            # Pre-stall linear region
+            cl = CL_0 + CL_alpha * aoa_deg
+            # Cap at max CL to avoid overshoot
+            cl = min(cl, max_cl)
+        else:
+            # Post-stall: CL drops with exponential decay
+            stall_excess = aoa_deg - stall_aoa_deg
+            # Exponential decay model: CL drops quickly after stall
+            cl = max_cl * math.exp(-0.05 * stall_excess)
+            # Floor at minimum post-stall CL
+            cl = max(cl, 0.4)
+
+        # Handle negative AOA (inverted flight / negative CL)
+        if aoa_deg < -5.0:
+            # Symmetric airfoil behavior at negative AOA
+            cl = CL_0 + CL_alpha * aoa_deg
+            cl = max(cl, -1.0)  # Floor at -1.0
+
+        return cl
+
+    def _calculate_drag_coefficient(self, cl: float, angle_of_attack_rad: float) -> float:
+        """Calculate total drag coefficient with stall-induced drag.
+
+        Includes:
+        - Parasite drag (CD_0): Skin friction, form drag
+        - Induced drag (CD_i): Due to lift generation
+        - Stall drag: Additional drag in post-stall regime
+
+        Args:
+            cl: Lift coefficient
+            angle_of_attack_rad: Angle of attack in radians
+
+        Returns:
+            Drag coefficient (dimensionless)
+
+        Note:
+            Drag increases dramatically in stall due to flow separation
+        """
+        aoa_deg = angle_of_attack_rad * RADIANS_TO_DEGREES
+
+        # Cessna 172 drag parameters
+        cd_parasite = 0.027  # Parasite drag coefficient (clean config)
+        aspect_ratio = 7.4  # Wing aspect ratio (b²/S)
+        oswald_efficiency = 0.7  # Oswald efficiency factor
+
+        # Induced drag: CD_i = CL² / (π * e * AR)
+        cd_induced = (cl * cl) / (math.pi * oswald_efficiency * aspect_ratio)
+
+        # Stall drag: Additional drag above stall AOA
+        stall_aoa_deg = 17.0
+        if abs(aoa_deg) > stall_aoa_deg:
+            # Drag increases dramatically in stall
+            stall_excess = abs(aoa_deg) - stall_aoa_deg
+            # Use 1 - exp(-x) for smooth onset of stall drag
+            cd_stall = 0.5 * (1.0 - math.exp(-0.1 * stall_excess))
+        else:
+            cd_stall = 0.0
+
+        total_cd = cd_parasite + cd_induced + cd_stall
+
+        return total_cd
 
     def _calculate_forces(self, inputs: ControlInputs) -> None:
         """Calculate aerodynamic and propulsive forces.
@@ -210,43 +358,62 @@ class Simple6DOFFlightModel(IFlightModel):
         q = 0.5 * AIR_DENSITY_SEA_LEVEL * airspeed * airspeed
 
         # --- Lift ---
-        # Simplified: Lift acts upward in body frame
-        # CL depends on angle of attack (approximated by pitch)
-        angle_of_attack = self.state.get_pitch()  # radians
-        cl = self.lift_coefficient_slope * (angle_of_attack * RADIANS_TO_DEGREES)
+        # Lift depends on angle of attack with realistic stall behavior
+        angle_of_attack = self._calculate_angle_of_attack()  # radians
+
+        # Calculate lift coefficient using realistic stall model
+        cl = self._calculate_lift_coefficient(angle_of_attack)
         lift_magnitude = q * self.wing_area * cl
 
-        # Lift direction: perpendicular to velocity
-        # Simplified: assume lift acts upward in world frame
-        self.forces.lift = Vector3(0.0, lift_magnitude, 0.0)
+        # DEBUG: Log lift calculation details every 60 frames (~1 second)
+        if self._updates % 60 == 0:
+            logger.info(f"[LIFT CALC] airspeed={airspeed:.1f}m/s q={q:.1f}Pa wing_area={self.wing_area:.2f}m² AOA={angle_of_attack*RADIANS_TO_DEGREES:.2f}° CL_slope={self.lift_coefficient_slope:.3f} CL={cl:.3f} lift_mag={lift_magnitude:.1f}N mass={self.state.mass:.1f}kg weight={self.state.mass*GRAVITY:.1f}N")
+
+        # Lift direction: perpendicular to velocity vector
+        # This prevents runaway climb by ensuring lift doesn't add to vertical velocity
+        velocity_mag_sq = self.state.velocity.magnitude_squared()
+        if velocity_mag_sq > 0.01:  # velocity magnitude > 0.1 m/s
+            velocity_normalized = self.state.velocity.normalized()
+
+            # Calculate lift direction perpendicular to velocity
+            # Use cross product: right = velocity × world_up, lift = right × velocity
+            world_up = Vector3(0.0, 1.0, 0.0)
+            right = velocity_normalized.cross(world_up)
+
+            # Check if velocity is not purely vertical
+            if right.magnitude_squared() > 0.001:
+                right = right.normalized()
+                # Lift perpendicular to velocity, in the "up" direction relative to flight path
+                lift_direction = right.cross(velocity_normalized).normalized()
+                self.forces.lift = lift_direction * lift_magnitude
+            else:
+                # Velocity is nearly vertical (straight up/down)
+                # In this case, lift acts in aircraft's pitch direction
+                # For simplicity, use minimal lift in this edge case
+                self.forces.lift = Vector3(0.0, lift_magnitude * 0.1, 0.0)
+        else:
+            # At very low speeds, lift is negligible
+            self.forces.lift = Vector3.zero()
 
         # --- Drag ---
-        # Total drag = parasite drag + induced drag
-        # Parasite drag: D_p = q × S × CD_0
-        drag_parasite = q * self.wing_area * self.drag_coefficient
+        # Calculate total drag coefficient with stall effects
+        # cl is already calculated above in lift calculation
+        cd = self._calculate_drag_coefficient(cl, angle_of_attack)
+        drag_magnitude = q * self.wing_area * cd
 
-        # Induced drag: D_i = (CL²) / (π × AR × e) × q × S
-        # For C172: AR ≈ 7.4, e (Oswald efficiency) ≈ 0.7
+        # Store components for telemetry (break down for analysis)
+        cd_parasite = 0.027
         aspect_ratio = 7.4
         oswald_efficiency = 0.7
+        cd_induced = (cl * cl) / (math.pi * aspect_ratio * oswald_efficiency)
 
-        # Lift coefficient from angle of attack
-        angle_of_attack = self.state.get_pitch()
-        cl = self.lift_coefficient_slope * (angle_of_attack * RADIANS_TO_DEGREES)
+        self.drag_parasite_n = q * self.wing_area * cd_parasite
+        self.drag_induced_n = q * self.wing_area * cd_induced
+        self.lift_coefficient = cl
+        self.angle_of_attack_deg = angle_of_attack * RADIANS_TO_DEGREES
 
-        # Induced drag coefficient
-        if aspect_ratio > 0 and oswald_efficiency > 0:
-            cd_induced = (cl * cl) / (math.pi * aspect_ratio * oswald_efficiency)
-        else:
-            cd_induced = 0.0
-
-        # Induced drag force
-        drag_induced = q * self.wing_area * cd_induced
-
-        # Total drag
-        drag_magnitude = drag_parasite + drag_induced
-
-        if airspeed > 0.1:
+        velocity_mag_sq_drag = self.state.velocity.magnitude_squared()
+        if velocity_mag_sq_drag > 0.01:  # velocity magnitude > 0.1 m/s
             # Drag in opposite direction of velocity
             velocity_normalized = self.state.velocity.normalized()
             self.forces.drag = velocity_normalized * (-drag_magnitude)
@@ -263,30 +430,18 @@ class Simple6DOFFlightModel(IFlightModel):
                 airspeed_mps=airspeed,
                 air_density_kgm3=AIR_DENSITY_SEA_LEVEL,
             )
-            # Debug logging every 60 frames (~1 second at 60 FPS)
-            if hasattr(self, "_thrust_log_counter"):
-                self._thrust_log_counter += 1
-            else:
-                self._thrust_log_counter = 0
-
-            if self._thrust_log_counter % 60 == 0:
-                logger.debug(
-                    f"Propeller thrust: {thrust_magnitude:.1f}N from {self.engine_power_hp:.1f}HP "
-                    f"@ {self.engine_rpm:.0f}RPM, airspeed={airspeed:.1f}m/s"
-                )
         else:
             # Fallback: Simple thrust model based on throttle
             thrust_magnitude = inputs.throttle * self.max_thrust
 
-        # Apply thrust in forward direction
-        if airspeed > 0.1:
-            velocity_normalized = self.state.velocity.normalized()
-            self.forces.thrust = velocity_normalized * thrust_magnitude
-        else:
-            # At zero speed, thrust in forward direction (yaw)
-            thrust_x = thrust_magnitude * self._cos_yaw
-            thrust_z = thrust_magnitude * self._sin_yaw
-            self.forces.thrust = Vector3(thrust_x, 0.0, thrust_z)
+        # Apply thrust in forward direction (based on aircraft heading, NOT velocity!)
+        # Coordinate system: +Z is forward (north), +X is right (east)
+        # Yaw = 0 means facing north (+Z direction)
+        # NOTE: Thrust is always applied in the direction the aircraft is pointing,
+        # regardless of velocity direction (unlike drag which opposes velocity)
+        thrust_x = thrust_magnitude * self._sin_yaw  # East component
+        thrust_z = thrust_magnitude * self._cos_yaw  # North component
+        self.forces.thrust = Vector3(thrust_x, 0.0, thrust_z)
 
         # --- Weight ---
         # Weight always acts downward
@@ -295,26 +450,119 @@ class Simple6DOFFlightModel(IFlightModel):
         # --- Total Force ---
         self.forces.calculate_total()
 
-    def _update_rotation(self, dt: float, inputs: ControlInputs) -> None:
-        """Update aircraft rotation based on inputs.
+        # DEBUG: Log force calculations at high speeds
+        if airspeed > 50.0:  # 50 m/s ~= 97 knots
+            thrust_mag = self.forces.thrust.magnitude()
+            drag_mag = self.forces.drag.magnitude()
+            total_mag = self.forces.total.magnitude()
+            logger.warning(
+                f"[FORCE DEBUG] spd={airspeed:.1f}m/s ({airspeed*1.94384:.1f}kt) "
+                f"thrust_vec={self.forces.thrust} thrust_mag={thrust_mag:.0f}N "
+                f"drag_vec={self.forces.drag} drag_mag={drag_mag:.0f}N "
+                f"total_vec={self.forces.total} total_mag={total_mag:.0f}N"
+            )
 
-        Simplified rotational dynamics for performance.
+    def _update_rotation(self, dt: float, inputs: ControlInputs) -> None:
+        """Update aircraft rotation based on inputs, trim, and stability.
+
+        Includes:
+        - Control surface inputs (elevator, aileron, rudder)
+        - Trim effects (aerodynamic moments from trim tabs)
+        - Aerodynamic stability (tendency to return to trimmed condition)
 
         Args:
             dt: Time step.
             inputs: Control inputs.
         """
-        # Rotational response rates (rad/s per unit input)
-        pitch_rate = 1.0  # rad/s
-        roll_rate = 2.0  # rad/s
-        yaw_rate = 0.5  # rad/s
+        airspeed = self.state.get_airspeed()
 
-        # Update angular velocity based on inputs
-        self.state.angular_velocity = Vector3(
-            inputs.pitch * pitch_rate, inputs.roll * roll_rate, inputs.yaw * yaw_rate
+        # === PITCH CONTROL (Moment-Based Physics) ===
+
+        # Cessna 172 physical parameters
+        chord = 1.5  # Mean aerodynamic chord (m)
+        pitch_inertia = 1500.0  # Pitch moment of inertia (kg⋅m²)
+
+        # Dynamic pressure
+        q = 0.5 * AIR_DENSITY_SEA_LEVEL * airspeed * airspeed
+
+        # Calculate angle of attack for stability moment
+        angle_of_attack = self._calculate_angle_of_attack()
+
+        # Elevator creates pitching moment: M = q * S * c * Cm_delta_e * delta_e
+        # Cm_delta_e ≈ -0.4 per radian for C172 (negative = nose down with positive deflection)
+        # But our convention is positive pitch input = nose up, so we negate
+        elevator_effectiveness = 0.4  # |Cm_delta_e| per radian of elevator deflection (reduced from 1.2 to prevent runaway)
+        elevator_moment = q * self.wing_area * chord * elevator_effectiveness * inputs.pitch  # N⋅m
+
+        # Trim tab creates pitching moment
+        trim_effectiveness = 0.15  # Trim has less authority than elevator (increased from 0.1 for better authority)
+        trim_moment = q * self.wing_area * chord * trim_effectiveness * self.state.pitch_trim  # N⋅m
+
+        # Aerodynamic stability: Cm_alpha (pitch stiffness)
+        # Aircraft naturally wants to return to equilibrium AOA
+        # Cm_alpha < 0 means stable (nose-down moment when AOA increases)
+        stability_derivative = -0.35  # Cm_alpha (per radian) - realistic for Cessna 172
+
+        # Calculate equilibrium AOA (where aircraft naturally flies)
+        # For C172, this is around 2-4° depending on speed and configuration
+        equilibrium_aoa = 0.035  # ~2° (radians) - better for cruise at 75-100 kts
+
+        # Stability moment opposes deviation from equilibrium AOA
+        aoa_error = angle_of_attack - equilibrium_aoa
+        stability_moment = q * self.wing_area * chord * stability_derivative * aoa_error  # N⋅m
+
+        # Pitch damping: Cmq (resists pitch rate changes)
+        # Creates moment proportional to pitch rate
+        # This is the key to altitude stability - resists rapid pitch changes
+        pitch_rate = self.state.angular_velocity.x  # Current pitch rate (rad/s)
+        damping_moment = 0.5 * AIR_DENSITY_SEA_LEVEL * airspeed * self.wing_area * chord * chord * self.pitch_damping_coefficient * pitch_rate  # N⋅m
+
+        # Total pitching moment
+        total_pitch_moment = elevator_moment + trim_moment + stability_moment + damping_moment  # N⋅m
+
+        # Angular acceleration = Moment / Inertia
+        pitch_acceleration = total_pitch_moment / pitch_inertia  # rad/s²
+
+        # === ROLL CONTROL (Simplified) ===
+
+        roll_inertia = 1000.0  # Roll moment of inertia (kg⋅m²)
+        aileron_effectiveness = 0.15  # Roll moment coefficient
+        aileron_moment = q * self.wing_area * chord * aileron_effectiveness * inputs.roll
+
+        # Roll damping
+        roll_rate = self.state.angular_velocity.y
+        roll_damping_moment = 0.5 * AIR_DENSITY_SEA_LEVEL * airspeed * self.wing_area * chord * chord * self.roll_damping_coefficient * roll_rate
+
+        total_roll_moment = aileron_moment + roll_damping_moment
+        roll_acceleration = total_roll_moment / roll_inertia
+
+        # === YAW CONTROL (Simplified) ===
+
+        yaw_inertia = 2000.0  # Yaw moment of inertia (kg⋅m²)
+        rudder_effectiveness = 0.10  # Yaw moment coefficient
+        rudder_moment = q * self.wing_area * chord * rudder_effectiveness * inputs.yaw
+
+        # Yaw damping
+        yaw_rate = self.state.angular_velocity.z
+        yaw_damping_moment = 0.5 * AIR_DENSITY_SEA_LEVEL * airspeed * self.wing_area * chord * chord * self.yaw_damping_coefficient * yaw_rate
+
+        total_yaw_moment = rudder_moment + yaw_damping_moment
+        yaw_acceleration = total_yaw_moment / yaw_inertia
+
+        # === UPDATE ANGULAR VELOCITY ===
+
+        # Integrate angular accelerations into angular velocity
+        # velocity += acceleration * dt
+        # Damping is now included in the moment calculations above
+        angular_accel_delta = Vector3(
+            pitch_acceleration * dt,
+            roll_acceleration * dt,
+            yaw_acceleration * dt
         )
+        self.state.angular_velocity = self.state.angular_velocity + angular_accel_delta
 
-        # Integrate rotation
+        # === INTEGRATE ROTATION ===
+
         rotation_delta = self.state.angular_velocity * dt
         self.state.rotation = self.state.rotation + rotation_delta
 

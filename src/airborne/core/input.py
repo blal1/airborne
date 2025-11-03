@@ -56,6 +56,8 @@ class InputStateEvent(Event):
     brakes: float = 0.0
     flaps: float = 0.0
     gear: float = 1.0
+    pitch_trim: float = 0.0  # Pitch trim position (-1.0 to 1.0)
+    rudder_trim: float = 0.0  # Rudder trim position (-1.0 to 1.0)
 
 
 @dataclass
@@ -100,6 +102,20 @@ class InputAction(Enum):
     FLAPS_UP = "flaps_up"
     FLAPS_DOWN = "flaps_down"
 
+    # Trim controls
+    TRIM_PITCH_UP = "trim_pitch_up"  # Roll trim wheel back (nose up)
+    TRIM_PITCH_DOWN = "trim_pitch_down"  # Roll trim wheel forward (nose down)
+    TRIM_RUDDER_LEFT = "trim_rudder_left"  # Twist rudder trim left
+    TRIM_RUDDER_RIGHT = "trim_rudder_right"  # Twist rudder trim right
+
+    # Flight instructor controls
+    INSTRUCTOR_ENABLE = "instructor_enable"  # Enable flight instructor (Shift+F9)
+    INSTRUCTOR_DISABLE = "instructor_disable"  # Disable flight instructor (Ctrl+F9)
+    INSTRUCTOR_ASSESSMENT = "instructor_assessment"  # Request on-demand assessment (F9)
+
+    # Control centering
+    CENTER_CONTROLS = "center_controls"  # Center pitch/roll/yaw (Right Shift)
+
     # View controls
     VIEW_NEXT = "view_next"
     VIEW_PREV = "view_prev"
@@ -125,6 +141,8 @@ class InputAction(Enum):
     READ_ENGINE = "read_engine"  # Engine status (RPM, manifold pressure, etc.)
     READ_ELECTRICAL = "read_electrical"  # Electrical status (battery, alternator)
     READ_FUEL = "read_fuel"  # Fuel status (quantity, consumption, remaining time)
+    READ_PITCH_TRIM = "read_pitch_trim"  # Read current pitch trim position
+    READ_RUDDER_TRIM = "read_rudder_trim"  # Read current rudder trim position
 
     # ATC/Radio controls
     ATC_MENU = "atc_menu"  # F1 - Open/close ATC menu
@@ -163,6 +181,8 @@ class InputConfig:
         axis_deadzone: Deadzone for analog axes (0.0-1.0).
         throttle_increment: Amount to change throttle per keypress (0.0-1.0).
         enable_joystick: Whether to enable joystick input.
+        keyboard_mode: Control mode for keyboard input ('incremental' or 'smooth').
+        keyboard_increment: Control deflection per keypress in incremental mode (0.0-1.0).
     """
 
     keyboard_bindings: dict[int, InputAction] = field(default_factory=dict)
@@ -170,6 +190,12 @@ class InputConfig:
     axis_deadzone: float = 0.1
     throttle_increment: float = 0.01  # Changed to 1% per frame
     enable_joystick: bool = True
+    keyboard_mode: str = (
+        "incremental"  # 'incremental' (FlightGear-style) or 'smooth' (joystick-style)
+    )
+    keyboard_increment: float = (
+        0.05  # 5% per keypress (20 taps for full deflection, like FlightGear)
+    )
 
     def __post_init__(self) -> None:
         """Initialize default key bindings if not provided."""
@@ -188,7 +214,7 @@ class InputConfig:
             pygame.K_DOWN: InputAction.PITCH_UP,
             pygame.K_LEFT: InputAction.ROLL_LEFT,
             pygame.K_RIGHT: InputAction.ROLL_RIGHT,
-            pygame.K_COMMA: InputAction.YAW_LEFT,  # Changed from Q (now Ctrl+Q for quit)
+            pygame.K_COMMA: InputAction.YAW_LEFT,  # Comma without modifier = yaw left
             pygame.K_e: InputAction.YAW_RIGHT,
             pygame.K_HOME: InputAction.THROTTLE_INCREASE,
             pygame.K_END: InputAction.THROTTLE_DECREASE,
@@ -199,14 +225,21 @@ class InputConfig:
             # Flaps
             pygame.K_LEFTBRACKET: InputAction.FLAPS_UP,
             pygame.K_RIGHTBRACKET: InputAction.FLAPS_DOWN,
+            # Note: Trim keys with modifiers handled specially:
+            # - Shift+Period (AZERTY colon) = pitch trim up
+            # - Ctrl+Period (AZERTY colon) = pitch trim down
+            # - Shift+Comma = rudder trim right
+            # - Ctrl+Comma = rudder trim left
+            # - Plain Comma = yaw left (when no modifier pressed)
             # View
-            pygame.K_v: InputAction.VIEW_NEXT,
-            pygame.K_c: InputAction.VIEW_PREV,
+            pygame.K_c: InputAction.VIEW_NEXT,  # C for Cycle view
+            pygame.K_x: InputAction.VIEW_PREV,  # X for previous view
             # Instrument readouts
             pygame.K_s: InputAction.READ_AIRSPEED,  # S for Speed
             pygame.K_l: InputAction.READ_ALTITUDE,  # L for aLtitude
             pygame.K_h: InputAction.READ_HEADING,  # H for Heading
-            pygame.K_w: InputAction.READ_VSPEED,  # W for Vertical speed (up/down)
+            pygame.K_v: InputAction.READ_VSPEED,  # V for Vertical speed
+            pygame.K_w: InputAction.READ_VSPEED,  # W for Vertical speed (legacy)
             # TTS
             pygame.K_n: InputAction.TTS_NEXT,  # N for Next
             pygame.K_r: InputAction.TTS_REPEAT,  # R for Repeat
@@ -257,6 +290,8 @@ class InputState:
     brakes: float = 0.0
     flaps: float = 0.0
     gear: float = 1.0  # Default gear down
+    pitch_trim: float = 0.0  # Pitch trim position (-1.0 to 1.0)
+    rudder_trim: float = 0.0  # Rudder trim position (-1.0 to 1.0)
 
     def clamp_all(self) -> None:
         """Clamp all values to valid ranges."""
@@ -267,6 +302,8 @@ class InputState:
         self.brakes = max(0.0, min(1.0, self.brakes))
         self.flaps = max(0.0, min(1.0, self.flaps))
         self.gear = max(0.0, min(1.0, self.gear))
+        self.pitch_trim = max(-1.0, min(1.0, self.pitch_trim))
+        self.rudder_trim = max(-1.0, min(1.0, self.rudder_trim))
 
 
 class InputManager:  # pylint: disable=too-many-instance-attributes
@@ -331,6 +368,10 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
             InputAction.THROTTLE_DECREASE,
             InputAction.FLAPS_UP,
             InputAction.FLAPS_DOWN,
+            InputAction.TRIM_PITCH_UP,
+            InputAction.TRIM_PITCH_DOWN,
+            InputAction.TRIM_RUDDER_LEFT,
+            InputAction.TRIM_RUDDER_RIGHT,
         }
 
         # Joystick support
@@ -344,6 +385,31 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
         self._throttle_click_interval = 0.1  # seconds between throttle adjustments
         # Initialize to interval so first throttle action works immediately
         self._time_since_last_throttle_click = self._throttle_click_interval
+
+        # Trim adjustment rate limiting (same as throttle)
+        self._trim_click_interval = 0.1  # seconds between trim adjustments
+        self._time_since_last_trim_click = self._trim_click_interval
+
+        # Track previous trim values for change detection (TTS announcements)
+        self._previous_pitch_trim = 0.0
+        self._previous_rudder_trim = 0.0
+
+        # Track active modifier-based actions (like trim controls)
+        # These actions are triggered by key+modifier combinations and need special tracking
+        self._modifier_actions: set[InputAction] = set()
+
+        # Keyboard control - smooth rate-based deflection
+        self._pitch_input_target = 0.0  # Target input direction (-1, 0, or +1)
+        self._roll_input_target = 0.0
+        self._yaw_input_target = 0.0
+        # Current smoothed yoke position (interpolates toward target)
+        self._pitch_input_smoothed = 0.0
+        self._roll_input_smoothed = 0.0
+        self._yaw_input_smoothed = 0.0
+        # Smoothing rate - how fast yoke moves to target (units per second)
+        self._keyboard_deflection_rate = 1.25  # Full deflection in ~0.8 seconds
+        # Trim adjustment rate when using Shift modifier (units per second)
+        self._trim_adjustment_rate = 0.3  # How fast trim adjusts with Shift+arrow
 
         logger.info(
             "Input manager initialized with %d key bindings", len(self.config.keyboard_bindings)
@@ -400,6 +466,24 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
         self._keys_pressed.add(key)
         if not is_repeat:
             self._keys_just_pressed.add(key)
+
+        # Log every key press with name, modifiers, and binding status
+        mods = pygame.key.get_mods()
+        key_name = pygame.key.name(key)
+        bound_action = self.config.keyboard_bindings.get(key)
+        mod_names = []
+        if mods & (pygame.KMOD_SHIFT | pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT):
+            mod_names.append("SHIFT")
+        if mods & (pygame.KMOD_CTRL | pygame.KMOD_LCTRL | pygame.KMOD_RCTRL):
+            mod_names.append("CTRL")
+        if mods & (pygame.KMOD_ALT | pygame.KMOD_LALT | pygame.KMOD_RALT):
+            mod_names.append("ALT")
+        mod_str = "+".join(mod_names) + "+" if mod_names else ""
+
+        if bound_action:
+            logger.info(f"KEY: {mod_str}{key_name} (code={key}) -> BOUND to {bound_action.name}")
+        else:
+            logger.info(f"KEY: {mod_str}{key_name} (code={key}) -> NOT BOUND")
 
         # Special handling for F1 with modifiers (ATC menu)
         if key == pygame.K_F1:
@@ -470,6 +554,73 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
                     self._handle_action_pressed(InputAction.PARKING_BRAKE_RELEASE)
                 return
 
+        # Special handling for Semicolon key (AZERTY - key to right of comma) - Pitch trim
+        # Shift+Semicolon = pitch trim up, Ctrl+Semicolon = pitch trim down, plain Semicolon = read pitch trim
+        logger.info(f"[TRIM_DEBUG] Before semicolon check: key={key}, pygame.K_SEMICOLON={pygame.K_SEMICOLON}, match={key == pygame.K_SEMICOLON}")
+        if key == pygame.K_SEMICOLON:
+            logger.info(
+                f"[TRIM_DEBUG] Semicolon key pressed: mods={mods:#x}, has_shift={bool(mods & (pygame.KMOD_SHIFT | pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT))}, has_ctrl={bool(mods & (pygame.KMOD_CTRL | pygame.KMOD_LCTRL | pygame.KMOD_RCTRL))}"
+            )
+            if mods & (pygame.KMOD_SHIFT | pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT):
+                logger.info("[TRIM_DEBUG] Shift+Semicolon detected - triggering TRIM_PITCH_UP")
+                self._handle_action_pressed(InputAction.TRIM_PITCH_UP)
+                return
+            elif mods & (pygame.KMOD_CTRL | pygame.KMOD_LCTRL | pygame.KMOD_RCTRL):
+                logger.info("Ctrl+Semicolon detected - triggering TRIM_PITCH_DOWN")
+                self._handle_action_pressed(InputAction.TRIM_PITCH_DOWN)
+                return
+            else:
+                # No modifier - read pitch trim
+                logger.info("Semicolon (no modifier) detected - triggering READ_PITCH_TRIM")
+                self._handle_action_pressed(InputAction.READ_PITCH_TRIM)
+                return
+
+        # Special handling for Comma key - Rudder trim
+        # Shift+Comma = rudder trim right, Ctrl+Comma = rudder trim left, plain Comma = read rudder trim
+        if key == pygame.K_COMMA:
+            logger.debug(
+                f"Comma key pressed: mods={mods:#x}, has_shift={bool(mods & (pygame.KMOD_SHIFT | pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT))}, has_ctrl={bool(mods & (pygame.KMOD_CTRL | pygame.KMOD_LCTRL | pygame.KMOD_RCTRL))}"
+            )
+            if mods & (pygame.KMOD_SHIFT | pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT):
+                logger.info("Shift+Comma detected - triggering TRIM_RUDDER_RIGHT")
+                self._handle_action_pressed(InputAction.TRIM_RUDDER_RIGHT)
+                return
+            elif mods & (pygame.KMOD_CTRL | pygame.KMOD_LCTRL | pygame.KMOD_RCTRL):
+                logger.info("Ctrl+Comma detected - triggering TRIM_RUDDER_LEFT")
+                self._handle_action_pressed(InputAction.TRIM_RUDDER_LEFT)
+                return
+            else:
+                # No modifier - read rudder trim
+                logger.info("Comma (no modifier) detected - triggering READ_RUDDER_TRIM")
+                self._handle_action_pressed(InputAction.READ_RUDDER_TRIM)
+                return
+
+        # Special handling for F9 key - Flight instructor
+        # Shift+F9 = enable instructor, Ctrl+F9 = disable instructor, plain F9 = on-demand assessment
+        if key == pygame.K_F9:
+            if mods & (pygame.KMOD_SHIFT | pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT):
+                if not is_repeat:
+                    logger.info("Shift+F9 detected - enabling flight instructor")
+                    self._handle_action_pressed(InputAction.INSTRUCTOR_ENABLE)
+                return
+            elif mods & (pygame.KMOD_CTRL | pygame.KMOD_LCTRL | pygame.KMOD_RCTRL):
+                if not is_repeat:
+                    logger.info("Ctrl+F9 detected - disabling flight instructor")
+                    self._handle_action_pressed(InputAction.INSTRUCTOR_DISABLE)
+                return
+            else:
+                # No modifier - on-demand assessment
+                if not is_repeat:
+                    logger.info("F9 (no modifier) detected - requesting instructor assessment")
+                    self._handle_action_pressed(InputAction.INSTRUCTOR_ASSESSMENT)
+                return
+
+        # Special handling for Right Shift alone to center controls
+        if key == pygame.K_RSHIFT:
+            if not is_repeat:
+                self._handle_action_pressed(InputAction.CENTER_CONTROLS)
+            return
+
         # Special handling for Control key alone to stop TTS
         if key in (pygame.K_LCTRL, pygame.K_RCTRL):
             if not is_repeat:
@@ -520,6 +671,28 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
         Args:
             action: Input action that was triggered.
         """
+        # Center controls (instant)
+        if action == InputAction.CENTER_CONTROLS:
+            logger.info("Centering all flight controls")
+            if self.config.keyboard_mode == "incremental":
+                # Incremental mode: set deflection values to 0
+                self.state.pitch = 0.0
+                self.state.roll = 0.0
+                self.state.yaw = 0.0
+            else:
+                # Smooth mode: set targets and smoothed values to 0
+                self._pitch_input_target = 0.0
+                self._roll_input_target = 0.0
+                self._yaw_input_target = 0.0
+                self._pitch_input_smoothed = 0.0
+                self._roll_input_smoothed = 0.0
+                self._yaw_input_smoothed = 0.0
+                self.state.pitch = 0.0
+                self.state.roll = 0.0
+                self.state.yaw = 0.0
+            self.event_bus.publish(InputActionEvent(action=action.value))
+            return
+
         # Continuous controls (handled in update)
         if action in (
             InputAction.PITCH_UP,
@@ -531,6 +704,18 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
             InputAction.THROTTLE_INCREASE,
             InputAction.THROTTLE_DECREASE,
         ):
+            return  # Handled in update loop
+
+        # Trim actions need special tracking since they come from modifier+key combinations
+        if action in (
+            InputAction.TRIM_PITCH_UP,
+            InputAction.TRIM_PITCH_DOWN,
+            InputAction.TRIM_RUDDER_LEFT,
+            InputAction.TRIM_RUDDER_RIGHT,
+        ):
+            logger.info(f"[TRIM_DEBUG] _handle_action_pressed called with {action}, adding to _modifier_actions")
+            self._modifier_actions.add(action)
+            logger.info(f"[TRIM_DEBUG] _modifier_actions now contains: {self._modifier_actions}")
             return  # Handled in update loop
 
         # Discrete controls
@@ -624,13 +809,61 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
         """
         # Update throttle rate limiting timer
         self._time_since_last_throttle_click += dt
+        self._time_since_last_trim_click += dt
 
         # Update continuous keyboard controls
         self._update_keyboard_controls()
 
-        # Update joystick controls
+        # Update joystick controls (overrides keyboard if joystick present)
         if self.joystick:
             self._update_joystick_controls()
+        elif self.config.keyboard_mode == "smooth":
+            # SMOOTH mode: Apply smooth rate-based deflection (joystick-style)
+            # This makes keyboard behave like a joystick with smooth movement:
+            # - Hold key = gradually deflect yoke to full
+            # - Release = gradually return to neutral
+
+            # Smooth pitch input toward target
+            if abs(self._pitch_input_target - self._pitch_input_smoothed) > 0.001:
+                pitch_delta = self._keyboard_deflection_rate * dt
+                if self._pitch_input_smoothed < self._pitch_input_target:
+                    self._pitch_input_smoothed = min(
+                        self._pitch_input_target, self._pitch_input_smoothed + pitch_delta
+                    )
+                else:
+                    self._pitch_input_smoothed = max(
+                        self._pitch_input_target, self._pitch_input_smoothed - pitch_delta
+                    )
+
+            # Smooth roll input toward target
+            if abs(self._roll_input_target - self._roll_input_smoothed) > 0.001:
+                roll_delta = self._keyboard_deflection_rate * dt
+                if self._roll_input_smoothed < self._roll_input_target:
+                    self._roll_input_smoothed = min(
+                        self._roll_input_target, self._roll_input_smoothed + roll_delta
+                    )
+                else:
+                    self._roll_input_smoothed = max(
+                        self._roll_input_target, self._roll_input_smoothed - roll_delta
+                    )
+
+            # Smooth yaw input toward target
+            if abs(self._yaw_input_target - self._yaw_input_smoothed) > 0.001:
+                yaw_delta = self._keyboard_deflection_rate * dt
+                if self._yaw_input_smoothed < self._yaw_input_target:
+                    self._yaw_input_smoothed = min(
+                        self._yaw_input_target, self._yaw_input_smoothed + yaw_delta
+                    )
+                else:
+                    self._yaw_input_smoothed = max(
+                        self._yaw_input_target, self._yaw_input_smoothed - yaw_delta
+                    )
+
+            # Set controls to smoothed values
+            self.state.pitch = self._pitch_input_smoothed
+            self.state.roll = self._roll_input_smoothed
+            self.state.yaw = self._yaw_input_smoothed
+        # else: INCREMENTAL mode - state is already set directly in _update_keyboard_incremental()
 
         # Smooth throttle changes
         if abs(self._target_throttle - self.state.throttle) > 0.001:
@@ -654,6 +887,8 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
                 brakes=self.state.brakes,
                 flaps=self.state.flaps,
                 gear=self.state.gear,
+                pitch_trim=self.state.pitch_trim,
+                rudder_trim=self.state.rudder_trim,
             )
         )
 
@@ -670,6 +905,11 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
                 )
                 self._previous_throttle = self.state.throttle
 
+            # Debug: Log trim values ALWAYS to see if they're being reset
+            logger.info(
+                f"[TRIM_DEBUG] About to send message: pitch_trim={self.state.pitch_trim:.3f}, rudder_trim={self.state.rudder_trim:.3f}, id(state)={id(self.state)}"
+            )
+
             # Publish control inputs message for physics plugin
             self.message_queue.publish(
                 Message(
@@ -684,6 +924,8 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
                         "brakes": self.state.brakes,
                         "flaps": self.state.flaps,
                         "gear": self.state.gear,
+                        "pitch_trim": self.state.pitch_trim,
+                        "rudder_trim": self.state.rudder_trim,
                     },
                     priority=MessagePriority.HIGH,
                 )
@@ -691,11 +933,100 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
 
     def _update_keyboard_controls(self) -> None:
         """Update continuous controls from keyboard."""
-        # Reset continuous controls
-        pitch = 0.0
-        roll = 0.0
-        yaw = 0.0
+        # Two control modes:
+        # 1. INCREMENTAL (FlightGear-style, default for keyboard):
+        #    - Each keypress adds/subtracts a fixed increment
+        #    - Deflection stays at that value until changed
+        #    - Easy to master on keyboard
+        # 2. SMOOTH (joystick-style, for analog devices):
+        #    - Hold key = smoothly deflect toward target
+        #    - Release = return to center
+        #    - Feels like real joystick
+
+        if self.config.keyboard_mode == "incremental":
+            self._update_keyboard_incremental()
+        else:
+            self._update_keyboard_smooth()
+
+    def _update_keyboard_incremental(self) -> None:
+        """Update controls using FlightGear-style incremental mode."""
         brakes = 0.0
+
+        # Check for Shift modifier
+        mods = pygame.key.get_mods()
+        shift_pressed = bool(mods & (pygame.KMOD_SHIFT | pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT))
+
+        # Process just-pressed keys for incremental changes
+        for key in self._keys_just_pressed:
+            action = self.config.keyboard_bindings.get(key)
+            if not action:
+                continue
+
+            if action == InputAction.PITCH_UP:
+                if not shift_pressed:
+                    self.state.pitch = min(1.0, self.state.pitch + self.config.keyboard_increment)
+            elif action == InputAction.PITCH_DOWN:
+                if not shift_pressed:
+                    self.state.pitch = max(-1.0, self.state.pitch - self.config.keyboard_increment)
+            elif action == InputAction.ROLL_LEFT:
+                self.state.roll = max(-1.0, self.state.roll - self.config.keyboard_increment)
+            elif action == InputAction.ROLL_RIGHT:
+                self.state.roll = min(1.0, self.state.roll + self.config.keyboard_increment)
+            elif action == InputAction.YAW_LEFT:
+                self.state.yaw = max(-1.0, self.state.yaw - self.config.keyboard_increment)
+            elif action == InputAction.YAW_RIGHT:
+                self.state.yaw = min(1.0, self.state.yaw + self.config.keyboard_increment)
+
+        # Check which keys are currently held (for brakes and throttle)
+        for key in self._keys_pressed:
+            action = self.config.keyboard_bindings.get(key)
+            if not action:
+                continue
+
+            if action == InputAction.THROTTLE_INCREASE:
+                # Rate-limited throttle increase (10 clicks/second max)
+                if self._time_since_last_throttle_click >= self._throttle_click_interval:
+                    # Shift modifier = 10% increment, otherwise 1%
+                    increment = 0.10 if shift_pressed else 0.01
+                    old_throttle = self._target_throttle
+                    self._target_throttle = min(1.0, self._target_throttle + increment)
+                    # Play click sound if throttle actually changed
+                    if abs(self._target_throttle - old_throttle) > 0.001:
+                        self.event_bus.publish(
+                            InputActionEvent(action="throttle_click", value=self._target_throttle)
+                        )
+                        self._time_since_last_throttle_click = 0.0
+            elif action == InputAction.THROTTLE_DECREASE:
+                # Rate-limited throttle decrease (10 clicks/second max)
+                if self._time_since_last_throttle_click >= self._throttle_click_interval:
+                    # Shift modifier = 10% decrement, otherwise 1%
+                    decrement = 0.10 if shift_pressed else 0.01
+                    old_throttle = self._target_throttle
+                    self._target_throttle = max(0.0, self._target_throttle - decrement)
+                    # Play click sound if throttle actually changed
+                    if abs(self._target_throttle - old_throttle) > 0.001:
+                        self.event_bus.publish(
+                            InputActionEvent(action="throttle_click", value=self._target_throttle)
+                        )
+                        self._time_since_last_throttle_click = 0.0
+            elif action == InputAction.BRAKES:
+                brakes = 1.0
+
+        # Handle trim controls (same for both modes)
+        self._process_trim_controls()
+
+        self.state.brakes = brakes
+
+    def _update_keyboard_smooth(self) -> None:
+        """Update controls using smooth joystick-style mode."""
+        pitch_input_target = 0.0
+        roll_input_target = 0.0
+        yaw_input_target = 0.0
+        brakes = 0.0
+
+        # Check for Shift modifier
+        mods = pygame.key.get_mods()
+        shift_pressed = bool(mods & (pygame.KMOD_SHIFT | pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT))
 
         # Check which keys are currently held
         for key in self._keys_pressed:
@@ -704,17 +1035,19 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
                 continue
 
             if action == InputAction.PITCH_UP:
-                pitch += 1.0
+                if not shift_pressed:
+                    pitch_input_target += 1.0  # Push forward (nose down)
             elif action == InputAction.PITCH_DOWN:
-                pitch -= 1.0
+                if not shift_pressed:
+                    pitch_input_target -= 1.0  # Pull back (nose up)
             elif action == InputAction.ROLL_LEFT:
-                roll -= 1.0
+                roll_input_target -= 1.0  # Roll left
             elif action == InputAction.ROLL_RIGHT:
-                roll += 1.0
+                roll_input_target += 1.0  # Roll right
             elif action == InputAction.YAW_LEFT:
-                yaw -= 1.0
+                yaw_input_target -= 1.0  # Yaw left
             elif action == InputAction.YAW_RIGHT:
-                yaw += 1.0
+                yaw_input_target += 1.0  # Yaw right
             elif action == InputAction.THROTTLE_INCREASE:
                 # Rate-limited throttle increase (10 clicks/second max)
                 if self._time_since_last_throttle_click >= self._throttle_click_interval:
@@ -746,11 +1079,162 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
             elif action == InputAction.BRAKES:
                 brakes = 1.0
 
-        # Update state
-        self.state.pitch = pitch
-        self.state.roll = roll
-        self.state.yaw = yaw
+        # Handle trim controls (same for both modes)
+        self._process_trim_controls()
+
+        # Set the target input directions for yoke control
+        # These are smoothly interpolated in update() method
+        self._pitch_input_target = pitch_input_target
+        self._roll_input_target = roll_input_target
+        self._yaw_input_target = yaw_input_target
         self.state.brakes = brakes
+
+    @staticmethod
+    def _trim_to_percent(trim_value: float) -> int:
+        """Convert trim value (-1.0 to +1.0) to percentage (0-100).
+
+        Args:
+            trim_value: Trim value in range [-1.0, 1.0]
+                       -1.0 = 0% (full down/left)
+                        0.0 = 50% (neutral)
+                       +1.0 = 100% (full up/right)
+
+        Returns:
+            Percentage value (0-100)
+        """
+        return int((trim_value + 1.0) / 2.0 * 100)
+
+    def _process_trim_controls(self) -> None:
+        """Process trim control inputs (shared by both keyboard modes)."""
+        # Check for Shift modifier
+        mods = pygame.key.get_mods()
+        shift_pressed = bool(mods & (pygame.KMOD_SHIFT | pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT))
+
+        # Process modifier-based actions (trim controls from Shift+Semicolon/Comma)
+        # Collect actions that were processed so we can remove them after
+        actions_to_remove = set()
+
+        # Debug: Log what's in _modifier_actions
+        if self._modifier_actions:
+            logger.info(f"[TRIM_DEBUG] _modifier_actions contains: {self._modifier_actions}")
+
+        for action in self._modifier_actions:
+            if action == InputAction.TRIM_PITCH_UP:
+                logger.info(
+                    f"[TRIM_DEBUG] Found TRIM_PITCH_UP action! time_since_click={self._time_since_last_trim_click:.3f}, interval={self._trim_click_interval:.3f}"
+                )
+                # Rate-limited trim increase (10 clicks/second max)
+                if self._time_since_last_trim_click >= self._trim_click_interval:
+                    increment = 0.05  # 5% per click
+                    old_trim = self.state.pitch_trim
+                    self.state.pitch_trim = min(1.0, self.state.pitch_trim + increment)
+                    logger.info(
+                        f"[TRIM_DEBUG] TRIM_PITCH_UP: {old_trim:.3f} -> {self.state.pitch_trim:.3f}, id(state)={id(self.state)}"
+                    )
+                    # Publish event for TTS announcement
+                    if abs(self.state.pitch_trim - old_trim) > 0.001:
+                        trim_percent = self._trim_to_percent(self.state.pitch_trim)
+                        logger.info(
+                            f"[TRIM_DEBUG] About to publish TTS, pitch_trim={self.state.pitch_trim:.3f}"
+                        )
+                        self.event_bus.publish(
+                            InputActionEvent(action="trim_pitch_adjusted", value=trim_percent)
+                        )
+                        logger.info(
+                            f"[TRIM_DEBUG] After TTS publish, pitch_trim={self.state.pitch_trim:.3f}"
+                        )
+                        self._time_since_last_trim_click = 0.0
+                        # Mark for removal - trim click should only apply once
+                        actions_to_remove.add(action)
+            elif action == InputAction.TRIM_PITCH_DOWN:
+                # Rate-limited trim decrease (10 clicks/second max)
+                if self._time_since_last_trim_click >= self._trim_click_interval:
+                    decrement = 0.05  # 5% per click
+                    old_trim = self.state.pitch_trim
+                    self.state.pitch_trim = max(-1.0, self.state.pitch_trim - decrement)
+                    # Publish event for TTS announcement
+                    if abs(self.state.pitch_trim - old_trim) > 0.001:
+                        trim_percent = self._trim_to_percent(self.state.pitch_trim)
+                        self.event_bus.publish(
+                            InputActionEvent(action="trim_pitch_adjusted", value=trim_percent)
+                        )
+                        self._time_since_last_trim_click = 0.0
+                        # Mark for removal - trim click should only apply once
+                        actions_to_remove.add(action)
+            elif action == InputAction.TRIM_RUDDER_RIGHT:
+                # Rate-limited rudder trim right (10 clicks/second max)
+                logger.debug(
+                    f"Processing TRIM_RUDDER_RIGHT: time_since_click={self._time_since_last_trim_click:.3f}, interval={self._trim_click_interval:.3f}"
+                )
+                if self._time_since_last_trim_click >= self._trim_click_interval:
+                    increment = 0.05  # 5% per click
+                    old_trim = self.state.rudder_trim
+                    self.state.rudder_trim = min(1.0, self.state.rudder_trim + increment)
+                    # Publish event for TTS announcement
+                    if abs(self.state.rudder_trim - old_trim) > 0.001:
+                        trim_percent = self._trim_to_percent(self.state.rudder_trim)
+                        logger.info(
+                            f"Rudder trim RIGHT: {old_trim:.2f} -> {self.state.rudder_trim:.2f} ({trim_percent}%)"
+                        )
+                        self.event_bus.publish(
+                            InputActionEvent(action="trim_rudder_adjusted", value=trim_percent)
+                        )
+                        self._time_since_last_trim_click = 0.0
+                        # Mark for removal - trim click should only apply once
+                        actions_to_remove.add(action)
+            elif action == InputAction.TRIM_RUDDER_LEFT:
+                # Rate-limited rudder trim left (10 clicks/second max)
+                logger.debug(
+                    f"Processing TRIM_RUDDER_LEFT: time_since_click={self._time_since_last_trim_click:.3f}, interval={self._trim_click_interval:.3f}"
+                )
+                if self._time_since_last_trim_click >= self._trim_click_interval:
+                    decrement = 0.05  # 5% per click
+                    old_trim = self.state.rudder_trim
+                    self.state.rudder_trim = max(-1.0, self.state.rudder_trim - decrement)
+                    # Publish event for TTS announcement
+                    if abs(self.state.rudder_trim - old_trim) > 0.001:
+                        trim_percent = self._trim_to_percent(self.state.rudder_trim)
+                        logger.info(
+                            f"Rudder trim LEFT: {old_trim:.2f} -> {self.state.rudder_trim:.2f} ({trim_percent}%)"
+                        )
+                        self.event_bus.publish(
+                            InputActionEvent(action="trim_rudder_adjusted", value=trim_percent)
+                        )
+                        self._time_since_last_trim_click = 0.0
+                        # Mark for removal - trim click should only apply once
+                        actions_to_remove.add(action)
+
+        # Remove processed trim actions (they should only fire once per click)
+        self._modifier_actions -= actions_to_remove
+
+        # Handle Shift+arrow keys for pitch trim adjustment (hybrid control)
+        if shift_pressed:
+            # Check if pitch keys are held with Shift
+            pitch_up_held = pygame.K_UP in self._keys_pressed
+            pitch_down_held = pygame.K_DOWN in self._keys_pressed
+
+            if pitch_down_held:
+                # Shift+DOWN = trim nose up (continuously adjust while held)
+                trim_change = self._trim_adjustment_rate * 0.016  # Assume ~60 FPS
+                old_trim = self.state.pitch_trim
+                self.state.pitch_trim = min(1.0, self.state.pitch_trim + trim_change)
+                # TTS announcement on significant change (every 5%)
+                if int(old_trim * 20) != int(self.state.pitch_trim * 20):
+                    trim_percent = self._trim_to_percent(self.state.pitch_trim)
+                    self.event_bus.publish(
+                        InputActionEvent(action="trim_pitch_adjusted", value=trim_percent)
+                    )
+            elif pitch_up_held:
+                # Shift+UP = trim nose down (continuously adjust while held)
+                trim_change = self._trim_adjustment_rate * 0.016  # Assume ~60 FPS
+                old_trim = self.state.pitch_trim
+                self.state.pitch_trim = max(-1.0, self.state.pitch_trim - trim_change)
+                # TTS announcement on significant change (every 5%)
+                if int(old_trim * 20) != int(self.state.pitch_trim * 20):
+                    trim_percent = self._trim_to_percent(self.state.pitch_trim)
+                    self.event_bus.publish(
+                        InputActionEvent(action="trim_pitch_adjusted", value=trim_percent)
+                    )
 
     def _update_joystick_controls(self) -> None:
         """Update controls from joystick axes."""

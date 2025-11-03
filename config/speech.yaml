@@ -88,6 +88,14 @@ voices:
     rate: 180
     volume: 1.0
     output_dir: ground/ops
+  instructor:
+    description: Flight instructor providing coaching and feedback
+    engine: say
+    language: en-US
+    voice_name: Daniel
+    rate: 200
+    volume: 1.0
+    output_dir: instructor
 messages:
   MSG_STARTUP:
     text: airborne flight simulator
@@ -613,6 +621,38 @@ messages:
     text: released
     voice: cockpit
     filename: released
+  MSG_WORD_TRIM:
+    text: trim
+    voice: cockpit
+    filename: trim
+  MSG_WORD_NOSE_UP:
+    text: nose_up
+    voice: cockpit
+    filename: nose_up
+  MSG_WORD_NOSE_DOWN:
+    text: nose_down
+    voice: cockpit
+    filename: nose_down
+  MSG_WORD_NEUTRAL:
+    text: neutral
+    voice: cockpit
+    filename: neutral
+  MSG_WORD_RUDDER:
+    text: rudder
+    voice: cockpit
+    filename: rudder
+  MSG_WORD_LEFT:
+    text: left
+    voice: cockpit
+    filename: left
+  MSG_WORD_RIGHT:
+    text: right
+    voice: cockpit
+    filename: right
+  MSG_WORD_STALL:
+    text: stall
+    voice: cockpit
+    filename: stall
   MSG_ON:
     text: 'on'
     voice: cockpit
@@ -1254,3 +1294,51 @@ messages:
     text: invalid option
     voice: cockpit
     filename: invalid_option
+
+  # Flight Instructor Messages
+  MSG_INSTRUCTOR_ENABLED:
+    text: flight instructor enabled
+    voice: instructor
+    filename: instructor_enabled
+  MSG_INSTRUCTOR_DISABLED:
+    text: flight instructor disabled
+    voice: instructor
+    filename: instructor_disabled
+  MSG_INSTRUCTOR_ASSESSMENT:
+    text: lets review your flight performance
+    voice: instructor
+    filename: instructor_assessment
+
+  # Post-takeoff pitch warnings
+  MSG_INSTRUCTOR_PITCH_TOO_HIGH:
+    text: careful with that pitch angle, you are climbing too steeply
+    voice: instructor
+    filename: instructor_pitch_too_high
+  MSG_INSTRUCTOR_PITCH_TOO_LOW:
+    text: watch your pitch, nose is too low after takeoff
+    voice: instructor
+    filename: instructor_pitch_too_low
+
+  # Stall recovery
+  MSG_INSTRUCTOR_STALL_WARNING:
+    text: stall warning, lower the nose and add power
+    voice: instructor
+    filename: instructor_stall_warning
+  MSG_INSTRUCTOR_STALL_RECOVERY:
+    text: good stall recovery, maintain your airspeed
+    voice: instructor
+    filename: instructor_stall_recovery
+
+  # Airspeed management
+  MSG_INSTRUCTOR_AIRSPEED_LOW:
+    text: watch your airspeed, you are getting too slow
+    voice: instructor
+    filename: instructor_airspeed_low
+  MSG_INSTRUCTOR_AIRSPEED_HIGH:
+    text: reduce throttle, your airspeed is too high
+    voice: instructor
+    filename: instructor_airspeed_high
+  MSG_INSTRUCTOR_AIRSPEED_GOOD:
+    text: good airspeed management
+    voice: instructor
+    filename: instructor_airspeed_good

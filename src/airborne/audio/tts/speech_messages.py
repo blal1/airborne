@@ -33,8 +33,19 @@ class SpeechMessages:
     MSG_FULL_THROTTLE = "MSG_FULL_THROTTLE"
     MSG_THROTTLE_IDLE = "MSG_THROTTLE_IDLE"
     MSG_BRAKES_ON = "MSG_BRAKES_ON"
+    MSG_PARKING_BRAKE_SET = "MSG_PARKING_BRAKE_SET"
+    MSG_PARKING_BRAKE_RELEASED = "MSG_PARKING_BRAKE_RELEASED"
     MSG_PAUSED = "MSG_PAUSED"
     MSG_NEXT = "MSG_NEXT"
+
+    # Trim messages
+    MSG_WORD_TRIM = "MSG_WORD_TRIM"
+    MSG_WORD_NOSE_UP = "MSG_WORD_NOSE_UP"
+    MSG_WORD_NOSE_DOWN = "MSG_WORD_NOSE_DOWN"
+    MSG_WORD_NEUTRAL = "MSG_WORD_NEUTRAL"
+    MSG_WORD_RUDDER = "MSG_WORD_RUDDER"
+    MSG_WORD_LEFT = "MSG_WORD_LEFT"
+    MSG_WORD_RIGHT = "MSG_WORD_RIGHT"
 
     # Vertical speed
     MSG_LEVEL_FLIGHT = "MSG_LEVEL_FLIGHT"
@@ -161,15 +172,15 @@ class SpeechMessages:
         Returns:
             List of keys to assemble the message.
         """
-        # Round to nearest 5 knots
-        rounded = round(knots / 5) * 5
-        rounded = max(0, min(300, rounded))
+        # Use exact knots (rounded to integer)
+        exact_knots = int(round(knots))
+        exact_knots = max(0, min(300, exact_knots))
 
-        # Cockpit voice uses natural number pronunciation (e.g., "one hundred fifty")
+        # Cockpit voice uses natural number pronunciation (e.g., "one hundred fifty two")
         # Use autogen files for numbers
         return [
             SpeechMessages.MSG_WORD_AIRSPEED,
-            f"cockpit/number_{rounded}_autogen",
+            f"cockpit/number_{exact_knots}_autogen",
             SpeechMessages.MSG_WORD_KNOTS,
         ]
 
@@ -743,6 +754,62 @@ class SpeechMessages:
 
         return result
 
+    @staticmethod
+    def trim_position(trim_percent: int) -> list[str]:
+        """Get message keys for trim position readout.
+
+        Args:
+            trim_percent: Trim percentage (0-100, where 0=full nose down, 50=neutral, 100=full nose up).
+
+        Returns:
+            List of message keys.
+        """
+        value = max(0, min(100, trim_percent))
+
+        result = [SpeechMessages.MSG_WORD_TRIM]
+
+        # Determine position description
+        if value < 30:
+            result.append(SpeechMessages.MSG_WORD_NOSE_DOWN)
+        elif value > 70:
+            result.append(SpeechMessages.MSG_WORD_NOSE_UP)
+        else:
+            result.append(SpeechMessages.MSG_WORD_NEUTRAL)
+
+        # Add the numeric percentage
+        result.append(f"number_{value}_autogen")
+        result.append(SpeechMessages.MSG_WORD_PERCENT)
+
+        return result
+
+    @staticmethod
+    def rudder_trim_position(trim_percent: int) -> list[str]:
+        """Get message keys for rudder trim position readout.
+
+        Args:
+            trim_percent: Rudder trim percentage (0-100, where 0=full left, 50=neutral, 100=full right).
+
+        Returns:
+            List of message keys.
+        """
+        value = max(0, min(100, trim_percent))
+
+        result = [SpeechMessages.MSG_WORD_RUDDER, SpeechMessages.MSG_WORD_TRIM]
+
+        # Determine position description
+        if value < 30:
+            result.append(SpeechMessages.MSG_WORD_LEFT)
+        elif value > 70:
+            result.append(SpeechMessages.MSG_WORD_RIGHT)
+        else:
+            result.append(SpeechMessages.MSG_WORD_NEUTRAL)
+
+        # Add the numeric percentage
+        result.append(f"number_{value}_autogen")
+        result.append(SpeechMessages.MSG_WORD_PERCENT)
+
+        return result
+
 
 # Export commonly used constants at module level for convenience
 MSG_STARTUP = SpeechMessages.MSG_STARTUP
@@ -759,6 +826,8 @@ MSG_THROTTLE_DECREASED = SpeechMessages.MSG_THROTTLE_DECREASED
 MSG_FULL_THROTTLE = SpeechMessages.MSG_FULL_THROTTLE
 MSG_THROTTLE_IDLE = SpeechMessages.MSG_THROTTLE_IDLE
 MSG_BRAKES_ON = SpeechMessages.MSG_BRAKES_ON
+MSG_PARKING_BRAKE_SET = SpeechMessages.MSG_PARKING_BRAKE_SET
+MSG_PARKING_BRAKE_RELEASED = SpeechMessages.MSG_PARKING_BRAKE_RELEASED
 MSG_PAUSED = SpeechMessages.MSG_PAUSED
 MSG_NEXT = SpeechMessages.MSG_NEXT
 MSG_LEVEL_FLIGHT = SpeechMessages.MSG_LEVEL_FLIGHT

@@ -228,9 +228,8 @@ class AirBorne:
             # Extract flight model config from aircraft config
             flight_model_config = config.get("aircraft", {}).get("flight_model_config", {})
 
-            # Extract propeller config from physics section
-            physics_config = config.get("physics", {})
-            propeller_config = physics_config.get("propeller", {})
+            # Extract propeller config from aircraft section (not physics!)
+            propeller_config = config.get("aircraft", {}).get("propeller", {})
 
             # Update plugin context with flight model config
             self.plugin_context.config["physics"] = {
@@ -339,6 +338,13 @@ class AirBorne:
 
             self.performance_display_plugin = PerformanceDisplayPlugin()
             self.performance_display_plugin.initialize(self.plugin_context)
+
+            # Load flight instructor plugin
+            logger.info("Loading flight instructor plugin...")
+            from airborne.plugins.training.flight_instructor_plugin import FlightInstructorPlugin
+
+            self.flight_instructor_plugin = FlightInstructorPlugin()
+            self.flight_instructor_plugin.initialize(self.plugin_context)
 
             # Build aircraft with systems
             builder = AircraftBuilder(self.plugin_loader, self.plugin_context)
@@ -643,6 +649,10 @@ class AirBorne:
         if hasattr(self, "radio_plugin") and self.radio_plugin:
             self.radio_plugin.update(dt)
 
+        # Update flight instructor plugin
+        if hasattr(self, "flight_instructor_plugin") and self.flight_instructor_plugin:
+            self.flight_instructor_plugin.update(dt)
+
         # Process message queue
         self.message_queue.process()
 
@@ -850,6 +860,10 @@ class AirBorne:
         if hasattr(self, "radio_plugin") and self.radio_plugin:
             logger.info("Shutting down radio plugin...")
             self.radio_plugin.shutdown()
+
+        if hasattr(self, "flight_instructor_plugin") and self.flight_instructor_plugin:
+            logger.info("Shutting down flight instructor plugin...")
+            self.flight_instructor_plugin.shutdown()
 
         if self.audio_plugin:
             logger.info("Shutting down audio plugin...")
