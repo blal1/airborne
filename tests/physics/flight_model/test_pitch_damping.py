@@ -45,8 +45,7 @@ class TestPitchRateDamping:
         }
         model.initialize(config)
 
-        assert model.pitch_damping_coefficient == -25.0, \
-            "Default pitch damping should be -25.0"
+        assert model.pitch_damping_coefficient == -25.0, "Default pitch damping should be -25.0"
 
     def test_pitch_damping_config_custom(self):
         """Test that pitch damping can be configured."""
@@ -59,14 +58,13 @@ class TestPitchRateDamping:
         }
         model.initialize(config)
 
-        assert model.pitch_damping_coefficient == -35.0, \
-            "Pitch damping should use configured value"
+        assert model.pitch_damping_coefficient == -35.0, "Pitch damping should use configured value"
 
     def test_pitch_damping_opposes_pitch_up(self, flight_model, inputs):
         """Test that pitch damping creates moment opposing pitch-up motion."""
         # Set up aircraft in level flight with positive pitch rate
         flight_model.state.position = Vector3(0, 100, 0)  # 100m altitude
-        flight_model.state.velocity = Vector3(0, 0, 30)   # 30 m/s forward
+        flight_model.state.velocity = Vector3(0, 0, 30)  # 30 m/s forward
         flight_model.state.pitch = 0.0
         flight_model.state.angular_velocity = Vector3(0.2, 0, 0)  # Positive pitch rate (nose up)
 
@@ -79,8 +77,9 @@ class TestPitchRateDamping:
         final_pitch_rate = flight_model.state.angular_velocity.x
 
         # Pitch rate should decrease (damping opposes the motion)
-        assert final_pitch_rate < initial_pitch_rate, \
+        assert final_pitch_rate < initial_pitch_rate, (
             "Pitch damping should reduce positive pitch rate"
+        )
 
     def test_pitch_damping_opposes_pitch_down(self, flight_model, inputs):
         """Test that pitch damping creates moment opposing pitch-down motion."""
@@ -98,8 +97,9 @@ class TestPitchRateDamping:
         final_pitch_rate = flight_model.state.angular_velocity.x
 
         # Pitch rate magnitude should decrease (become less negative)
-        assert final_pitch_rate > initial_pitch_rate, \
+        assert final_pitch_rate > initial_pitch_rate, (
             "Pitch damping should reduce negative pitch rate"
+        )
 
     def test_pitch_damping_scales_with_airspeed(self, flight_model, inputs):
         """Test that damping effect increases with airspeed."""
@@ -124,8 +124,7 @@ class TestPitchRateDamping:
         damping_fast = initial_rate_fast - final_rate_fast
 
         # Damping should be stronger at higher airspeed
-        assert damping_fast > damping_slow, \
-            "Pitch damping should increase with airspeed"
+        assert damping_fast > damping_slow, "Pitch damping should increase with airspeed"
 
     def test_pitch_damping_near_zero_rate(self, flight_model, inputs):
         """Test that damping is minimal when pitch rate is near zero."""
@@ -141,8 +140,9 @@ class TestPitchRateDamping:
 
         # Pitch should remain relatively stable
         pitch_change = abs(final_pitch - initial_pitch)
-        assert pitch_change < 0.5, \
+        assert pitch_change < 0.5, (
             f"With minimal pitch rate, pitch should be stable (changed {pitch_change}°)"
+        )
 
     def test_pitch_damping_improves_stability(self, flight_model, inputs):
         """Test that higher damping coefficient improves stability."""
@@ -180,9 +180,9 @@ class TestPitchRateDamping:
             model_high_damping.update(0.016, inputs)
 
         # High damping should result in lower pitch rate
-        assert abs(model_high_damping.state.angular_velocity.x) < \
-               abs(model_low_damping.state.angular_velocity.x), \
-            "Higher damping coefficient should reduce pitch rate more effectively"
+        assert abs(model_high_damping.state.angular_velocity.x) < abs(
+            model_low_damping.state.angular_velocity.x
+        ), "Higher damping coefficient should reduce pitch rate more effectively"
 
     def test_all_damping_coefficients_configurable(self):
         """Test that all damping coefficients can be configured."""
@@ -218,8 +218,9 @@ class TestPitchRateDamping:
         # With positive elevator and positive pitch rate, rate might increase
         # but damping should still provide resistance
         # The key is that the system remains stable
-        assert final_pitch_rate != initial_pitch_rate, \
+        assert final_pitch_rate != initial_pitch_rate, (
             "Pitch rate should change with elevator input and damping"
+        )
 
 
 if __name__ == "__main__":

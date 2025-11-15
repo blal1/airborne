@@ -88,9 +88,7 @@ class TestStaticThrustValidation:
 
         # Verify monotonic increase
         for i in range(len(thrust_values) - 1):
-            assert (
-                thrust_values[i] < thrust_values[i + 1]
-            ), "Thrust should increase with power"
+            assert thrust_values[i] < thrust_values[i + 1], "Thrust should increase with power"
 
 
 class TestGroundForcesValidation:
@@ -126,16 +124,16 @@ class TestGroundForcesValidation:
         friction_force = forces.friction_force.magnitude()
         rolling_force = forces.rolling_resistance.magnitude()
 
-        print(f"\nGround resistance (no brakes, 5 m/s):")
+        print("\nGround resistance (no brakes, 5 m/s):")
         print(f"  Friction force: {friction_force:.0f} N")
         print(f"  Rolling resistance: {rolling_force:.0f} N")
         print(f"  Total: {total_force:.0f} N")
 
         # Expected rolling resistance: 0.015 × 1111kg × 9.81 = 163 N
         assert total_force < 200, f"Ground force {total_force:.0f}N too high without brakes"
-        assert (
-            friction_force < 10
-        ), f"Friction {friction_force:.0f}N should be near zero without brakes"
+        assert friction_force < 10, (
+            f"Friction {friction_force:.0f}N should be near zero without brakes"
+        )
         assert 140 < rolling_force < 180, f"Rolling resistance {rolling_force:.0f}N out of range"
 
     def test_brakes_apply_significant_force(self):
@@ -162,7 +160,7 @@ class TestGroundForcesValidation:
         brake_force = forces.brake_force.magnitude()
         total_force = forces.total_force.magnitude()
 
-        print(f"\nBraking force at 39 knots:")
+        print("\nBraking force at 39 knots:")
         print(f"  Brake force: {brake_force:.0f} N")
         print(f"  Total deceleration force: {total_force:.0f} N")
 
@@ -190,9 +188,9 @@ class TestGroundForcesValidation:
         total_force = forces.total_force.magnitude()
 
         # Should be zero or near-zero when weight is off wheels
-        assert (
-            total_force < 1.0
-        ), f"Should have minimal force with low compression, got {total_force:.1f}N"
+        assert total_force < 1.0, (
+            f"Should have minimal force with low compression, got {total_force:.1f}N"
+        )
 
 
 class TestTakeoffPerformance:
@@ -269,7 +267,7 @@ class TestTakeoffPerformance:
         final_speed_kias = state.get_airspeed() * 1.94384
         distance_ft = state.position.z * 3.28084
 
-        print(f"\nTakeoff Results:")
+        print("\nTakeoff Results:")
         print(f"  Time to {target_speed_kias:.0f} KIAS: {time:.1f} seconds")
         print(f"  Distance: {distance_ft:.0f} feet")
         print(f"  Final speed: {final_speed_kias:.1f} KIAS")
@@ -277,9 +275,7 @@ class TestTakeoffPerformance:
         # Validate against expected performance (flight model without ground physics)
         # Expected: 0.55 m/s² × 20s = 11 m/s = 21 KIAS in 20 seconds
         assert 18 < time < 22, f"Time to {target_speed_kias} KIAS: {time:.1f}s not in range 18-22s"
-        assert (
-            350 < distance_ft < 500
-        ), f"Distance {distance_ft:.0f}ft not in range 350-500ft"
+        assert 350 < distance_ft < 500, f"Distance {distance_ft:.0f}ft not in range 350-500ft"
         assert final_speed_kias >= 23, f"Final speed {final_speed_kias:.0f} KIAS too low"
 
         # Check reasonable acceleration (without ground resistance)
@@ -325,7 +321,7 @@ class TestAccelerationCurve:
 
         # Expected performance benchmarks without ground physics (time, expected_speed_kias, tolerance)
         benchmarks = [
-            (5.0, 6.0, 2.0),   # 5s -> 6 KIAS ± 2 KIAS
+            (5.0, 6.0, 2.0),  # 5s -> 6 KIAS ± 2 KIAS
             (10.0, 12.0, 3.0),  # 10s -> 12 KIAS ± 3 KIAS
             (15.0, 18.0, 4.0),  # 15s -> 18 KIAS ± 4 KIAS
         ]

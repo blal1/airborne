@@ -74,9 +74,11 @@ class Simple6DOFFlightModel(IFlightModel):
         self.max_fuel = 100.0  # kg
 
         # Stability and damping coefficients (configurable)
-        self.pitch_damping_coefficient = -25.0  # Cmq - pitch rate damping (increased for keyboard control)
-        self.roll_damping_coefficient = -8.0    # Clp - roll rate damping
-        self.yaw_damping_coefficient = -6.0     # Cnr - yaw rate damping
+        self.pitch_damping_coefficient = (
+            -25.0
+        )  # Cmq - pitch rate damping (increased for keyboard control)
+        self.roll_damping_coefficient = -8.0  # Clp - roll rate damping
+        self.yaw_damping_coefficient = -6.0  # Cnr - yaw rate damping
 
         # Propeller model (optional - if present, overrides max_thrust)
         self.propeller: IPropeller | None = None
@@ -367,7 +369,9 @@ class Simple6DOFFlightModel(IFlightModel):
 
         # DEBUG: Log lift calculation details every 60 frames (~1 second)
         if self._updates % 60 == 0:
-            logger.info(f"[LIFT CALC] airspeed={airspeed:.1f}m/s q={q:.1f}Pa wing_area={self.wing_area:.2f}m² AOA={angle_of_attack*RADIANS_TO_DEGREES:.2f}° CL_slope={self.lift_coefficient_slope:.3f} CL={cl:.3f} lift_mag={lift_magnitude:.1f}N mass={self.state.mass:.1f}kg weight={self.state.mass*GRAVITY:.1f}N")
+            logger.info(
+                f"[LIFT CALC] airspeed={airspeed:.1f}m/s q={q:.1f}Pa wing_area={self.wing_area:.2f}m² AOA={angle_of_attack * RADIANS_TO_DEGREES:.2f}° CL_slope={self.lift_coefficient_slope:.3f} CL={cl:.3f} lift_mag={lift_magnitude:.1f}N mass={self.state.mass:.1f}kg weight={self.state.mass * GRAVITY:.1f}N"
+            )
 
         # Lift direction: perpendicular to velocity vector
         # This prevents runaway climb by ensuring lift doesn't add to vertical velocity
@@ -456,7 +460,7 @@ class Simple6DOFFlightModel(IFlightModel):
             drag_mag = self.forces.drag.magnitude()
             total_mag = self.forces.total.magnitude()
             logger.warning(
-                f"[FORCE DEBUG] spd={airspeed:.1f}m/s ({airspeed*1.94384:.1f}kt) "
+                f"[FORCE DEBUG] spd={airspeed:.1f}m/s ({airspeed * 1.94384:.1f}kt) "
                 f"thrust_vec={self.forces.thrust} thrust_mag={thrust_mag:.0f}N "
                 f"drag_vec={self.forces.drag} drag_mag={drag_mag:.0f}N "
                 f"total_vec={self.forces.total} total_mag={total_mag:.0f}N"
@@ -495,7 +499,9 @@ class Simple6DOFFlightModel(IFlightModel):
         elevator_moment = q * self.wing_area * chord * elevator_effectiveness * inputs.pitch  # N⋅m
 
         # Trim tab creates pitching moment
-        trim_effectiveness = 0.15  # Trim has less authority than elevator (increased from 0.1 for better authority)
+        trim_effectiveness = (
+            0.15  # Trim has less authority than elevator (increased from 0.1 for better authority)
+        )
         trim_moment = q * self.wing_area * chord * trim_effectiveness * self.state.pitch_trim  # N⋅m
 
         # Aerodynamic stability: Cm_alpha (pitch stiffness)
@@ -515,10 +521,21 @@ class Simple6DOFFlightModel(IFlightModel):
         # Creates moment proportional to pitch rate
         # This is the key to altitude stability - resists rapid pitch changes
         pitch_rate = self.state.angular_velocity.x  # Current pitch rate (rad/s)
-        damping_moment = 0.5 * AIR_DENSITY_SEA_LEVEL * airspeed * self.wing_area * chord * chord * self.pitch_damping_coefficient * pitch_rate  # N⋅m
+        damping_moment = (
+            0.5
+            * AIR_DENSITY_SEA_LEVEL
+            * airspeed
+            * self.wing_area
+            * chord
+            * chord
+            * self.pitch_damping_coefficient
+            * pitch_rate
+        )  # N⋅m
 
         # Total pitching moment
-        total_pitch_moment = elevator_moment + trim_moment + stability_moment + damping_moment  # N⋅m
+        total_pitch_moment = (
+            elevator_moment + trim_moment + stability_moment + damping_moment
+        )  # N⋅m
 
         # Angular acceleration = Moment / Inertia
         pitch_acceleration = total_pitch_moment / pitch_inertia  # rad/s²
@@ -531,7 +548,16 @@ class Simple6DOFFlightModel(IFlightModel):
 
         # Roll damping
         roll_rate = self.state.angular_velocity.y
-        roll_damping_moment = 0.5 * AIR_DENSITY_SEA_LEVEL * airspeed * self.wing_area * chord * chord * self.roll_damping_coefficient * roll_rate
+        roll_damping_moment = (
+            0.5
+            * AIR_DENSITY_SEA_LEVEL
+            * airspeed
+            * self.wing_area
+            * chord
+            * chord
+            * self.roll_damping_coefficient
+            * roll_rate
+        )
 
         total_roll_moment = aileron_moment + roll_damping_moment
         roll_acceleration = total_roll_moment / roll_inertia
@@ -544,7 +570,16 @@ class Simple6DOFFlightModel(IFlightModel):
 
         # Yaw damping
         yaw_rate = self.state.angular_velocity.z
-        yaw_damping_moment = 0.5 * AIR_DENSITY_SEA_LEVEL * airspeed * self.wing_area * chord * chord * self.yaw_damping_coefficient * yaw_rate
+        yaw_damping_moment = (
+            0.5
+            * AIR_DENSITY_SEA_LEVEL
+            * airspeed
+            * self.wing_area
+            * chord
+            * chord
+            * self.yaw_damping_coefficient
+            * yaw_rate
+        )
 
         total_yaw_moment = rudder_moment + yaw_damping_moment
         yaw_acceleration = total_yaw_moment / yaw_inertia
@@ -555,9 +590,7 @@ class Simple6DOFFlightModel(IFlightModel):
         # velocity += acceleration * dt
         # Damping is now included in the moment calculations above
         angular_accel_delta = Vector3(
-            pitch_acceleration * dt,
-            roll_acceleration * dt,
-            yaw_acceleration * dt
+            pitch_acceleration * dt, roll_acceleration * dt, yaw_acceleration * dt
         )
         self.state.angular_velocity = self.state.angular_velocity + angular_accel_delta
 

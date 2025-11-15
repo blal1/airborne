@@ -91,15 +91,15 @@ class GroundPhysics:
     # NOT sliding friction (which is 40-50x higher)
     # Reference: Aircraft tires on paved runways have C_rr = 0.008-0.012
     ROLLING_RESISTANCE = {
-        "asphalt": 0.010,      # Aircraft tires on smooth asphalt runway
-        "concrete": 0.010,     # Aircraft tires on smooth concrete runway
-        "grass": 0.06,         # Short grass (significantly higher)
-        "dirt": 0.08,          # Packed dirt
-        "gravel": 0.05,        # Loose stones
-        "snow": 0.04,          # Packed snow
-        "ice": 0.015,          # Smooth ice
-        "water": 0.03,         # Wet runway (hydroplaning risk)
-        "unknown": 0.020,      # Conservative default
+        "asphalt": 0.010,  # Aircraft tires on smooth asphalt runway
+        "concrete": 0.010,  # Aircraft tires on smooth concrete runway
+        "grass": 0.06,  # Short grass (significantly higher)
+        "dirt": 0.08,  # Packed dirt
+        "gravel": 0.05,  # Loose stones
+        "snow": 0.04,  # Packed snow
+        "ice": 0.015,  # Smooth ice
+        "water": 0.03,  # Wet runway (hydroplaning risk)
+        "unknown": 0.020,  # Conservative default
     }
 
     def __init__(

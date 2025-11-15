@@ -6,7 +6,6 @@ Tests verify the three critical fixes:
 3. Clamping limit increased from 1.2× to 1.5×
 """
 
-import math
 import pytest
 
 from airborne.systems.propeller.fixed_pitch import FixedPitchPropeller
@@ -106,8 +105,9 @@ class TestCorrectionFactorFade:
         corrections = [propeller._get_static_thrust_correction(j) for j in j_values]
 
         for i in range(len(corrections) - 1):
-            assert corrections[i] >= corrections[i+1], \
-                f"Correction should decrease: J={j_values[i]} -> J={j_values[i+1]}"
+            assert corrections[i] >= corrections[i + 1], (
+                f"Correction should decrease: J={j_values[i]} -> J={j_values[i + 1]}"
+            )
 
 
 class TestBlendFactor:
@@ -143,7 +143,7 @@ class TestBlendFactor:
         """Blend should be 0.05 (95% static) at low speeds."""
         # J=0.10 at v=8.6 m/s, 2700 RPM
         j = 0.10
-        v = j * (2700/60) * 1.905
+        v = j * (2700 / 60) * 1.905
         blend = self._calculate_blend_from_thrust(propeller, v, 2700)
         assert blend == pytest.approx(0.05, abs=0.001)
 
@@ -151,7 +151,7 @@ class TestBlendFactor:
         """Blend should be 0.05 below J=0.20."""
         # J=0.19 at v=16.3 m/s, 2700 RPM
         j = 0.19
-        v = j * (2700/60) * 1.905
+        v = j * (2700 / 60) * 1.905
         blend = self._calculate_blend_from_thrust(propeller, v, 2700)
         assert blend == pytest.approx(0.05, abs=0.001)
 
@@ -159,7 +159,7 @@ class TestBlendFactor:
         """Blend should be 0.05 at J=0.20 (new threshold)."""
         # J=0.20 at v=17.2 m/s, 2700 RPM
         j = 0.20
-        v = j * (2700/60) * 1.905
+        v = j * (2700 / 60) * 1.905
         blend = self._calculate_blend_from_thrust(propeller, v, 2700)
         assert blend == pytest.approx(0.05, abs=0.001)
 
@@ -171,7 +171,7 @@ class TestBlendFactor:
         """
         # J=0.30 at v=25.7 m/s, 2700 RPM
         j = 0.30
-        v = j * (2700/60) * 1.905
+        v = j * (2700 / 60) * 1.905
         blend = self._calculate_blend_from_thrust(propeller, v, 2700)
 
         # At J=0.30: (0.30-0.20)/(0.7-0.20) = 0.10/0.50 = 20% through range
@@ -183,7 +183,7 @@ class TestBlendFactor:
         """Blend at J=0.40 should still favor static formula."""
         # J=0.40 at v=34.3 m/s, 2700 RPM
         j = 0.40
-        v = j * (2700/60) * 1.905
+        v = j * (2700 / 60) * 1.905
         blend = self._calculate_blend_from_thrust(propeller, v, 2700)
 
         expected = 0.05 + (0.40 - 0.20) * 0.85 / 0.50
@@ -194,7 +194,7 @@ class TestBlendFactor:
         """Blend at J=0.6 should transition toward dynamic."""
         # J=0.60 at v=51.5 m/s, 2700 RPM
         j = 0.60
-        v = j * (2700/60) * 1.905
+        v = j * (2700 / 60) * 1.905
         blend = self._calculate_blend_from_thrust(propeller, v, 2700)
 
         expected = 0.05 + (0.60 - 0.20) * 0.85 / 0.50
@@ -205,7 +205,7 @@ class TestBlendFactor:
         """Blend should be 0.90 (90% dynamic) above J=0.7."""
         # J=0.80 at v=68.6 m/s, 2700 RPM
         j = 0.80
-        v = j * (2700/60) * 1.905
+        v = j * (2700 / 60) * 1.905
         blend = self._calculate_blend_from_thrust(propeller, v, 2700)
         assert blend == pytest.approx(0.90, abs=0.001)
 
@@ -250,8 +250,9 @@ class TestThrustCalculationWithFixes:
 
         # Should be similar to static (small fade, small blend)
         static_thrust = propeller.calculate_thrust(180, 2700, 0, 1.225)
-        assert thrust > 0.90 * static_thrust, \
-            f"Thrust at 10 m/s should be >90% of static, got {thrust/static_thrust:.1%}"
+        assert thrust > 0.90 * static_thrust, (
+            f"Thrust at 10 m/s should be >90% of static, got {thrust / static_thrust:.1%}"
+        )
 
     def test_thrust_at_25_mps_critical(self, propeller):
         """CRITICAL: Thrust at 25 m/s (rotation speed) should be strong.
@@ -271,10 +272,12 @@ class TestThrustCalculationWithFixes:
         # - Blend at J=0.291: ~0.15 (instead of 0.30)
         # - Clamp: 1.5× (instead of 1.2×)
         # Expected thrust: 1000-1200N (higher than initial estimate due to blend effect)
-        assert thrust > 1000, \
+        assert thrust > 1000, (
             f"Thrust at 25 m/s should be >1000N for realistic acceleration, got {thrust:.1f}N"
-        assert thrust < 1250, \
+        )
+        assert thrust < 1250, (
             f"Thrust at 25 m/s should be <1250N (realistic limit), got {thrust:.1f}N"
+        )
 
     def test_thrust_at_40_mps(self, propeller):
         """Thrust at 40 m/s should be lower than 25 m/s but still substantial."""
@@ -289,10 +292,10 @@ class TestThrustCalculationWithFixes:
 
         # At higher speed, thrust should be lower than at rotation speed
         # But with our blend, it may still be quite high
-        assert thrust_40 > 800, \
-            f"Thrust at 40 m/s should be >800N, got {thrust_40:.1f}N"
-        assert thrust_40 < thrust_25 * 1.1, \
-            f"Thrust at 40 m/s should not be much higher than at 25 m/s"
+        assert thrust_40 > 800, f"Thrust at 40 m/s should be >800N, got {thrust_40:.1f}N"
+        assert thrust_40 < thrust_25 * 1.1, (
+            "Thrust at 40 m/s should not be much higher than at 25 m/s"
+        )
 
     def test_thrust_behavior_across_speed_range(self, propeller):
         """Verify thrust has reasonable values across speed range.
@@ -311,8 +314,9 @@ class TestThrustCalculationWithFixes:
         assert thrust_50 > 500, f"Thrust at 50 m/s should be >500N, got {thrust_50:.1f}N"
 
         # Thrust at cruise should be lower than at takeoff speed
-        assert thrust_50 < thrust_25, \
-            f"Thrust at cruise (50 m/s) should be lower than at rotation (25 m/s)"
+        assert thrust_50 < thrust_25, (
+            "Thrust at cruise (50 m/s) should be lower than at rotation (25 m/s)"
+        )
 
     def test_thrust_with_reduced_power(self, propeller):
         """Thrust should scale roughly with power."""
@@ -322,8 +326,7 @@ class TestThrustCalculationWithFixes:
         # Thrust scales with sqrt(power) in momentum theory
         # So half power should give ~71% thrust
         ratio = thrust_half / thrust_full
-        assert 0.65 < ratio < 0.80, \
-            f"Half power should give ~71% thrust, got {ratio:.1%}"
+        assert 0.65 < ratio < 0.80, f"Half power should give ~71% thrust, got {ratio:.1%}"
 
     def test_thrust_scales_with_rpm(self, propeller):
         """Thrust should be higher at higher RPM."""
@@ -333,8 +336,7 @@ class TestThrustCalculationWithFixes:
 
         # Higher RPM should generally give more thrust
         # (though complex interaction with advance ratio and efficiency)
-        assert thrust_2700 > thrust_2000, \
-            "Thrust at 2700 RPM should be higher than at 2000 RPM"
+        assert thrust_2700 > thrust_2000, "Thrust at 2700 RPM should be higher than at 2000 RPM"
 
     def test_no_thrust_without_power(self, propeller):
         """No power should give no thrust."""
@@ -372,12 +374,12 @@ class TestClampingLimit:
 
         # Even with aggressive blend, thrust should be reasonable
         # Real C172 static thrust is ~900-1000N, so 1.5× would be ~1350-1500N max
-        assert thrust < 1500, \
-            f"Thrust should be clamped to realistic values, got {thrust:.1f}N"
+        assert thrust < 1500, f"Thrust should be clamped to realistic values, got {thrust:.1f}N"
 
         # But should still be substantial for good acceleration
-        assert thrust > 800, \
+        assert thrust > 800, (
             f"Thrust should be >800N for good low-speed performance, got {thrust:.1f}N"
+        )
 
     def test_clamp_allows_higher_thrust(self, propeller):
         """The 1.5× clamp should allow higher thrust than old 1.2× clamp.
@@ -391,8 +393,7 @@ class TestClampingLimit:
         # New clamp should allow up to ~1000N if blend calculation produces it
         # Actual value depends on correction and blend at this speed
         # Just verify we can exceed the old limit
-        assert thrust > 800, \
-            f"New clamp should allow thrust >800N, got {thrust:.1f}N"
+        assert thrust > 800, f"New clamp should allow thrust >800N, got {thrust:.1f}N"
 
 
 def test_realistic_c172_acceleration_performance():
@@ -452,7 +453,7 @@ def test_realistic_c172_acceleration_performance():
     # Results
     performance_ratio = acceleration / target_acceleration
 
-    print(f"\n=== C172 Acceleration Performance Test ===")
+    print("\n=== C172 Acceleration Performance Test ===")
     print(f"Thrust at 25 m/s: {thrust:.1f}N")
     print(f"Drag (parasite): {drag:.1f}N")
     print(f"Rolling resistance: {rolling_resistance_n:.1f}N")
@@ -462,12 +463,13 @@ def test_realistic_c172_acceleration_performance():
     print(f"Performance: {performance_ratio:.1%} of realistic C172")
 
     # Assert improvements from fixes
-    assert thrust > 850, \
-        f"Thrust should be >850N with fixes, got {thrust:.1f}N"
-    assert acceleration > 0.50, \
+    assert thrust > 850, f"Thrust should be >850N with fixes, got {thrust:.1f}N"
+    assert acceleration > 0.50, (
         f"Acceleration should be >0.50 m/s² with fixes, got {acceleration:.2f} m/s²"
-    assert performance_ratio > 0.65, \
+    )
+    assert performance_ratio > 0.65, (
         f"Performance should be >65% of realistic with fixes, got {performance_ratio:.1%}"
+    )
 
     # Note: To reach 100% performance we'd also need to fix the mass issue
     # (1211kg -> 1135kg would add another ~7% improvement)

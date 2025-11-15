@@ -271,7 +271,10 @@ class SoundManager:
         return False
 
     def set_engine_sound_paths(
-        self, start_path: str | None = None, idle_path: str | None = None, shutdown_path: str | None = None
+        self,
+        start_path: str | None = None,
+        idle_path: str | None = None,
+        shutdown_path: str | None = None,
     ) -> None:
         """Configure engine sound file paths.
 
@@ -283,7 +286,9 @@ class SoundManager:
         self._engine_start_path = start_path
         self._engine_idle_path = idle_path
         self._engine_shutdown_path = shutdown_path
-        logger.debug(f"Engine sound paths configured: start={start_path}, idle={idle_path}, shutdown={shutdown_path}")
+        logger.debug(
+            f"Engine sound paths configured: start={start_path}, idle={idle_path}, shutdown={shutdown_path}"
+        )
 
     def start_engine_sound(self, path: str | None = None) -> None:
         """Start looping engine sound.

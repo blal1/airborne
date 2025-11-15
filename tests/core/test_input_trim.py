@@ -6,10 +6,10 @@ import pygame
 import pytest
 
 from airborne.core.event_bus import EventBus
-from airborne.core.input import InputAction, InputActionEvent, InputManager
+from airborne.core.input import InputActionEvent, InputManager
 
 # Patch path for pygame.key.get_mods in the input module
-PATCH_GET_MODS = 'airborne.core.input.pygame.key.get_mods'
+PATCH_GET_MODS = "airborne.core.input.pygame.key.get_mods"
 
 
 class TestPitchTrimControls:
@@ -360,9 +360,7 @@ class TestRudderTrimControls:
         # Event should contain percentage (0.025 = 51.25% = 51 int)
         assert trim_events[0].value == 51
 
-    def test_comma_without_modifier_triggers_yaw_left(
-        self, manager: InputManager
-    ) -> None:
+    def test_comma_without_modifier_triggers_yaw_left(self, manager: InputManager) -> None:
         """Test plain comma key (no modifier) triggers yaw left, not rudder trim."""
         # Mock no modifiers pressed
         with patch(PATCH_GET_MODS, return_value=0):
@@ -449,19 +447,18 @@ class TestTrimToPercentConversion:
             (-0.6, int((-0.6 + 1.0) / 2.0 * 100)),  # 20
             (-0.4, int((-0.4 + 1.0) / 2.0 * 100)),  # 30
             (-0.2, int((-0.2 + 1.0) / 2.0 * 100)),  # 40
-            (0.0, int((0.0 + 1.0) / 2.0 * 100)),    # 50
-            (0.2, int((0.2 + 1.0) / 2.0 * 100)),    # 60
-            (0.4, int((0.4 + 1.0) / 2.0 * 100)),    # 70
-            (0.6, int((0.6 + 1.0) / 2.0 * 100)),    # 80
-            (0.8, int((0.8 + 1.0) / 2.0 * 100)),    # 90
-            (1.0, int((1.0 + 1.0) / 2.0 * 100)),    # 100
+            (0.0, int((0.0 + 1.0) / 2.0 * 100)),  # 50
+            (0.2, int((0.2 + 1.0) / 2.0 * 100)),  # 60
+            (0.4, int((0.4 + 1.0) / 2.0 * 100)),  # 70
+            (0.6, int((0.6 + 1.0) / 2.0 * 100)),  # 80
+            (0.8, int((0.8 + 1.0) / 2.0 * 100)),  # 90
+            (1.0, int((1.0 + 1.0) / 2.0 * 100)),  # 100
         ]
 
         for trim_value, expected_percent in test_cases:
             result = InputManager._trim_to_percent(trim_value)
             assert result == expected_percent, (
-                f"Trim value {trim_value} should convert to {expected_percent}%, "
-                f"but got {result}%"
+                f"Trim value {trim_value} should convert to {expected_percent}%, but got {result}%"
             )
 
     def test_trim_formula_accuracy(self):

@@ -367,9 +367,7 @@ class AudioPlugin(IPlugin):
             from airborne.audio.tts.base import TTSPriority
 
             stall_message = ["MSG_WORD_STALL", "MSG_WORD_STALL"]  # "Stall! Stall!"
-            self.tts_provider.speak(
-                stall_message, priority=TTSPriority.CRITICAL, interrupt=True
-            )
+            self.tts_provider.speak(stall_message, priority=TTSPriority.CRITICAL, interrupt=True)
             self._stall_announced = True
 
     def _update_pitch_feedback_tone(self, pitch: float) -> None:
@@ -394,6 +392,7 @@ class AudioPlugin(IPlugin):
             if self._pitch_tone_active:
                 if self._pitch_tone_channel is not None:
                     from contextlib import suppress
+
                     with suppress(Exception):
                         self.audio_engine.stop_source(self._pitch_tone_channel)
                     self._pitch_tone_channel = None
@@ -419,14 +418,16 @@ class AudioPlugin(IPlugin):
         # Stop previous beep
         if self._pitch_tone_channel is not None:
             from contextlib import suppress
+
             with suppress(Exception):
                 self.audio_engine.stop_source(self._pitch_tone_channel)
             self._pitch_tone_channel = None
 
         # Generate and play new beep at current frequency
-        import numpy as np
         import tempfile
         import wave
+
+        import numpy as np
 
         # Generate short beep (100ms for rapid updates)
         sample_rate = 44100
@@ -449,11 +450,11 @@ class AudioPlugin(IPlugin):
 
         try:
             # Create temporary WAV file
-            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_wav:
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_wav:
                 temp_path = temp_wav.name
 
             # Write WAV file
-            with wave.open(temp_path, 'wb') as wav_file:
+            with wave.open(temp_path, "wb") as wav_file:
                 wav_file.setnchannels(1)  # Mono
                 wav_file.setsampwidth(2)  # 16-bit
                 wav_file.setframerate(sample_rate)
@@ -470,6 +471,7 @@ class AudioPlugin(IPlugin):
             # Clean up temp file
             import os
             from contextlib import suppress
+
             with suppress(Exception):
                 os.unlink(temp_path)
 
@@ -693,7 +695,9 @@ class AudioPlugin(IPlugin):
                     ):
                         # New format: use start_engine_sequence (start.wav -> idle.wav)
                         self.sound_manager.start_engine_sequence()
-                        logger.info(f"Engine started: sound sequence playing (RPM = {engine_rpm:.0f})")
+                        logger.info(
+                            f"Engine started: sound sequence playing (RPM = {engine_rpm:.0f})"
+                        )
                     else:
                         # Old format: use single engine sound
                         engine_sound_path = getattr(

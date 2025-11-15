@@ -12,6 +12,83 @@ This document provides instructions for Claude (AI assistant) when working on th
 - Complete all tasks within a phase before moving to the next
 - Do not skip tasks unless explicitly instructed
 - Do not deviate from the architecture without discussion
+- Always update the plan to reflect implementation cocpleteness.
+
+---
+## Git Commit Guidelines
+
+### Commit Message Format
+
+**Use one-liner commits only** with the following format:
+
+```
+<type>(<scope>): <brief description>
+```
+
+**Types**:
+- `feat`: New feature
+- `enh`: Enhancement to existing feature
+- `fix`: Bug fix
+
+**Scope**: Plugin or service name (e.g., `audio`, `engine`, `physics`, `core`)
+
+**Important**:
+- ❌ **NO** multi-line commit messages
+- ❌ **NO** Co-Authored-By footer
+- ❌ **NO** body or footer sections
+- ✅ Keep it concise and descriptive
+
+**Examples**:
+```
+feat(core): implement event bus with priority handling
+enh(audio): improve stereo panning calculation
+fix(engine): correct fuel consumption rate
+feat(physics): add 6DOF flight model
+enh(checklist): add auto-verification for items
+fix(network): resolve connection timeout issue
+```
+
+### When to Commit
+
+- After completing each task
+- After writing tests
+- Before switching to different task
+- When reaching a stable state
+
+**Commit often, push less frequently.**
+
+### Pre-Commit Quality Checks
+
+**Before every commit** (unless marked as WIP), ensure code passes all quality checks:
+
+```bash
+# 1. Format code with Ruff
+uv run ruff format .
+
+# 2. Run Ruff linting
+uv run ruff check . --fix
+
+# 3. Run mypy type checking
+uv run mypy src
+
+# 4. Run pylint
+uv run pylint src
+
+# 5. Run tests
+uv run pytest
+```
+
+**All checks must pass** before committing. If any check fails:
+- Fix the issues immediately
+- Do not commit broken code
+- Exception: Use `WIP:` prefix for work-in-progress commits
+
+**WIP Commits** (allowed to skip checks temporarily):
+```
+WIP: implementing event bus (type errors to fix)
+```
+
+**Important**: WIP commits must be fixed before phase completion.
 
 ---
 
@@ -64,39 +141,6 @@ uv run pytest                  # Run tests
 
 ---
 
-## Progress Tracking
-
-### Update plan.md
-
-As you complete tasks, **update `plan.md`** to track progress:
-
-1. **Mark completed tasks** by adding a checkbox:
-   ```markdown
-   #### 1.1: Implement Event Bus (1 hour) ✅
-   **Status**: COMPLETED - 2025-10-12
-   ```
-
-2. **Track current task** being worked on:
-   ```markdown
-   #### 1.2: Implement Message Queue (2 hours) 🚧
-   **Status**: IN PROGRESS - Started 2025-10-12
-   ```
-
-3. **Add notes** for deviations or important decisions:
-   ```markdown
-   #### 1.3: Implement Plugin Interface (2 hours)
-   **Status**: COMPLETED - 2025-10-12
-   **Notes**: Added additional `on_error()` method for error handling
-   ```
-
-4. **Update milestones** when reached:
-   ```markdown
-   ### M1: Core Framework Complete (End of Phase 1) ✅
-   **Completed**: 2025-10-15
-   **Notes**: All tests passing, ready for Phase 2
-   ```
-
----
 
 ## When Unsure: Ask Questions
 
@@ -518,82 +562,6 @@ Before marking a task complete, verify:
 
 ---
 
-## Git Commit Guidelines
-
-### Commit Message Format
-
-**Use one-liner commits only** with the following format:
-
-```
-<type>(<scope>): <brief description>
-```
-
-**Types**:
-- `feat`: New feature
-- `enh`: Enhancement to existing feature
-- `fix`: Bug fix
-
-**Scope**: Plugin or service name (e.g., `audio`, `engine`, `physics`, `core`)
-
-**Important**:
-- ❌ **NO** multi-line commit messages
-- ❌ **NO** Co-Authored-By footer
-- ❌ **NO** body or footer sections
-- ✅ Keep it concise and descriptive
-
-**Examples**:
-```
-feat(core): implement event bus with priority handling
-enh(audio): improve stereo panning calculation
-fix(engine): correct fuel consumption rate
-feat(physics): add 6DOF flight model
-enh(checklist): add auto-verification for items
-fix(network): resolve connection timeout issue
-```
-
-### When to Commit
-
-- After completing each task
-- After writing tests
-- Before switching to different task
-- When reaching a stable state
-
-**Commit often, push less frequently.**
-
-### Pre-Commit Quality Checks
-
-**Before every commit** (unless marked as WIP), ensure code passes all quality checks:
-
-```bash
-# 1. Format code with Ruff
-uv run ruff format .
-
-# 2. Run Ruff linting
-uv run ruff check . --fix
-
-# 3. Run mypy type checking
-uv run mypy src
-
-# 4. Run pylint
-uv run pylint src
-
-# 5. Run tests
-uv run pytest
-```
-
-**All checks must pass** before committing. If any check fails:
-- Fix the issues immediately
-- Do not commit broken code
-- Exception: Use `WIP:` prefix for work-in-progress commits
-
-**WIP Commits** (allowed to skip checks temporarily):
-```
-WIP: implementing event bus (type errors to fix)
-```
-
-**Important**: WIP commits must be fixed before phase completion.
-
----
 
 ## Development Workflow
 

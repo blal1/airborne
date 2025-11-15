@@ -123,7 +123,10 @@ class FixedPitchPropeller(IPropeller):
             # The correction accounts for 3D flow effects not captured in simple momentum theory
             fade_range = 0.8 - 0.05
             fade_progress = (advance_ratio - 0.05) / fade_range
-            correction = self.static_thrust_multiplier - (self.static_thrust_multiplier - 1.0) * fade_progress
+            correction = (
+                self.static_thrust_multiplier
+                - (self.static_thrust_multiplier - 1.0) * fade_progress
+            )
             return correction
         else:
             # High-speed cruise and above: no correction needed
@@ -183,7 +186,10 @@ class FixedPitchPropeller(IPropeller):
             #   ρ = air density (kg/m³)
             #   A = propeller disc area (m²)
             #   correction = empirical multiplier for momentum theory limitation
-            thrust = math.sqrt(efficiency * power_watts * air_density_kgm3 * self.disc_area) * thrust_correction
+            thrust = (
+                math.sqrt(efficiency * power_watts * air_density_kgm3 * self.disc_area)
+                * thrust_correction
+            )
         else:
             # Dynamic thrust: Combined momentum and blade element theory
             # At low speeds, use momentum theory with correction
@@ -191,9 +197,10 @@ class FixedPitchPropeller(IPropeller):
 
             # Momentum theory component (dominates at low speed)
             # Apply correction here too since we still need it at takeoff speeds
-            thrust_momentum = math.sqrt(
-                efficiency * power_watts * air_density_kgm3 * self.disc_area
-            ) * thrust_correction
+            thrust_momentum = (
+                math.sqrt(efficiency * power_watts * air_density_kgm3 * self.disc_area)
+                * thrust_correction
+            )
 
             # Power-velocity component (dominates at high speed)
             # T = (η × P) / (v + v_induced)
@@ -253,13 +260,14 @@ class FixedPitchPropeller(IPropeller):
             thrust = min(thrust, max_thrust)
 
         # DIAGNOSTIC: Log propeller thrust calculation
-        if not hasattr(self, '_thrust_log_counter'):
+        if not hasattr(self, "_thrust_log_counter"):
             self._thrust_log_counter = 0
         self._thrust_log_counter += 1
 
         # Log every 60 calls when receiving power (removed thrust threshold)
         if power_hp > 10.0 and self._thrust_log_counter % 60 == 0:
             import logging
+
             logger = logging.getLogger(__name__)
 
             # Calculate advance ratio for diagnostics
@@ -274,15 +282,19 @@ class FixedPitchPropeller(IPropeller):
                     blend_diag = 0.90
                 else:
                     blend_diag = 0.05 + (advance_ratio_diag - 0.20) * (0.90 - 0.05) / (0.7 - 0.20)
-                logger.info(f"[PROPELLER] power_in={power_hp:.1f}HP rpm={rpm:.0f} "
-                           f"v={airspeed_mps:.1f}m/s η={efficiency:.3f} "
-                           f"J={advance_ratio_diag:.3f} correction={thrust_correction:.3f} "
-                           f"blend={blend_diag:.2f} THRUST={thrust:.1f}N")
+                logger.info(
+                    f"[PROPELLER] power_in={power_hp:.1f}HP rpm={rpm:.0f} "
+                    f"v={airspeed_mps:.1f}m/s η={efficiency:.3f} "
+                    f"J={advance_ratio_diag:.3f} correction={thrust_correction:.3f} "
+                    f"blend={blend_diag:.2f} THRUST={thrust:.1f}N"
+                )
             else:
-                logger.info(f"[PROPELLER] power_in={power_hp:.1f}HP rpm={rpm:.0f} "
-                           f"v={airspeed_mps:.1f}m/s η={efficiency:.3f} "
-                           f"J={advance_ratio_diag:.3f} correction={thrust_correction:.3f} "
-                           f"THRUST={thrust:.1f}N (static)")
+                logger.info(
+                    f"[PROPELLER] power_in={power_hp:.1f}HP rpm={rpm:.0f} "
+                    f"v={airspeed_mps:.1f}m/s η={efficiency:.3f} "
+                    f"J={advance_ratio_diag:.3f} correction={thrust_correction:.3f} "
+                    f"THRUST={thrust:.1f}N (static)"
+                )
 
         return thrust
 

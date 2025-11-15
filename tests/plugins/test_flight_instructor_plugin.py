@@ -1,7 +1,5 @@
 """Tests for flight instructor plugin."""
 
-from unittest.mock import Mock, patch
-
 import pytest
 
 from airborne.core.event_bus import EventBus
@@ -110,9 +108,7 @@ class TestFlightInstructorPlugin:
 
         # Should have sent assessment message
         assert len(messages) > 0
-        assert any(
-            m.data.get("message_id") == "MSG_INSTRUCTOR_ASSESSMENT" for m in messages
-        )
+        assert any(m.data.get("message_id") == "MSG_INSTRUCTOR_ASSESSMENT" for m in messages)
 
     def test_post_takeoff_pitch_too_high(
         self, plugin: FlightInstructorPlugin, context: PluginContext
@@ -141,9 +137,7 @@ class TestFlightInstructorPlugin:
 
         # Should have sent pitch warning
         assert len(messages) > 0
-        assert any(
-            m.data.get("message_id") == "MSG_INSTRUCTOR_PITCH_TOO_HIGH" for m in messages
-        )
+        assert any(m.data.get("message_id") == "MSG_INSTRUCTOR_PITCH_TOO_HIGH" for m in messages)
 
     def test_post_takeoff_pitch_too_low(
         self, plugin: FlightInstructorPlugin, context: PluginContext
@@ -173,9 +167,7 @@ class TestFlightInstructorPlugin:
 
         # Should have sent pitch warning
         assert len(messages) > 0
-        assert any(
-            m.data.get("message_id") == "MSG_INSTRUCTOR_PITCH_TOO_LOW" for m in messages
-        )
+        assert any(m.data.get("message_id") == "MSG_INSTRUCTOR_PITCH_TOO_LOW" for m in messages)
 
     def test_stall_warning_guidance(
         self, plugin: FlightInstructorPlugin, context: PluginContext
@@ -200,9 +192,7 @@ class TestFlightInstructorPlugin:
 
         # Should have sent stall warning
         assert len(messages) > 0
-        assert any(
-            m.data.get("message_id") == "MSG_INSTRUCTOR_STALL_WARNING" for m in messages
-        )
+        assert any(m.data.get("message_id") == "MSG_INSTRUCTOR_STALL_WARNING" for m in messages)
 
     def test_airspeed_too_low_warning(
         self, plugin: FlightInstructorPlugin, context: PluginContext
@@ -229,9 +219,7 @@ class TestFlightInstructorPlugin:
 
         # Should have sent airspeed warning
         assert len(messages) > 0
-        assert any(
-            m.data.get("message_id") == "MSG_INSTRUCTOR_AIRSPEED_LOW" for m in messages
-        )
+        assert any(m.data.get("message_id") == "MSG_INSTRUCTOR_AIRSPEED_LOW" for m in messages)
 
     def test_airspeed_too_high_warning(
         self, plugin: FlightInstructorPlugin, context: PluginContext
@@ -258,9 +246,7 @@ class TestFlightInstructorPlugin:
 
         # Should have sent airspeed warning
         assert len(messages) > 0
-        assert any(
-            m.data.get("message_id") == "MSG_INSTRUCTOR_AIRSPEED_HIGH" for m in messages
-        )
+        assert any(m.data.get("message_id") == "MSG_INSTRUCTOR_AIRSPEED_HIGH" for m in messages)
 
     def test_feedback_cooldown(
         self, plugin: FlightInstructorPlugin, context: PluginContext

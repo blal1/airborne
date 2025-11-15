@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Analyze drag and deceleration for C172."""
 
-
 # C172 parameters
 wing_area_m2 = 174 * 0.092903  # 174 sqft to m²
 drag_coefficient = 0.027

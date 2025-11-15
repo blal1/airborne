@@ -556,7 +556,9 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
 
         # Special handling for Semicolon key (AZERTY - key to right of comma) - Pitch trim
         # Shift+Semicolon = pitch trim up, Ctrl+Semicolon = pitch trim down, plain Semicolon = read pitch trim
-        logger.info(f"[TRIM_DEBUG] Before semicolon check: key={key}, pygame.K_SEMICOLON={pygame.K_SEMICOLON}, match={key == pygame.K_SEMICOLON}")
+        logger.info(
+            f"[TRIM_DEBUG] Before semicolon check: key={key}, pygame.K_SEMICOLON={pygame.K_SEMICOLON}, match={key == pygame.K_SEMICOLON}"
+        )
         if key == pygame.K_SEMICOLON:
             logger.info(
                 f"[TRIM_DEBUG] Semicolon key pressed: mods={mods:#x}, has_shift={bool(mods & (pygame.KMOD_SHIFT | pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT))}, has_ctrl={bool(mods & (pygame.KMOD_CTRL | pygame.KMOD_LCTRL | pygame.KMOD_RCTRL))}"
@@ -713,7 +715,9 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
             InputAction.TRIM_RUDDER_LEFT,
             InputAction.TRIM_RUDDER_RIGHT,
         ):
-            logger.info(f"[TRIM_DEBUG] _handle_action_pressed called with {action}, adding to _modifier_actions")
+            logger.info(
+                f"[TRIM_DEBUG] _handle_action_pressed called with {action}, adding to _modifier_actions"
+            )
             self._modifier_actions.add(action)
             logger.info(f"[TRIM_DEBUG] _modifier_actions now contains: {self._modifier_actions}")
             return  # Handled in update loop
