@@ -1,0 +1,66 @@
+# Checklist Menu context
+# Active when checklist menu is open (F2)
+
+context: checklist_menu
+description: "Checklist navigation and verification"
+priority: 75
+
+on_enter:
+  announce: "MSG_CHECKLIST_MENU_OPENED"
+
+on_exit:
+  announce: "MSG_CHECKLIST_MENU_CLOSED"
+
+bindings:
+  # Menu navigation
+  - keys: [up, w]
+    action: checklist_previous_item
+    description: "Previous checklist item"
+    repeat: false
+
+  - keys: [down, s]
+    action: checklist_next_item
+    description: "Next checklist item"
+    repeat: false
+
+  - keys: [left, a]
+    action: checklist_previous_list
+    description: "Previous checklist"
+    repeat: false
+
+  - keys: [right, d]
+    action: checklist_next_list
+    description: "Next checklist"
+    repeat: false
+
+  # Item actions
+  - key: return
+    action: checklist_verify_item
+    description: "Verify/check current item"
+
+  - key: space
+    action: checklist_verify_item
+    description: "Verify/check current item"
+
+  # Number keys for quick navigation
+  - keys: ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+    action: checklist_select_number
+    description: "Jump to checklist by number"
+
+  # Close menu
+  - key: escape
+    action: close_checklist_menu
+    description: "Close checklist menu"
+    pop_context: true
+
+  - key: f2
+    action: close_checklist_menu
+    description: "Close checklist menu (toggle)"
+    pop_context: true
+
+# Block flight controls
+block_actions:
+  - pitch_up
+  - pitch_down
+  - roll_left
+  - roll_right

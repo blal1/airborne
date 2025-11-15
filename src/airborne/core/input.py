@@ -24,6 +24,7 @@ Typical usage example:
 
 from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
 from typing import Any  # noqa: F401
 
 import pygame  # pylint: disable=no-member
@@ -144,12 +145,33 @@ class InputAction(Enum):
     READ_PITCH_TRIM = "read_pitch_trim"  # Read current pitch trim position
     READ_RUDDER_TRIM = "read_rudder_trim"  # Read current rudder trim position
 
+    # Radio frequency controls (legacy F11/F12 system)
+    COM1_TUNE_UP = "com1_tune_up"  # F12 - Increase COM1 frequency
+    COM1_TUNE_DOWN = "com1_tune_down"  # Shift+F12 - Decrease COM1 frequency
+    COM1_SWAP = "com1_swap"  # Ctrl+F12 - Swap COM1 active/standby
+    COM1_READ = "com1_read"  # Alt+F12 - Read COM1 frequency
+    COM2_TUNE_UP = "com2_tune_up"  # F11 - Increase COM2 frequency
+    COM2_TUNE_DOWN = "com2_tune_down"  # Shift+F11 - Decrease COM2 frequency
+    COM2_SWAP = "com2_swap"  # Ctrl+F11 - Swap COM2 active/standby
+    COM2_READ = "com2_read"  # Alt+F11 - Read COM2 frequency
+    READ_ACTIVE_RADIO = "read_active_radio"  # Alt+9 - Read selected radio's active frequency
+
+    # Dual-knob radio system (Cessna 172, traditional radios)
+    RADIO_OUTER_KNOB_INCREASE = "radio_outer_knob_increase"  # Shift+D - Increase MHz
+    RADIO_OUTER_KNOB_DECREASE = "radio_outer_knob_decrease"  # Ctrl+D - Decrease MHz
+    RADIO_OUTER_KNOB_READ = "radio_outer_knob_read"  # D - Announce MHz
+    RADIO_INNER_KNOB_INCREASE = "radio_inner_knob_increase"  # Shift+F - Increase kHz
+    RADIO_INNER_KNOB_DECREASE = "radio_inner_knob_decrease"  # Ctrl+F - Decrease kHz
+    RADIO_INNER_KNOB_READ = "radio_inner_knob_read"  # F - Announce kHz
+    RADIO_ANNOUNCE_FREQUENCY = "radio_announce_frequency"  # S - Announce full frequency
+
     # ATC/Radio controls
     ATC_MENU = "atc_menu"  # F1 - Open/close ATC menu
     # F2 - Checklist menu (defined below)
     # F3 - Ground services menu (defined below)
     ATC_ACKNOWLEDGE = "atc_acknowledge"  # Shift+F1 - Acknowledge/readback
-    ATC_REPEAT = "atc_repeat"  # Ctrl+F1 - Request repeat ("say again")
+    RADIO_PANEL = "radio_panel"  # Ctrl+F1 - Open radio panel (announce controls)
+    ATC_REPEAT = "atc_repeat"  # Alt+F1 - Request repeat ("say again")
     ATC_SELECT_1 = "atc_select_1"  # Number keys for menu selection
     ATC_SELECT_2 = "atc_select_2"
     ATC_SELECT_3 = "atc_select_3"
@@ -390,6 +412,10 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
         self._trim_click_interval = 0.1  # seconds between trim adjustments
         self._time_since_last_trim_click = self._trim_click_interval
 
+        # Context-aware input system (YAML-based)
+        self.context_manager: Any = None  # InputContextManager | None
+        self._initialize_context_manager()
+
         # Track previous trim values for change detection (TTS announcements)
         self._previous_pitch_trim = 0.0
         self._previous_rudder_trim = 0.0
@@ -434,6 +460,41 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
             )
         else:
             logger.debug("No joystick detected")
+
+    def _initialize_context_manager(self) -> None:
+        """Initialize context-aware input system from YAML configs."""
+        if not self.message_queue:
+            logger.debug("Context manager disabled (no message queue)")
+            return
+
+        try:
+            from airborne.core.input_context import InputContextManager
+
+            # Look for config/input directory
+            config_dir = Path("config/input")
+            if not config_dir.exists():
+                logger.warning(f"Input config directory not found: {config_dir}")
+                return
+
+            self.context_manager = InputContextManager(config_dir, self.message_queue)
+            logger.info(
+                "Context-aware input system initialized (%d contexts loaded)",
+                len(self.context_manager.contexts),
+            )
+
+            # Detect and log any conflicts
+            conflicts = self.context_manager.detect_conflicts()
+            if conflicts:
+                logger.warning(f"Detected {len(conflicts)} key binding conflicts:")
+                for conflict in conflicts[:5]:  # Log first 5
+                    logger.warning(
+                        f"  {conflict['context']}: {'+'.join(conflict['modifiers'])}{conflict['key']} → {conflict['actions']}"
+                    )
+
+        except ImportError as e:
+            logger.debug(f"Context manager not available: {e}")
+        except Exception as e:
+            logger.error(f"Failed to initialize context manager: {e}")
 
     def process_events(self, events: list[pygame.event.Event]) -> None:
         """Process pygame events.
@@ -485,12 +546,23 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
         else:
             logger.info(f"KEY: {mod_str}{key_name} (code={key}) -> NOT BOUND")
 
+        # Try context-aware input system first (YAML-based)
+        if self.context_manager:
+            handled = self.context_manager.handle_key_press(key, mods, is_repeat)
+            if handled:
+                logger.debug(f"Key handled by context manager: {mod_str}{key_name}")
+                return  # Context manager handled it, don't fall through to hardcoded handlers
+
+        # Fallback to hardcoded handlers below
         # Special handling for F1 with modifiers (ATC menu)
         if key == pygame.K_F1:
             mods = pygame.key.get_mods()
             if mods & pygame.KMOD_SHIFT:
                 action = InputAction.ATC_ACKNOWLEDGE
-            elif mods & pygame.KMOD_CTRL:
+            elif mods & (pygame.KMOD_CTRL | pygame.KMOD_LCTRL | pygame.KMOD_RCTRL):
+                logger.info("Ctrl+F1 detected - opening radio panel")
+                action = InputAction.RADIO_PANEL
+            elif mods & (pygame.KMOD_ALT | pygame.KMOD_LALT | pygame.KMOD_RALT):
                 action = InputAction.ATC_REPEAT
             else:
                 action = InputAction.ATC_MENU
@@ -537,6 +609,7 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
                 pygame.K_6: InputAction.READ_ELECTRICAL,  # Alt+6: Electrical status
                 pygame.K_7: InputAction.READ_FUEL,  # Alt+7: Fuel status
                 pygame.K_8: InputAction.READ_ATTITUDE,  # Alt+8: Attitude (bank/pitch)
+                pygame.K_9: InputAction.READ_ACTIVE_RADIO,  # Alt+9: Active radio frequency
             }
             if key in alt_number_actions:
                 if not is_repeat:
@@ -615,6 +688,103 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
                 if not is_repeat:
                     logger.info("F9 (no modifier) detected - requesting instructor assessment")
                     self._handle_action_pressed(InputAction.INSTRUCTOR_ASSESSMENT)
+                return
+
+        # Special handling for D key - Radio outer knob (MHz)
+        # Shift+D = increase MHz, Ctrl+D = decrease MHz, plain D = announce MHz
+        if key == pygame.K_d:
+            if mods & (pygame.KMOD_SHIFT | pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT):
+                if not is_repeat:
+                    logger.info("Shift+D detected - radio outer knob increase")
+                    self._handle_action_pressed(InputAction.RADIO_OUTER_KNOB_INCREASE)
+                return
+            elif mods & (pygame.KMOD_CTRL | pygame.KMOD_LCTRL | pygame.KMOD_RCTRL):
+                if not is_repeat:
+                    logger.info("Ctrl+D detected - radio outer knob decrease")
+                    self._handle_action_pressed(InputAction.RADIO_OUTER_KNOB_DECREASE)
+                return
+            else:
+                # No modifier - announce MHz
+                if not is_repeat:
+                    logger.info("D (no modifier) detected - announce MHz")
+                    self._handle_action_pressed(InputAction.RADIO_OUTER_KNOB_READ)
+                return
+
+        # Special handling for F key - Radio inner knob (kHz)
+        # Shift+F = increase kHz, Ctrl+F = decrease kHz, plain F = announce kHz
+        if key == pygame.K_f:
+            if mods & (pygame.KMOD_SHIFT | pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT):
+                if not is_repeat:
+                    logger.info("Shift+F detected - radio inner knob increase")
+                    self._handle_action_pressed(InputAction.RADIO_INNER_KNOB_INCREASE)
+                return
+            elif mods & (pygame.KMOD_CTRL | pygame.KMOD_LCTRL | pygame.KMOD_RCTRL):
+                if not is_repeat:
+                    logger.info("Ctrl+F detected - radio inner knob decrease")
+                    self._handle_action_pressed(InputAction.RADIO_INNER_KNOB_DECREASE)
+                return
+            else:
+                # No modifier - announce kHz
+                if not is_repeat:
+                    logger.info("F (no modifier) detected - announce kHz")
+                    self._handle_action_pressed(InputAction.RADIO_INNER_KNOB_READ)
+                return
+
+        # Special handling for S key - Announce full radio frequency
+        if key == pygame.K_s:
+            if not is_repeat:
+                logger.info("S detected - announce full frequency")
+                self._handle_action_pressed(InputAction.RADIO_ANNOUNCE_FREQUENCY)
+            return
+
+        # Special handling for F12 key - COM1 radio tuning
+        # Shift+F12 = tune down, Ctrl+F12 = swap, Alt+F12 = read, plain F12 = tune up
+        if key == pygame.K_F12:
+            if mods & (pygame.KMOD_SHIFT | pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT):
+                if not is_repeat:
+                    logger.info("Shift+F12 detected - COM1 tune down")
+                    self._handle_action_pressed(InputAction.COM1_TUNE_DOWN)
+                return
+            elif mods & (pygame.KMOD_CTRL | pygame.KMOD_LCTRL | pygame.KMOD_RCTRL):
+                if not is_repeat:
+                    logger.info("Ctrl+F12 detected - COM1 swap active/standby")
+                    self._handle_action_pressed(InputAction.COM1_SWAP)
+                return
+            elif mods & (pygame.KMOD_ALT | pygame.KMOD_LALT | pygame.KMOD_RALT):
+                if not is_repeat:
+                    logger.info("Alt+F12 detected - read COM1 frequency")
+                    self._handle_action_pressed(InputAction.COM1_READ)
+                return
+            else:
+                # No modifier - tune up
+                if not is_repeat:
+                    logger.info("F12 (no modifier) detected - COM1 tune up")
+                    self._handle_action_pressed(InputAction.COM1_TUNE_UP)
+                return
+
+        # Special handling for F11 key - COM2 radio tuning
+        # Shift+F11 = tune down, Ctrl+F11 = swap, Alt+F11 = read, plain F11 = tune up
+        if key == pygame.K_F11:
+            if mods & (pygame.KMOD_SHIFT | pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT):
+                if not is_repeat:
+                    logger.info("Shift+F11 detected - COM2 tune down")
+                    self._handle_action_pressed(InputAction.COM2_TUNE_DOWN)
+                return
+            elif mods & (pygame.KMOD_CTRL | pygame.KMOD_LCTRL | pygame.KMOD_RCTRL):
+                if not is_repeat:
+                    logger.info("Ctrl+F11 detected - COM2 swap active/standby")
+                    self._handle_action_pressed(InputAction.COM2_SWAP)
+                return
+            elif mods & (pygame.KMOD_ALT | pygame.KMOD_LALT | pygame.KMOD_RALT):
+                if not is_repeat:
+                    logger.info("Alt+F11 detected - read COM2 frequency")
+                    self._handle_action_pressed(InputAction.COM2_READ)
+                return
+            else:
+                # No modifier - tune up
+                if not is_repeat:
+                    logger.info("F11 (no modifier) detected - COM2 tune up")
+                    self._handle_action_pressed(InputAction.COM2_TUNE_UP)
                 return
 
         # Special handling for Right Shift alone to center controls
@@ -1116,7 +1286,7 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
 
         # Process modifier-based actions (trim controls from Shift+Semicolon/Comma)
         # Collect actions that were processed so we can remove them after
-        actions_to_remove = set()
+        actions_to_remove: set[InputAction] = set()
 
         # Debug: Log what's in _modifier_actions
         if self._modifier_actions:

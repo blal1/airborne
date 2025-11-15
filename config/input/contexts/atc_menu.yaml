@@ -1,0 +1,53 @@
+# ATC Menu context
+# Active when ATC menu is open (F1)
+
+context: atc_menu
+description: "ATC menu navigation"
+priority: 75  # Higher than flight_mode, lower than global
+
+on_enter:
+  announce: "ATC_MENU_OPENED"  # Speak when menu opens
+
+on_exit:
+  announce: "ATC_MENU_CLOSED"  # Speak when menu closes
+
+bindings:
+  # Menu navigation (override arrow keys)
+  - keys: [up, w]
+    action: menu_previous
+    description: "Select previous menu option"
+    repeat: false
+
+  - keys: [down, s]
+    action: menu_next
+    description: "Select next menu option"
+    repeat: false
+
+  # Selection
+  - key: return
+    action: menu_select
+    description: "Select current option"
+
+  # Number keys for quick selection
+  - keys: ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+    action: menu_select_number
+    description: "Select option by number"
+
+  # Close menu (return to flight mode)
+  - key: escape
+    action: close_atc_menu
+    description: "Close ATC menu"
+    pop_context: true  # Return to previous context
+
+  - key: f1
+    action: close_atc_menu
+    description: "Close ATC menu (toggle)"
+    pop_context: true
+
+# Block these actions from flight_mode while in menu
+block_actions:
+  - pitch_up
+  - pitch_down
+  - roll_left
+  - roll_right
+  # (arrow keys won't control aircraft in this context)

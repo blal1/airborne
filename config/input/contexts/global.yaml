@@ -1,0 +1,121 @@
+# Global key bindings - work in ALL contexts
+# These keys are always active regardless of current context/menu
+
+context: global
+description: "Global controls available everywhere"
+priority: 100  # Higher priority = checked first
+
+bindings:
+  # System controls
+  - key: ESCAPE
+    action: pause
+    description: "Pause/unpause simulation"
+
+  - key: q
+    modifiers: [CTRL]
+    action: quit
+    description: "Quit application"
+
+  # Push-to-talk (global - works everywhere)
+  - key: SPACE
+    action: push_to_talk
+    description: "Push to talk (ATC communication)"
+    repeat: false
+
+  # Instrument readouts (global Alt+number keys)
+  - key: "1"
+    modifiers: [ALT]
+    action: read_airspeed
+    description: "Read airspeed indicator"
+
+  - key: "2"
+    modifiers: [ALT]
+    action: read_altitude
+    description: "Read altimeter"
+
+  - key: "3"
+    modifiers: [ALT]
+    action: read_heading
+    description: "Read heading indicator"
+
+  - key: "4"
+    modifiers: [ALT]
+    action: read_vertical_speed
+    description: "Read vertical speed indicator"
+
+  - key: "5"
+    modifiers: [ALT]
+    action: read_attitude
+    description: "Read attitude indicator"
+
+  - key: "6"
+    modifiers: [ALT]
+    action: read_turn_coordinator
+    description: "Read turn coordinator"
+
+  - key: "7"
+    modifiers: [ALT]
+    action: read_engine_gauges
+    description: "Read engine instruments"
+
+  - key: "8"
+    modifiers: [ALT]
+    action: read_fuel_quantity
+    description: "Read fuel quantity"
+
+  - key: "9"
+    modifiers: [ALT]
+    action: read_active_radio
+    description: "Read active radio frequency"
+
+  # Context switching (global)
+  - key: f1
+    action: toggle_atc_menu
+    description: "Toggle ATC menu"
+    toggle_context: atc_menu
+
+  - key: f1
+    modifiers: [SHIFT]
+    action: atc_acknowledge
+    description: "Acknowledge ATC (readback)"
+
+  - key: f1
+    modifiers: [CTRL]
+    action: toggle_radio_panel
+    description: "Toggle radio panel"
+    toggle_context: radio_panel
+
+  - key: f1
+    modifiers: [ALT]
+    action: atc_repeat
+    description: "Request ATC repeat (say again)"
+
+  - key: f2
+    action: toggle_checklist_menu
+    description: "Toggle checklist menu"
+    toggle_context: checklist_menu
+
+  - key: f3
+    action: toggle_ground_services_menu
+    description: "Toggle ground services menu"
+    toggle_context: ground_services_menu
+
+  - key: f4
+    action: toggle_performance_display
+    description: "Toggle performance display"
+
+  # View/camera controls (global)
+  - key: f8
+    action: toggle_external_view
+    description: "Toggle external camera view"
+
+  # Debug/developer
+  - key: f9
+    modifiers: [SHIFT]
+    action: flight_instructor_enable
+    description: "Enable flight instructor"
+
+  - key: f9
+    modifiers: [CTRL]
+    action: flight_instructor_disable
+    description: "Disable flight instructor"

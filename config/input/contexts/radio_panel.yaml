@@ -1,0 +1,94 @@
+# Radio Panel context
+# Active when radio panel is open (Ctrl+F1)
+# Allows direct frequency entry and enhanced radio controls
+
+context: radio_panel
+description: "Radio panel - frequency management and direct entry"
+priority: 75  # Same as other menus
+
+on_enter:
+  announce: "RADIO_PANEL"  # Speak "Radio Panel"
+
+on_exit:
+  announce: "RADIO_PANEL_CLOSED"
+
+bindings:
+  # Direct frequency entry (digits)
+  - keys: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+    action: radio_enter_digit
+    description: "Enter frequency digit"
+
+  - key: period
+    action: radio_enter_decimal
+    description: "Enter decimal point"
+
+  - key: return
+    action: radio_confirm_frequency
+    description: "Set entered frequency"
+
+  - key: backspace
+    action: radio_delete_digit
+    description: "Delete last digit"
+
+  - key: delete
+    action: radio_clear_entry
+    description: "Clear entire entry"
+
+  # Dual-knob controls still work in this context
+  - key: d
+    action: radio_outer_knob_read
+    description: "Announce outer knob (MHz)"
+
+  - key: d
+    modifiers: [SHIFT]
+    action: radio_outer_knob_increase
+    description: "Increase MHz"
+
+  - key: d
+    modifiers: [CTRL]
+    action: radio_outer_knob_decrease
+    description: "Decrease MHz"
+
+  - key: f
+    action: radio_inner_knob_read
+    description: "Announce inner knob (kHz)"
+
+  - key: f
+    modifiers: [SHIFT]
+    action: radio_inner_knob_increase
+    description: "Increase kHz (+.025)"
+
+  - key: f
+    modifiers: [CTRL]
+    action: radio_inner_knob_decrease
+    description: "Decrease kHz (-.025)"
+
+  - key: s
+    action: radio_announce_frequency
+    description: "Announce full frequency"
+
+  # Switch between COM1/COM2
+  - key: tab
+    action: radio_switch_com
+    description: "Switch between COM1 and COM2"
+
+  # Close panel
+  - key: escape
+    action: close_radio_panel
+    description: "Close radio panel"
+    pop_context: true
+
+  - key: f1
+    modifiers: [CTRL]
+    action: close_radio_panel
+    description: "Close radio panel (toggle)"
+    pop_context: true
+
+# Block flight controls while in radio panel
+block_actions:
+  - pitch_up
+  - pitch_down
+  - roll_left
+  - roll_right
+  - yaw_left
+  - yaw_right

@@ -1,0 +1,255 @@
+# Flight mode key bindings
+# Active when flying (default context)
+
+context: flight_mode
+description: "Primary flight controls and aircraft systems"
+priority: 50  # Lower than global, checked after global keys
+
+bindings:
+  # Primary flight controls (arrow keys + WASD)
+  - keys: [up, w]
+    action: pitch_down
+    description: "Pitch nose down"
+    repeat: true
+
+  - keys: [down, s]
+    action: pitch_up
+    description: "Pitch nose up"
+    repeat: true
+
+  - keys: [left, a]
+    action: roll_left
+    description: "Roll left"
+    repeat: true
+
+  - keys: [right, d]
+    action: roll_right
+    description: "Roll right"
+    repeat: true
+
+  - keys: [q]
+    action: yaw_left
+    description: "Yaw left (rudder)"
+    repeat: true
+
+  - keys: [e]
+    action: yaw_right
+    description: "Yaw right (rudder)"
+    repeat: true
+
+  # Throttle controls
+  - keys: [pageup, equals]  # PgUp or =
+    action: throttle_increase
+    description: "Increase throttle"
+    repeat: true
+
+  - keys: [pagedown, minus]  # PgDn or -
+    action: throttle_decrease
+    description: "Decrease throttle"
+    repeat: true
+
+  - key: backspace
+    action: throttle_idle
+    description: "Throttle to idle"
+
+  - key: backspace
+    modifiers: [SHIFT]
+    action: throttle_full
+    description: "Full throttle"
+
+  # Trim controls
+  - key: semicolon
+    modifiers: [SHIFT]
+    action: trim_pitch_up
+    description: "Trim pitch up"
+    repeat: true
+
+  - key: semicolon
+    modifiers: [CTRL]
+    action: trim_pitch_down
+    description: "Trim pitch down"
+    repeat: true
+
+  - key: comma
+    modifiers: [SHIFT]
+    action: trim_rudder_right
+    description: "Trim rudder right"
+    repeat: true
+
+  - key: comma
+    modifiers: [CTRL]
+    action: trim_rudder_left
+    description: "Trim rudder left"
+    repeat: true
+
+  # Flaps
+  - key: leftbracket
+    action: flaps_up
+    description: "Retract flaps one notch"
+
+  - key: rightbracket
+    action: flaps_down
+    description: "Extend flaps one notch"
+
+  # Brakes
+  - key: period
+    action: brakes
+    description: "Apply brakes"
+    repeat: true
+
+  # Parking brake
+  - key: p
+    modifiers: [SHIFT]
+    action: parking_brake_set
+    description: "Set parking brake"
+
+  - key: p
+    modifiers: [CTRL]
+    action: parking_brake_release
+    description: "Release parking brake"
+
+  # Radio controls - Dual-knob system
+  - key: d
+    action: radio_outer_knob_read
+    description: "Announce outer knob (MHz)"
+
+  - key: d
+    modifiers: [SHIFT]
+    action: radio_outer_knob_increase
+    description: "Increase MHz"
+
+  - key: d
+    modifiers: [CTRL]
+    action: radio_outer_knob_decrease
+    description: "Decrease MHz"
+
+  - key: f
+    action: radio_inner_knob_read
+    description: "Announce inner knob (kHz)"
+
+  - key: f
+    modifiers: [SHIFT]
+    action: radio_inner_knob_increase
+    description: "Increase kHz (+.025)"
+
+  - key: f
+    modifiers: [CTRL]
+    action: radio_inner_knob_decrease
+    description: "Decrease kHz (-.025)"
+
+  - key: s
+    action: radio_announce_frequency
+    description: "Announce full frequency"
+
+  # Legacy radio controls
+  - key: f12
+    action: com1_tune_up
+    description: "Increment COM1 frequency"
+
+  - key: f12
+    modifiers: [SHIFT]
+    action: com1_tune_down
+    description: "Decrement COM1 frequency"
+
+  - key: f12
+    modifiers: [CTRL]
+    action: com1_swap
+    description: "Swap COM1 active/standby"
+
+  - key: f12
+    modifiers: [ALT]
+    action: com1_read
+    description: "Read COM1 frequencies"
+
+  - key: f11
+    action: com2_tune_up
+    description: "Increment COM2 frequency"
+
+  - key: f11
+    modifiers: [SHIFT]
+    action: com2_tune_down
+    description: "Decrement COM2 frequency"
+
+  - key: f11
+    modifiers: [CTRL]
+    action: com2_swap
+    description: "Swap COM2 active/standby"
+
+  - key: f11
+    modifiers: [ALT]
+    action: com2_read
+    description: "Read COM2 frequencies"
+
+  # Engine controls
+  - key: m
+    action: mixture_rich
+    description: "Mixture full rich"
+
+  - key: m
+    modifiers: [SHIFT]
+    action: mixture_increase
+    description: "Increase mixture"
+
+  - key: m
+    modifiers: [CTRL]
+    action: mixture_decrease
+    description: "Decrease mixture"
+
+  - key: m
+    modifiers: [ALT]
+    action: mixture_cutoff
+    description: "Mixture to idle cutoff"
+
+  # Electrical
+  - key: b
+    action: toggle_battery_master
+    description: "Toggle battery master switch"
+
+  - key: b
+    modifiers: [SHIFT]
+    action: toggle_alternator
+    description: "Toggle alternator switch"
+
+  # Magnetos and starter
+  - key: i
+    action: toggle_magnetos
+    description: "Cycle magnetos (OFF → R → L → BOTH)"
+
+  - key: i
+    modifiers: [SHIFT]
+    action: starter_engage
+    description: "Engage starter motor"
+    repeat: false  # Don't repeat starter
+
+  # Lights
+  - key: l
+    action: toggle_nav_lights
+    description: "Toggle navigation lights"
+
+  - key: l
+    modifiers: [SHIFT]
+    action: toggle_beacon
+    description: "Toggle beacon light"
+
+  - key: l
+    modifiers: [CTRL]
+    action: toggle_strobe
+    description: "Toggle strobe lights"
+
+  - key: l
+    modifiers: [ALT]
+    action: toggle_landing_lights
+    description: "Toggle landing lights"
+
+  # Autopilot
+  - key: z
+    action: autopilot_toggle
+    description: "Toggle autopilot master"
+
+  - key: h
+    action: autopilot_heading_hold
+    description: "Toggle heading hold"
+
+  - key: v
+    action: autopilot_altitude_hold
+    description: "Toggle altitude hold"
