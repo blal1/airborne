@@ -155,10 +155,8 @@ class AirBorne:
 
         logger.info("Initializing navigation systems...")
 
-        # Load airport database
+        # Airport database (loads airports on-demand from X-Plane Gateway)
         self.airport_db = AirportDatabase()
-        self.airport_db.load_from_csv(str(get_data_path("airports")))
-        logger.info(f"Loaded {len(self.airport_db.airports)} airports")
 
         # Initialize callsign generator
         self.callsign_gen = CallsignGenerator(

@@ -13,7 +13,6 @@ Configuration:
 """
 
 import logging
-from pathlib import Path
 from typing import Any
 
 from airborne.airports.database import AirportDatabase
@@ -155,24 +154,9 @@ class GroundNavigationPlugin(IPlugin):
         self.proximity_manager = ProximityCueManager()
         self.beeper = ProximityBeeper(sample_rate=44100)
 
-        # Load airport data
-        data_dir = Path(__file__).parent.parent.parent.parent.parent / "data" / "airports"
-
-        # Only load if explicitly enabled in config (to avoid slow initialization in tests)
-        if config.get("load_airport_data", False) and (data_dir / "airports.csv").exists():
-            logger.info("Loading airport database from %s", data_dir)
-            self.airport_db.load_from_csv(data_dir)
-
-            # Build spatial index
-            logger.info("Building spatial index...")
-            for icao, airport in self.airport_db.airports.items():
-                self.spatial_index.insert(airport.position, icao)
-
-            logger.info(
-                "Loaded %d airports with spatial indexing", self.airport_db.get_airport_count()
-            )
-        else:
-            logger.debug("Airport database loading skipped (set load_airport_data=true to enable)")
+        # Note: Airport database now loads on-demand from X-Plane Gateway
+        # Spatial index will be populated as airports are loaded
+        logger.debug("Airport database initialized (on-demand loading from X-Plane Gateway)")
 
         logger.info(
             "Ground Navigation initialized (audio=%s, beep_style=%s, pattern=%s)",
