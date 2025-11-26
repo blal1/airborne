@@ -1,25 +1,30 @@
-"""Airport database parser and query system.
+"""Airport database using X-Plane Gateway data.
 
-This module provides functionality for loading and querying the OurAirports
-database, including airports, runways, and frequencies.
+This module provides functionality for loading and querying airport data
+from the X-Plane Scenery Gateway, including airports, runways, taxiways,
+parking positions, and frequencies.
 
 Typical usage:
     db = AirportDatabase()
-    db.load_from_csv("data/airports")
+    db.load_airport("KPAO")  # Load on-demand from Gateway
 
     airport = db.get_airport("KPAO")
     runways = db.get_runways("KPAO")
-    nearby = db.get_airports_near(position, radius_nm=50)
+    parking = db.get_parking("KPAO")
 """
 
-import csv
 import logging
 import math
+import warnings
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
 from airborne.physics.vectors import Vector3
+from airborne.services.atc.gateway_loader import (
+    GatewayAirportData,
+    GatewayAirportLoader,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +55,20 @@ class SurfaceType(Enum):
     UNKNOWN = "unknown"
 
 
+# X-Plane surface code to SurfaceType mapping
+XPLANE_SURFACE_MAP = {
+    1: SurfaceType.ASPH,  # Asphalt
+    2: SurfaceType.CONC,  # Concrete
+    3: SurfaceType.GRASS,  # Turf/grass
+    4: SurfaceType.DIRT,  # Dirt
+    5: SurfaceType.GRVL,  # Gravel
+    12: SurfaceType.ASPH,  # Dry lakebed (treat as asphalt)
+    13: SurfaceType.WATER,  # Water
+    14: SurfaceType.UNKNOWN,  # Snow/ice
+    15: SurfaceType.UNKNOWN,  # Transparent
+}
+
+
 class FrequencyType(Enum):
     """Radio frequency type."""
 
@@ -58,25 +77,42 @@ class FrequencyType(Enum):
     ATIS = "atis"
     UNICOM = "unicom"
     CTAF = "ctaf"
-    APPROACH = "approach"
-    DEPARTURE = "departure"
+    APP = "approach"
+    DEP = "departure"
     CLEARANCE = "clearance"
     MULTICOM = "multicom"
     FSS = "fss"
     OTHER = "other"
 
 
+# Gateway frequency type to FrequencyType mapping
+GATEWAY_FREQ_MAP = {
+    "TOWER": FrequencyType.TWR,
+    "TWR": FrequencyType.TWR,
+    "GROUND": FrequencyType.GND,
+    "GND": FrequencyType.GND,
+    "ATIS": FrequencyType.ATIS,
+    "UNICOM": FrequencyType.UNICOM,
+    "CTAF": FrequencyType.CTAF,
+    "APP": FrequencyType.APP,
+    "APPROACH": FrequencyType.APP,
+    "DEP": FrequencyType.DEP,
+    "DEPARTURE": FrequencyType.DEP,
+    "CLEARANCE": FrequencyType.CLEARANCE,
+}
+
+
 @dataclass
 class Airport:
-    """Airport information from OurAirports database.
+    """Airport information from X-Plane Gateway.
 
     Attributes:
         icao: ICAO code (e.g., "KPAO")
         name: Airport name
-        position: Geographic position (lat, lon, elevation in meters)
-        airport_type: Type classification
-        municipality: City/town name
-        iso_country: ISO country code
+        position: Geographic position (x=lon, y=elevation, z=lat)
+        airport_type: Type classification (derived from data)
+        municipality: City/town name (empty for Gateway data)
+        iso_country: ISO country code (empty for Gateway data)
         scheduled_service: Whether airport has scheduled airline service
         iata_code: IATA code (3-letter, if exists)
         gps_code: GPS code
@@ -88,9 +124,9 @@ class Airport:
     name: str
     position: Vector3  # x=longitude, y=elevation, z=latitude
     airport_type: AirportType
-    municipality: str
-    iso_country: str
-    scheduled_service: bool
+    municipality: str = ""
+    iso_country: str = ""
+    scheduled_service: bool = False
     iata_code: str | None = None
     gps_code: str | None = None
     home_link: str | None = None
@@ -157,204 +193,218 @@ class Frequency:
     frequency_mhz: float
 
 
-class AirportDatabase:
-    """Airport database with spatial querying capability.
+@dataclass
+class ParkingPosition:
+    """Parking/startup position at an airport.
 
-    Loads airport, runway, and frequency data from OurAirports CSV files
-    and provides fast spatial queries.
+    Attributes:
+        airport_icao: Parent airport ICAO code
+        position_id: Position identifier (e.g., "C12", "Gate 5")
+        position: Geographic position (x=lon, y=elevation, z=lat)
+        heading: Aircraft heading when parked
+        parking_type: Type of parking (tie_down, gate, hangar)
+        aircraft_types: List of supported aircraft types
+    """
+
+    airport_icao: str
+    position_id: str
+    position: Vector3
+    heading: float
+    parking_type: str = "tie_down"
+    aircraft_types: list[str] | None = None
+
+
+class AirportDatabase:
+    """Airport database using X-Plane Gateway data.
+
+    Loads airport data on-demand from the X-Plane Scenery Gateway,
+    including runways, taxiways, parking positions, and frequencies.
 
     Examples:
         >>> db = AirportDatabase()
-        >>> db.load_from_csv("data/airports")
+        >>> db.load_airport("KPAO")
         >>> airport = db.get_airport("KPAO")
         >>> print(f"{airport.name} at {airport.position}")
-        >>> nearby = db.get_airports_near(airport.position, radius_nm=10)
+        >>> parking = db.get_parking("KPAO")
     """
 
-    def __init__(self) -> None:
-        """Initialize empty database."""
-        self.airports: dict[str, Airport] = {}
-        self.runways: dict[str, list[Runway]] = {}  # Keyed by airport ICAO
-        self.frequencies: dict[str, list[Frequency]] = {}  # Keyed by airport ICAO
-
-    def load_from_csv(self, data_dir: str | Path) -> None:
-        """Load airport data from CSV files.
+    def __init__(self, cache_dir: str | Path | None = None) -> None:
+        """Initialize database with Gateway loader.
 
         Args:
-            data_dir: Directory containing airports.csv, runways.csv,
-                     and airport-frequencies.csv
+            cache_dir: Directory for caching Gateway data.
+                      Defaults to data/airports/gateway_cache
+        """
+        self.gateway_loader = GatewayAirportLoader(cache_dir)
+        self.airports: dict[str, Airport] = {}
+        self.runways: dict[str, list[Runway]] = {}
+        self.frequencies: dict[str, list[Frequency]] = {}
+        self.parking: dict[str, list[ParkingPosition]] = {}
+        self._gateway_data: dict[str, GatewayAirportData] = {}
 
-        Raises:
-            FileNotFoundError: If required CSV files not found
-            ValueError: If CSV data is invalid
+    def load_airport(self, icao: str) -> bool:
+        """Load a single airport from Gateway.
+
+        Args:
+            icao: ICAO code (e.g., "KPAO")
+
+        Returns:
+            True if airport was loaded successfully
 
         Examples:
             >>> db = AirportDatabase()
-            >>> db.load_from_csv("data/airports")
+            >>> if db.load_airport("LFLY"):
+            ...     print("Loaded Lyon Bron")
         """
-        data_dir = Path(data_dir)
+        icao = icao.upper()
 
-        # Load airports
-        airports_file = data_dir / "airports.csv"
-        if not airports_file.exists():
-            raise FileNotFoundError(f"Airports file not found: {airports_file}")
+        # Already loaded?
+        if icao in self.airports:
+            return True
 
-        logger.info("Loading airports from %s", airports_file)
-        self._load_airports(airports_file)
-        logger.info("Loaded %d airports", len(self.airports))
+        # Fetch from Gateway
+        gateway_data = self.gateway_loader.get_airport(icao)
+        if not gateway_data:
+            logger.warning("Airport %s not found in Gateway", icao)
+            return False
 
-        # Load runways
-        runways_file = data_dir / "runways.csv"
-        if runways_file.exists():
-            logger.info("Loading runways from %s", runways_file)
-            self._load_runways(runways_file)
-            runway_count = sum(len(rws) for rws in self.runways.values())
-            logger.info("Loaded %d runways for %d airports", runway_count, len(self.runways))
+        # Store raw gateway data for advanced queries
+        self._gateway_data[icao] = gateway_data
 
-        # Load frequencies
-        frequencies_file = data_dir / "airport-frequencies.csv"
-        if frequencies_file.exists():
-            logger.info("Loading frequencies from %s", frequencies_file)
-            self._load_frequencies(frequencies_file)
-            freq_count = sum(len(freqs) for freqs in self.frequencies.values())
-            logger.info("Loaded %d frequencies for %d airports", freq_count, len(self.frequencies))
+        # Convert to our dataclasses
+        self._convert_airport(gateway_data)
+        self._convert_runways(gateway_data)
+        self._convert_frequencies(gateway_data)
+        self._convert_parking(gateway_data)
 
-    def _load_airports(self, csv_path: Path) -> None:
-        """Load airports from CSV file."""
-        with open(csv_path, encoding="utf-8") as f:
-            reader = csv.DictReader(f)
+        logger.info(
+            "Loaded %s: %s (runways=%d, parking=%d, freq=%d)",
+            icao,
+            gateway_data.name,
+            len(self.runways.get(icao, [])),
+            len(self.parking.get(icao, [])),
+            len(self.frequencies.get(icao, [])),
+        )
 
-            for row in reader:
-                try:
-                    # Only load airports with ICAO codes
-                    icao = row.get("icao_code", "").strip()
-                    if not icao:
-                        continue
+        return True
 
-                    # Parse coordinates
-                    lat = float(row["latitude_deg"])
-                    lon = float(row["longitude_deg"])
-                    elevation_ft = float(row["elevation_ft"]) if row["elevation_ft"] else 0.0
-                    elevation_m = elevation_ft * 0.3048  # Convert feet to meters
+    def _convert_airport(self, data: GatewayAirportData) -> None:
+        """Convert Gateway airport data to Airport dataclass."""
+        # Determine airport type based on ATC presence and runway count
+        # This is a heuristic - Gateway doesn't provide explicit classification
+        airport_type = AirportType.MEDIUM_AIRPORT if data.has_atc else AirportType.SMALL_AIRPORT
 
-                    # Parse type
-                    try:
-                        airport_type = AirportType(row["type"])
-                    except ValueError:
-                        airport_type = AirportType.SMALL_AIRPORT
+        elevation_m = data.elevation_ft * 0.3048
 
-                    # Create airport
-                    airport = Airport(
-                        icao=icao,
-                        name=row["name"],
-                        position=Vector3(lon, elevation_m, lat),
-                        airport_type=airport_type,
-                        municipality=row.get("municipality", ""),
-                        iso_country=row.get("iso_country", ""),
-                        scheduled_service=row.get("scheduled_service", "no") == "yes",
-                        iata_code=row.get("iata_code") or None,
-                        gps_code=row.get("gps_code") or None,
-                        home_link=row.get("home_link") or None,
-                        wikipedia_link=row.get("wikipedia_link") or None,
-                    )
+        airport = Airport(
+            icao=data.icao,
+            name=data.name,
+            position=Vector3(data.longitude, elevation_m, data.latitude),
+            airport_type=airport_type,
+        )
 
-                    self.airports[icao] = airport
+        self.airports[data.icao] = airport
 
-                except (ValueError, KeyError) as e:
-                    logger.debug("Skipping invalid airport row: %s", e)
-                    continue
+    def _convert_runways(self, data: GatewayAirportData) -> None:
+        """Convert Gateway runway data to Runway dataclasses."""
+        runways = []
 
-    def _load_runways(self, csv_path: Path) -> None:
-        """Load runways from CSV file."""
-        with open(csv_path, encoding="utf-8") as f:
-            reader = csv.DictReader(f)
+        for gw_rwy in data.runways:
+            # Calculate runway length from coordinates
+            length_m = self._calculate_distance_m(
+                gw_rwy.lat1, gw_rwy.lon1, gw_rwy.lat2, gw_rwy.lon2
+            )
+            length_ft = length_m * 3.28084
+            width_ft = gw_rwy.width_m * 3.28084
 
-            for row in reader:
-                try:
-                    # Get airport identifier
-                    airport_ident = row.get("airport_ident", "").strip()
+            # Map surface type
+            surface = XPLANE_SURFACE_MAP.get(gw_rwy.surface, SurfaceType.UNKNOWN)
 
-                    # Try to find airport by ident
-                    if airport_ident not in self.airports:
-                        continue
+            runway = Runway(
+                airport_icao=data.icao,
+                runway_id=f"{gw_rwy.id1}/{gw_rwy.id2}",
+                length_ft=length_ft,
+                width_ft=width_ft,
+                surface=surface,
+                lighted=True,  # Gateway doesn't provide this, assume lighted
+                closed=False,
+                le_ident=gw_rwy.id1,
+                le_latitude=gw_rwy.lat1,
+                le_longitude=gw_rwy.lon1,
+                le_elevation_ft=data.elevation_ft,  # Use airport elevation
+                le_heading_deg=gw_rwy.heading1,
+                he_ident=gw_rwy.id2,
+                he_latitude=gw_rwy.lat2,
+                he_longitude=gw_rwy.lon2,
+                he_elevation_ft=data.elevation_ft,
+                he_heading_deg=gw_rwy.heading2,
+            )
 
-                    # Parse surface type
-                    surface_str = row.get("surface", "").upper()
-                    surface = SurfaceType.UNKNOWN
-                    for surf_type in SurfaceType:
-                        if surf_type.name in surface_str:
-                            surface = surf_type
-                            break
+            runways.append(runway)
 
-                    # Create runway
-                    runway = Runway(
-                        airport_icao=airport_ident,
-                        runway_id=row.get("le_ident", "") + "/" + row.get("he_ident", ""),
-                        length_ft=float(row.get("length_ft", 0) or 0),
-                        width_ft=float(row.get("width_ft", 0) or 0),
-                        surface=surface,
-                        lighted=row.get("lighted", "0") == "1",
-                        closed=row.get("closed", "0") == "1",
-                        le_ident=row.get("le_ident", ""),
-                        le_latitude=float(row.get("le_latitude_deg", 0) or 0),
-                        le_longitude=float(row.get("le_longitude_deg", 0) or 0),
-                        le_elevation_ft=float(row.get("le_elevation_ft", 0) or 0),
-                        le_heading_deg=float(row.get("le_heading_degT", 0) or 0),
-                        he_ident=row.get("he_ident", ""),
-                        he_latitude=float(row.get("he_latitude_deg", 0) or 0),
-                        he_longitude=float(row.get("he_longitude_deg", 0) or 0),
-                        he_elevation_ft=float(row.get("he_elevation_ft", 0) or 0),
-                        he_heading_deg=float(row.get("he_heading_degT", 0) or 0),
-                    )
+        self.runways[data.icao] = runways
 
-                    # Add to runway list for airport
-                    if airport_ident not in self.runways:
-                        self.runways[airport_ident] = []
-                    self.runways[airport_ident].append(runway)
+    def _convert_frequencies(self, data: GatewayAirportData) -> None:
+        """Convert Gateway frequency data to Frequency dataclasses."""
+        frequencies = []
 
-                except (ValueError, KeyError) as e:
-                    logger.debug("Skipping invalid runway row: %s", e)
-                    continue
+        for gw_freq in data.frequencies:
+            freq_type = GATEWAY_FREQ_MAP.get(gw_freq.type, FrequencyType.OTHER)
 
-    def _load_frequencies(self, csv_path: Path) -> None:
-        """Load frequencies from CSV file."""
-        with open(csv_path, encoding="utf-8") as f:
-            reader = csv.DictReader(f)
+            frequency = Frequency(
+                airport_icao=data.icao,
+                freq_type=freq_type,
+                description=gw_freq.name,
+                frequency_mhz=gw_freq.frequency_mhz,
+            )
 
-            for row in reader:
-                try:
-                    # Get airport reference
-                    airport_ident = row.get("airport_ident", "").strip()
-                    if airport_ident not in self.airports:
-                        continue
+            frequencies.append(frequency)
 
-                    # Parse frequency type
-                    type_str = row.get("type", "").upper()
-                    freq_type = FrequencyType.OTHER
-                    for ftype in FrequencyType:
-                        if ftype.name in type_str:
-                            freq_type = ftype
-                            break
+        self.frequencies[data.icao] = frequencies
 
-                    # Create frequency
-                    frequency = Frequency(
-                        airport_icao=airport_ident,
-                        freq_type=freq_type,
-                        description=row.get("description", ""),
-                        frequency_mhz=float(row.get("frequency_mhz", 0)),
-                    )
+    def _convert_parking(self, data: GatewayAirportData) -> None:
+        """Convert Gateway parking data to ParkingPosition dataclasses."""
+        parking_list = []
+        elevation_m = data.elevation_ft * 0.3048
 
-                    # Add to frequency list for airport
-                    if airport_ident not in self.frequencies:
-                        self.frequencies[airport_ident] = []
-                    self.frequencies[airport_ident].append(frequency)
+        for gw_parking in data.parking_positions:
+            parking = ParkingPosition(
+                airport_icao=data.icao,
+                position_id=gw_parking.id,
+                position=Vector3(gw_parking.longitude, elevation_m, gw_parking.latitude),
+                heading=gw_parking.heading,
+                parking_type=gw_parking.type,
+                aircraft_types=gw_parking.aircraft_types or [],
+            )
 
-                except (ValueError, KeyError) as e:
-                    logger.debug("Skipping invalid frequency row: %s", e)
-                    continue
+            parking_list.append(parking)
+
+        self.parking[data.icao] = parking_list
+
+    @staticmethod
+    def _calculate_distance_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+        """Calculate distance between two points in meters."""
+        lat1_rad, lon1_rad = math.radians(lat1), math.radians(lon1)
+        lat2_rad, lon2_rad = math.radians(lat2), math.radians(lon2)
+
+        dlat = lat2_rad - lat1_rad
+        dlon = lon2_rad - lon1_rad
+
+        a = (
+            math.sin(dlat / 2) ** 2
+            + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2) ** 2
+        )
+        c = 2 * math.asin(math.sqrt(a))
+
+        # Earth radius in meters
+        radius_m = 6371000
+
+        return c * radius_m
 
     def get_airport(self, icao: str) -> Airport | None:
         """Get airport by ICAO code.
+
+        Automatically loads from Gateway if not already loaded.
 
         Args:
             icao: ICAO code (e.g., "KPAO")
@@ -367,7 +417,13 @@ class AirportDatabase:
             >>> if airport:
             ...     print(airport.name)
         """
-        return self.airports.get(icao.upper())
+        icao = icao.upper()
+
+        # Try to load if not present
+        if icao not in self.airports:
+            self.load_airport(icao)
+
+        return self.airports.get(icao)
 
     def get_runways(self, icao: str) -> list[Runway]:
         """Get runways for an airport.
@@ -383,7 +439,13 @@ class AirportDatabase:
             >>> for runway in runways:
             ...     print(f"{runway.runway_id}: {runway.length_ft}ft")
         """
-        return self.runways.get(icao.upper(), [])
+        icao = icao.upper()
+
+        # Try to load if not present
+        if icao not in self.runways:
+            self.load_airport(icao)
+
+        return self.runways.get(icao, [])
 
     def get_frequencies(self, icao: str) -> list[Frequency]:
         """Get frequencies for an airport.
@@ -399,10 +461,63 @@ class AirportDatabase:
             >>> for freq in freqs:
             ...     print(f"{freq.freq_type.value}: {freq.frequency_mhz:.3f}")
         """
-        return self.frequencies.get(icao.upper(), [])
+        icao = icao.upper()
+
+        # Try to load if not present
+        if icao not in self.frequencies:
+            self.load_airport(icao)
+
+        return self.frequencies.get(icao, [])
+
+    def get_parking(self, icao: str) -> list[ParkingPosition]:
+        """Get parking positions for an airport.
+
+        Args:
+            icao: Airport ICAO code
+
+        Returns:
+            List of parking positions (empty if none found)
+
+        Examples:
+            >>> parking = db.get_parking("LFLY")
+            >>> for pos in parking:
+            ...     print(f"{pos.position_id}: {pos.parking_type} @ {pos.heading}°")
+        """
+        icao = icao.upper()
+
+        # Try to load if not present
+        if icao not in self.parking:
+            self.load_airport(icao)
+
+        return self.parking.get(icao, [])
+
+    def get_gateway_data(self, icao: str) -> GatewayAirportData | None:
+        """Get raw Gateway data for advanced queries (taxiway network, etc.).
+
+        Args:
+            icao: Airport ICAO code
+
+        Returns:
+            GatewayAirportData if loaded, None otherwise
+
+        Examples:
+            >>> gw_data = db.get_gateway_data("LFLY")
+            >>> if gw_data:
+            ...     print(f"Taxi nodes: {len(gw_data.taxi_nodes)}")
+        """
+        icao = icao.upper()
+
+        # Try to load if not present
+        if icao not in self._gateway_data:
+            self.load_airport(icao)
+
+        return self._gateway_data.get(icao)
 
     def get_airports_near(self, position: Vector3, radius_nm: float) -> list[tuple[Airport, float]]:
-        """Get airports within radius of position.
+        """Get loaded airports within radius of position.
+
+        Note: This only searches already-loaded airports.
+        For a comprehensive search, airports must be pre-loaded.
 
         Args:
             position: Center position (x=lon, y=elev, z=lat)
@@ -454,26 +569,83 @@ class AirportDatabase:
         return c * radius_nm
 
     def get_airport_count(self) -> int:
-        """Get total number of airports in database.
+        """Get number of currently loaded airports.
 
         Returns:
-            Number of airports
+            Number of loaded airports
 
         Examples:
             >>> count = db.get_airport_count()
-            >>> print(f"Database contains {count} airports")
+            >>> print(f"Loaded {count} airports")
         """
         return len(self.airports)
 
     def get_countries(self) -> list[str]:
-        """Get list of all countries with airports.
+        """Get list of countries for loaded airports.
+
+        Note: Gateway data doesn't include country info, so this
+        may return an empty list.
 
         Returns:
             Sorted list of ISO country codes
-
-        Examples:
-            >>> countries = db.get_countries()
-            >>> print(f"Airports in {len(countries)} countries")
         """
-        countries = {airport.iso_country for airport in self.airports.values()}
+        countries = {
+            airport.iso_country for airport in self.airports.values() if airport.iso_country
+        }
         return sorted(countries)
+
+    def _map_surface_type(self, surface: str) -> SurfaceType:
+        """Map surface type string to SurfaceType enum.
+
+        Args:
+            surface: Surface type string from Gateway
+
+        Returns:
+            Corresponding SurfaceType enum value
+        """
+        surface_lower = surface.lower()
+        mapping = {
+            "asphalt": SurfaceType.ASPH,
+            "asph": SurfaceType.ASPH,
+            "concrete": SurfaceType.CONC,
+            "conc": SurfaceType.CONC,
+            "grass": SurfaceType.GRASS,
+            "turf": SurfaceType.TURF,
+            "dirt": SurfaceType.DIRT,
+            "gravel": SurfaceType.GRVL,
+            "grvl": SurfaceType.GRVL,
+            "sand": SurfaceType.SAND,
+            "water": SurfaceType.WATER,
+        }
+        return mapping.get(surface_lower, SurfaceType.UNKNOWN)
+
+    def _map_frequency_type(self, freq_type: str) -> FrequencyType:
+        """Map frequency type string to FrequencyType enum.
+
+        Args:
+            freq_type: Frequency type string from Gateway
+
+        Returns:
+            Corresponding FrequencyType enum value
+        """
+        return GATEWAY_FREQ_MAP.get(freq_type.upper(), FrequencyType.OTHER)
+
+    # Backwards compatibility alias
+    def load_from_csv(self, data_dir: str | Path) -> None:
+        """Legacy method for CSV loading - no longer supported.
+
+        This method is kept for backwards compatibility but no longer
+        loads CSV data. Use load_airport() instead.
+
+        Args:
+            data_dir: Ignored - was directory containing CSV files
+
+        Raises:
+            DeprecationWarning: Always raised as this method is deprecated
+        """
+        warnings.warn(
+            "load_from_csv() is no longer supported. "
+            "Use load_airport(icao) to load airports on demand from X-Plane Gateway.",
+            DeprecationWarning,
+            stacklevel=2,
+        )

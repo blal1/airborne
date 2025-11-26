@@ -1,17 +1,15 @@
 """Airport database and navigation systems.
 
 This module provides functionality for working with airport data from
-the OurAirports database, including spatial queries, runway information,
-and frequencies.
+the X-Plane Scenery Gateway, including spatial queries, runway information,
+parking positions, taxiways, and frequencies.
 
 Typical usage:
     from airborne.airports import AirportDatabase
 
     db = AirportDatabase()
-    db.load_from_csv("data/airports")
-
-    airport = db.get_airport("KPAO")
-    nearby = db.get_airports_near(position, radius_nm=50)
+    airport = db.get_airport("KPAO")  # Loads on-demand from Gateway
+    parking = db.get_parking("KPAO")
 """
 
 from airborne.airports.classifier import AirportCategory, AirportClassifier
@@ -21,6 +19,7 @@ from airborne.airports.database import (
     AirportType,
     Frequency,
     FrequencyType,
+    ParkingPosition,
     Runway,
     SurfaceType,
 )
@@ -36,6 +35,7 @@ __all__ = [
     "AirportType",
     "Frequency",
     "FrequencyType",
+    "ParkingPosition",
     "Runway",
     "SpatialIndex",
     "SurfaceType",
