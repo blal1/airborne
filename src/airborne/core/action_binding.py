@@ -63,6 +63,8 @@ class InputBinding:
     axis: int | None = None
     axis_threshold: float = 0.5
     axis_direction: str = "positive"  # "positive", "negative", or "both"
+    hat: int | None = None  # Hat/POV index for joystick_hat inputs
+    hat_value: tuple[int, int] | None = None  # Hat direction as (x, y) tuple
     device_id: str | None = None
     network_command: str | None = None
 
