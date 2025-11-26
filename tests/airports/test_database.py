@@ -1,7 +1,6 @@
-"""Tests for Airport Database."""
+"""Tests for Airport Database with X-Plane Gateway integration."""
 
-import tempfile
-from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -12,308 +11,341 @@ from airborne.airports.database import (
     SurfaceType,
 )
 from airborne.physics.vectors import Vector3
+from airborne.services.atc.gateway_loader import (
+    GatewayAirportData,
+    GatewayFrequency,
+    GatewayRunway,
+)
+from airborne.services.atc.gateway_loader import (
+    ParkingPosition as GatewayParkingPosition,
+)
 
 
-class TestAirportDatabaseLoading:
-    """Test loading airport data from CSV files."""
-
-    @pytest.fixture
-    def temp_data_dir(self) -> Path:
-        """Create temporary data directory with sample CSV files."""
-        temp_dir = Path(tempfile.mkdtemp())
-
-        # Create sample airports.csv
-        airports_csv = temp_dir / "airports.csv"
-        with open(airports_csv, "w", encoding="utf-8") as f:
-            f.write(
-                '"id","ident","type","name","latitude_deg","longitude_deg",'
-                '"elevation_ft","continent","iso_country","iso_region","municipality",'
-                '"scheduled_service","icao_code","iata_code","gps_code","local_code",'
-                '"home_link","wikipedia_link","keywords"\n'
-            )
-            f.write(
-                '1,"KPAO","small_airport","Palo Alto Airport",37.461111,-122.115000,7,'
-                '"NA","US","US-CA","Palo Alto","no","KPAO","PAO","KPAO","PAO",'
-                '"http://paloaltoairport.org","https://en.wikipedia.org/wiki/Palo_Alto_Airport",""\n'
-            )
-            f.write(
-                '2,"KSFO","large_airport","San Francisco Intl",37.618972,-122.374889,13,'
-                '"NA","US","US-CA","San Francisco","yes","KSFO","SFO","KSFO","SFO",'
-                '"http://flysfo.com","https://en.wikipedia.org/wiki/San_Francisco_International_Airport",""\n'
-            )
-
-        # Create sample runways.csv
-        runways_csv = temp_dir / "runways.csv"
-        with open(runways_csv, "w", encoding="utf-8") as f:
-            f.write(
-                '"id","airport_ref","airport_ident","length_ft","width_ft","surface",'
-                '"lighted","closed","le_ident","le_latitude_deg","le_longitude_deg",'
-                '"le_elevation_ft","le_heading_degT","le_displaced_threshold_ft",'
-                '"he_ident","he_latitude_deg","he_longitude_deg","he_elevation_ft",'
-                '"he_heading_degT","he_displaced_threshold_ft"\n'
-            )
-            f.write(
-                '1,"1","KPAO",2443,75,"ASPH",1,0,"13",37.458611,-122.121111,5,129.8,0,'
-                '"31",37.463611,-122.108889,8,309.8,0\n'
-            )
-            f.write(
-                '2,"2","KSFO",11870,200,"ASPH",1,0,"28L",37.617222,-122.396111,9,284.0,0,'
-                '"10R",37.620278,-122.359444,13,104.0,0\n'
-            )
-
-        # Create sample frequencies.csv
-        frequencies_csv = temp_dir / "airport-frequencies.csv"
-        with open(frequencies_csv, "w", encoding="utf-8") as f:
-            f.write('"id","airport_ref","airport_ident","type","description","frequency_mhz"\n')
-            f.write('1,"1","KPAO","UNICOM","UNICOM",122.950\n')
-            f.write('2,"2","KSFO","TWR","SFO Tower",120.500\n')
-            f.write('3,"2","KSFO","GND","SFO Ground",121.800\n')
-            f.write('4,"2","KSFO","ATIS","SFO ATIS",118.850\n')
-
-        return temp_dir
-
-    def test_load_airports(self, temp_data_dir: Path) -> None:
-        """Test loading airports from CSV."""
-        db = AirportDatabase()
-        db.load_from_csv(temp_data_dir)
-
-        assert db.get_airport_count() == 2
-        assert "KPAO" in db.airports
-        assert "KSFO" in db.airports
-
-    def test_load_missing_file_raises_error(self) -> None:
-        """Test loading from nonexistent directory raises error."""
-        db = AirportDatabase()
-        with pytest.raises(FileNotFoundError):
-            db.load_from_csv("nonexistent_directory")
-
-    def test_airport_data_parsed_correctly(self, temp_data_dir: Path) -> None:
-        """Test airport data is parsed correctly."""
-        db = AirportDatabase()
-        db.load_from_csv(temp_data_dir)
-
-        pao = db.get_airport("KPAO")
-        assert pao is not None
-        assert pao.name == "Palo Alto Airport"
-        assert pao.airport_type == AirportType.SMALL_AIRPORT
-        assert pao.municipality == "Palo Alto"
-        assert pao.iso_country == "US"
-        assert pao.scheduled_service is False
-        assert pao.iata_code == "PAO"
-
-    def test_airport_position_parsed_correctly(self, temp_data_dir: Path) -> None:
-        """Test airport position is parsed correctly."""
-        db = AirportDatabase()
-        db.load_from_csv(temp_data_dir)
-
-        pao = db.get_airport("KPAO")
-        assert pao is not None
-
-        # Check lat/lon (x=lon, z=lat)
-        assert abs(pao.position.x - (-122.115)) < 0.001
-        assert abs(pao.position.z - 37.461111) < 0.001
-
-        # Check elevation (y=elevation in meters)
-        elevation_m = 7 * 0.3048  # 7 feet to meters
-        assert abs(pao.position.y - elevation_m) < 0.01
-
-
-class TestAirportDatabaseQueries:
-    """Test airport database query operations."""
+class TestAirportDatabaseGatewayLoading:
+    """Test loading airport data from X-Plane Gateway."""
 
     @pytest.fixture
-    def loaded_db(self, temp_data_dir: Path) -> AirportDatabase:
-        """Create loaded database for testing."""
-        db = AirportDatabase()
-        db.load_from_csv(temp_data_dir)
-        return db
-
-    @pytest.fixture
-    def temp_data_dir(self) -> Path:
-        """Create temporary data directory with sample CSV files."""
-        temp_dir = Path(tempfile.mkdtemp())
-
-        # Create sample airports.csv with several airports
-        airports_csv = temp_dir / "airports.csv"
-        with open(airports_csv, "w", encoding="utf-8") as f:
-            f.write(
-                '"id","ident","type","name","latitude_deg","longitude_deg",'
-                '"elevation_ft","continent","iso_country","iso_region","municipality",'
-                '"scheduled_service","icao_code","iata_code","gps_code","local_code",'
-                '"home_link","wikipedia_link","keywords"\n'
-            )
-            # Palo Alto (reference point)
-            f.write(
-                '1,"KPAO","small_airport","Palo Alto Airport",37.461111,-122.115000,7,'
-                '"NA","US","US-CA","Palo Alto","no","KPAO","PAO","KPAO","PAO","","",""\n'
-            )
-            # San Francisco (nearby)
-            f.write(
-                '2,"KSFO","large_airport","San Francisco Intl",37.618972,-122.374889,13,'
-                '"NA","US","US-CA","San Francisco","yes","KSFO","SFO","KSFO","SFO","","",""\n'
-            )
-            # San Jose (nearby)
-            f.write(
-                '3,"KSJC","medium_airport","San Jose Intl",37.362500,-121.929167,62,'
-                '"NA","US","US-CA","San Jose","yes","KSJC","SJC","KSJC","SJC","","",""\n'
-            )
-            # Los Angeles (far away)
-            f.write(
-                '4,"KLAX","large_airport","Los Angeles Intl",33.942536,-118.408075,125,'
-                '"NA","US","US-CA","Los Angeles","yes","KLAX","LAX","KLAX","LAX","","",""\n'
-            )
-
-        # Create empty runways and frequencies files
-        (temp_dir / "runways.csv").write_text(
-            '"id","airport_ref","airport_ident","length_ft","width_ft","surface",'
-            '"lighted","closed","le_ident","le_latitude_deg","le_longitude_deg",'
-            '"le_elevation_ft","le_heading_degT","le_displaced_threshold_ft",'
-            '"he_ident","he_latitude_deg","he_longitude_deg","he_elevation_ft",'
-            '"he_heading_degT","he_displaced_threshold_ft"\n'
-        )
-        (temp_dir / "airport-frequencies.csv").write_text(
-            '"id","airport_ref","airport_ident","type","description","frequency_mhz"\n'
+    def mock_gateway_data(self) -> GatewayAirportData:
+        """Create mock gateway airport data."""
+        return GatewayAirportData(
+            icao="KSFO",
+            name="San Francisco International",
+            latitude=37.618972,
+            longitude=-122.374889,
+            elevation_ft=13.0,
+            transition_altitude=18000,
+            has_atc=True,
+            runways=[
+                GatewayRunway(
+                    id1="28L",
+                    id2="10R",
+                    width_m=60.0,
+                    lat1=37.617222,
+                    lon1=-122.396111,
+                    lat2=37.620278,
+                    lon2=-122.359444,
+                    heading1=284.0,
+                    heading2=104.0,
+                    surface=1,
+                ),
+            ],
+            frequencies=[
+                GatewayFrequency(type="TOWER", frequency_mhz=120.5, name="SFO Tower"),
+                GatewayFrequency(type="GROUND", frequency_mhz=121.8, name="SFO Ground"),
+                GatewayFrequency(type="ATIS", frequency_mhz=118.85, name="SFO ATIS"),
+            ],
+            parking_positions=[
+                GatewayParkingPosition(
+                    id="Gate A1",
+                    latitude=37.615,
+                    longitude=-122.390,
+                    heading=90.0,
+                    type="gate",
+                ),
+            ],
         )
 
-        return temp_dir
+    def test_load_airport_from_gateway(self, mock_gateway_data: GatewayAirportData) -> None:
+        """Test loading airport data from Gateway."""
+        db = AirportDatabase()
 
-    def test_get_airport_by_icao(self, loaded_db: AirportDatabase) -> None:
-        """Test getting airport by ICAO code."""
-        pao = loaded_db.get_airport("KPAO")
-        assert pao is not None
-        assert pao.icao == "KPAO"
-        assert pao.name == "Palo Alto Airport"
+        with patch.object(db.gateway_loader, "get_airport", return_value=mock_gateway_data):
+            airport = db.get_airport("KSFO")
 
-    def test_get_nonexistent_airport(self, loaded_db: AirportDatabase) -> None:
-        """Test getting nonexistent airport returns None."""
-        airport = loaded_db.get_airport("XXXX")
-        assert airport is None
+        assert airport is not None
+        assert airport.icao == "KSFO"
+        assert airport.name == "San Francisco International"
 
-    def test_get_airports_near(self, loaded_db: AirportDatabase) -> None:
-        """Test spatial query for nearby airports."""
-        # Use KPAO position as reference
-        pao = loaded_db.get_airport("KPAO")
-        assert pao is not None
+    def test_airport_cached_after_load(self, mock_gateway_data: GatewayAirportData) -> None:
+        """Test airport is cached after first load."""
+        db = AirportDatabase()
 
-        # Query 30nm radius (should include KPAO, KSFO, KSJC but not KLAX)
-        nearby = loaded_db.get_airports_near(pao.position, radius_nm=30)
+        with patch.object(db.gateway_loader, "get_airport", return_value=mock_gateway_data) as mock:
+            # First call loads from gateway
+            db.get_airport("KSFO")
+            # Second call should use cache
+            db.get_airport("KSFO")
 
-        # Extract ICAOs
-        icaos = [airport.icao for airport, _ in nearby]
+        # Should only have been called once
+        assert mock.call_count == 1
 
-        assert "KPAO" in icaos  # Should include itself
-        assert "KSFO" in icaos  # ~15nm away
-        assert "KSJC" in icaos  # ~10nm away
-        assert "KLAX" not in icaos  # ~300nm away
+    def test_airport_position_correct(self, mock_gateway_data: GatewayAirportData) -> None:
+        """Test airport position is correctly parsed."""
+        db = AirportDatabase()
 
-    def test_get_airports_near_sorted_by_distance(self, loaded_db: AirportDatabase) -> None:
-        """Test that nearby airports are sorted by distance."""
-        pao = loaded_db.get_airport("KPAO")
-        assert pao is not None
+        with patch.object(db.gateway_loader, "get_airport", return_value=mock_gateway_data):
+            airport = db.get_airport("KSFO")
 
-        nearby = loaded_db.get_airports_near(pao.position, radius_nm=50)
+        assert airport is not None
+        # x = longitude, z = latitude, y = elevation in meters
+        assert abs(airport.position.x - (-122.374889)) < 0.001
+        assert abs(airport.position.z - 37.618972) < 0.001
+        elevation_m = 13.0 * 0.3048
+        assert abs(airport.position.y - elevation_m) < 0.1
 
-        # Check that distances are sorted
-        distances = [distance for _, distance in nearby]
-        assert distances == sorted(distances)
+    def test_airport_type_from_atc(self, mock_gateway_data: GatewayAirportData) -> None:
+        """Test airport type determined from ATC presence."""
+        db = AirportDatabase()
 
-        # KPAO should be first (distance ~0)
-        assert nearby[0][0].icao == "KPAO"
-        assert nearby[0][1] < 0.1  # Very close to zero
+        with patch.object(db.gateway_loader, "get_airport", return_value=mock_gateway_data):
+            airport = db.get_airport("KSFO")
 
-    def test_get_countries(self, loaded_db: AirportDatabase) -> None:
-        """Test getting list of countries."""
-        countries = loaded_db.get_countries()
-        assert "US" in countries
-        assert isinstance(countries, list)
-        assert countries == sorted(countries)
+        assert airport is not None
+        assert airport.airport_type == AirportType.MEDIUM_AIRPORT
+
+    def test_airport_without_atc_is_small(self) -> None:
+        """Test airport without ATC is classified as small."""
+        db = AirportDatabase()
+        data = GatewayAirportData(
+            icao="KPAO",
+            name="Palo Alto Airport",
+            latitude=37.461111,
+            longitude=-122.115000,
+            elevation_ft=7.0,
+            transition_altitude=18000,
+            has_atc=False,
+            runways=[],
+            frequencies=[],
+            parking_positions=[],
+        )
+
+        with patch.object(db.gateway_loader, "get_airport", return_value=data):
+            airport = db.get_airport("KPAO")
+
+        assert airport is not None
+        assert airport.airport_type == AirportType.SMALL_AIRPORT
 
 
-class TestRunwaysAndFrequencies:
-    """Test runway and frequency queries."""
+class TestRunwayLoading:
+    """Test runway data loading from Gateway."""
 
     @pytest.fixture
-    def temp_data_dir(self) -> Path:
-        """Create temporary data directory."""
-        temp_dir = Path(tempfile.mkdtemp())
+    def mock_gateway_data(self) -> GatewayAirportData:
+        """Create mock gateway data with runways."""
+        runway_28l = GatewayRunway(
+            id1="28L",
+            id2="10R",
+            width_m=60.0,
+            lat1=37.617222,
+            lon1=-122.396111,
+            lat2=37.620278,
+            lon2=-122.359444,
+            heading1=284.0,
+            heading2=104.0,
+            surface=1,  # Asphalt
+        )
+        return GatewayAirportData(
+            icao="KSFO",
+            name="San Francisco International",
+            latitude=37.618972,
+            longitude=-122.374889,
+            elevation_ft=13.0,
+            transition_altitude=18000,
+            has_atc=True,
+            runways=[runway_28l],
+            frequencies=[],
+            parking_positions=[],
+        )
 
-        # Create airports
-        airports_csv = temp_dir / "airports.csv"
-        with open(airports_csv, "w", encoding="utf-8") as f:
-            f.write(
-                '"id","ident","type","name","latitude_deg","longitude_deg",'
-                '"elevation_ft","continent","iso_country","iso_region","municipality",'
-                '"scheduled_service","icao_code","iata_code","gps_code","local_code",'
-                '"home_link","wikipedia_link","keywords"\n'
-            )
-            f.write(
-                '1,"KPAO","small_airport","Palo Alto Airport",37.461111,-122.115000,7,'
-                '"NA","US","US-CA","Palo Alto","no","KPAO","PAO","KPAO","PAO","","",""\n'
-            )
-
-        # Create runways
-        runways_csv = temp_dir / "runways.csv"
-        with open(runways_csv, "w", encoding="utf-8") as f:
-            f.write(
-                '"id","airport_ref","airport_ident","length_ft","width_ft","surface",'
-                '"lighted","closed","le_ident","le_latitude_deg","le_longitude_deg",'
-                '"le_elevation_ft","le_heading_degT","le_displaced_threshold_ft",'
-                '"he_ident","he_latitude_deg","he_longitude_deg","he_elevation_ft",'
-                '"he_heading_degT","he_displaced_threshold_ft"\n'
-            )
-            f.write(
-                '1,"1","KPAO",2443,75,"ASPH",1,0,"13",37.458611,-122.121111,5,129.8,0,'
-                '"31",37.463611,-122.108889,8,309.8,0\n'
-            )
-
-        # Create frequencies
-        frequencies_csv = temp_dir / "airport-frequencies.csv"
-        with open(frequencies_csv, "w", encoding="utf-8") as f:
-            f.write('"id","airport_ref","airport_ident","type","description","frequency_mhz"\n')
-            f.write('1,"1","KPAO","UNICOM","UNICOM",122.950\n')
-            f.write('2,"1","KPAO","CTAF","CTAF",122.950\n')
-
-        return temp_dir
-
-    def test_get_runways(self, temp_data_dir: Path) -> None:
+    def test_get_runways(self, mock_gateway_data: GatewayAirportData) -> None:
         """Test getting runways for an airport."""
         db = AirportDatabase()
-        db.load_from_csv(temp_data_dir)
 
-        runways = db.get_runways("KPAO")
+        with patch.object(db.gateway_loader, "get_airport", return_value=mock_gateway_data):
+            runways = db.get_runways("KSFO")
+
         assert len(runways) == 1
-        assert runways[0].runway_id == "13/31"
-        assert runways[0].length_ft == 2443
-        assert runways[0].surface == SurfaceType.ASPH
-        assert runways[0].lighted is True
+        assert runways[0].runway_id == "28L/10R"
 
-    def test_get_runways_nonexistent_airport(self, temp_data_dir: Path) -> None:
+    def test_runway_surface_type(self, mock_gateway_data: GatewayAirportData) -> None:
+        """Test runway surface type is correctly mapped."""
+        db = AirportDatabase()
+
+        with patch.object(db.gateway_loader, "get_airport", return_value=mock_gateway_data):
+            runways = db.get_runways("KSFO")
+
+        assert runways[0].surface == SurfaceType.ASPH
+
+    def test_runway_headings(self, mock_gateway_data: GatewayAirportData) -> None:
+        """Test runway heading data."""
+        db = AirportDatabase()
+
+        with patch.object(db.gateway_loader, "get_airport", return_value=mock_gateway_data):
+            runways = db.get_runways("KSFO")
+
+        rwy = runways[0]
+        assert rwy.le_ident == "28L"
+        assert abs(rwy.le_heading_deg - 284.0) < 0.1
+        assert rwy.he_ident == "10R"
+        assert abs(rwy.he_heading_deg - 104.0) < 0.1
+
+    def test_get_runways_nonexistent_airport(self) -> None:
         """Test getting runways for nonexistent airport returns empty list."""
         db = AirportDatabase()
-        db.load_from_csv(temp_data_dir)
 
-        runways = db.get_runways("XXXX")
+        with patch.object(db.gateway_loader, "get_airport", return_value=None):
+            runways = db.get_runways("XXXX")
+
         assert runways == []
 
-    def test_get_frequencies(self, temp_data_dir: Path) -> None:
+
+class TestFrequencyLoading:
+    """Test frequency data loading from Gateway."""
+
+    @pytest.fixture
+    def mock_gateway_data(self) -> GatewayAirportData:
+        """Create mock gateway data with frequencies."""
+        return GatewayAirportData(
+            icao="KSFO",
+            name="San Francisco International",
+            latitude=37.618972,
+            longitude=-122.374889,
+            elevation_ft=13.0,
+            transition_altitude=18000,
+            has_atc=True,
+            runways=[],
+            frequencies=[
+                GatewayFrequency(type="TOWER", frequency_mhz=120.5, name="SFO Tower"),
+                GatewayFrequency(type="GROUND", frequency_mhz=121.8, name="SFO Ground"),
+                GatewayFrequency(type="ATIS", frequency_mhz=118.85, name="SFO ATIS"),
+                GatewayFrequency(type="APPROACH", frequency_mhz=124.0, name="NorCal Approach"),
+            ],
+            parking_positions=[],
+        )
+
+    def test_get_frequencies(self, mock_gateway_data: GatewayAirportData) -> None:
         """Test getting frequencies for an airport."""
         db = AirportDatabase()
-        db.load_from_csv(temp_data_dir)
 
-        freqs = db.get_frequencies("KPAO")
-        assert len(freqs) == 2
+        with patch.object(db.gateway_loader, "get_airport", return_value=mock_gateway_data):
+            freqs = db.get_frequencies("KSFO")
 
-        # Check UNICOM frequency
-        unicom = next(f for f in freqs if f.freq_type == FrequencyType.UNICOM)
-        assert unicom.frequency_mhz == 122.950
+        assert len(freqs) == 4
 
-    def test_get_frequencies_nonexistent_airport(self, temp_data_dir: Path) -> None:
+    def test_frequency_conversion(self, mock_gateway_data: GatewayAirportData) -> None:
+        """Test frequency type conversion from Gateway format."""
+        db = AirportDatabase()
+
+        with patch.object(db.gateway_loader, "get_airport", return_value=mock_gateway_data):
+            freqs = db.get_frequencies("KSFO")
+
+        # Find tower frequency
+        tower = next((f for f in freqs if f.freq_type == FrequencyType.TWR), None)
+        assert tower is not None
+        assert tower.frequency_mhz == 120.5
+        assert tower.description == "SFO Tower"
+
+        # Find ground frequency
+        ground = next((f for f in freqs if f.freq_type == FrequencyType.GND), None)
+        assert ground is not None
+        assert ground.frequency_mhz == 121.8
+
+    def test_get_frequencies_nonexistent_airport(self) -> None:
         """Test getting frequencies for nonexistent airport returns empty list."""
         db = AirportDatabase()
-        db.load_from_csv(temp_data_dir)
 
-        freqs = db.get_frequencies("XXXX")
+        with patch.object(db.gateway_loader, "get_airport", return_value=None):
+            freqs = db.get_frequencies("XXXX")
+
         assert freqs == []
+
+
+class TestParkingLoading:
+    """Test parking position loading from Gateway."""
+
+    @pytest.fixture
+    def mock_gateway_data(self) -> GatewayAirportData:
+        """Create mock gateway data with parking."""
+        return GatewayAirportData(
+            icao="KSFO",
+            name="San Francisco International",
+            latitude=37.618972,
+            longitude=-122.374889,
+            elevation_ft=13.0,
+            transition_altitude=18000,
+            has_atc=True,
+            runways=[],
+            frequencies=[],
+            parking_positions=[
+                GatewayParkingPosition(
+                    id="Gate A1",
+                    latitude=37.615,
+                    longitude=-122.390,
+                    heading=90.0,
+                    type="gate",
+                ),
+                GatewayParkingPosition(
+                    id="Tie Down 1",
+                    latitude=37.614,
+                    longitude=-122.391,
+                    heading=180.0,
+                    type="tie_down",
+                ),
+            ],
+        )
+
+    def test_get_parking(self, mock_gateway_data: GatewayAirportData) -> None:
+        """Test getting parking positions for an airport."""
+        db = AirportDatabase()
+
+        with patch.object(db.gateway_loader, "get_airport", return_value=mock_gateway_data):
+            parking = db.get_parking("KSFO")
+
+        assert len(parking) == 2
+
+    def test_parking_position_data(self, mock_gateway_data: GatewayAirportData) -> None:
+        """Test parking position data is correctly parsed."""
+        db = AirportDatabase()
+
+        with patch.object(db.gateway_loader, "get_airport", return_value=mock_gateway_data):
+            parking = db.get_parking("KSFO")
+
+        gate = parking[0]
+        assert gate.position_id == "Gate A1"
+        assert gate.parking_type == "gate"
+        assert abs(gate.heading - 90.0) < 0.1
+        assert abs(gate.position.x - (-122.390)) < 0.001
+        assert abs(gate.position.z - 37.615) < 0.001
+
+    def test_get_parking_nonexistent_airport(self) -> None:
+        """Test getting parking for nonexistent airport returns empty list."""
+        db = AirportDatabase()
+
+        with patch.object(db.gateway_loader, "get_airport", return_value=None):
+            parking = db.get_parking("XXXX")
+
+        assert parking == []
+
+
+class TestDeprecatedCSVLoading:
+    """Test deprecated CSV loading raises warning."""
+
+    def test_load_from_csv_raises_deprecation(self) -> None:
+        """Test load_from_csv raises deprecation warning."""
+        db = AirportDatabase()
+
+        with pytest.warns(DeprecationWarning, match="load_from_csv.*no longer supported"):
+            db.load_from_csv("/some/path")
 
 
 class TestHaversineDistance:
@@ -348,3 +380,22 @@ class TestHaversineDistance:
         dist2 = AirportDatabase._haversine_distance_nm(pos2, pos1)
 
         assert abs(dist1 - dist2) < 0.001
+
+
+class TestSurfaceTypeMapping:
+    """Test surface type mapping from Gateway format."""
+
+    def test_surface_types(self) -> None:
+        """Test various surface type mappings."""
+        db = AirportDatabase()
+
+        assert db._map_surface_type("asphalt") == SurfaceType.ASPH
+        assert db._map_surface_type("Asphalt") == SurfaceType.ASPH
+        assert db._map_surface_type("ASPH") == SurfaceType.ASPH
+        assert db._map_surface_type("concrete") == SurfaceType.CONC
+        assert db._map_surface_type("grass") == SurfaceType.GRASS
+        assert db._map_surface_type("turf") == SurfaceType.TURF
+        assert db._map_surface_type("dirt") == SurfaceType.DIRT
+        assert db._map_surface_type("gravel") == SurfaceType.GRVL
+        assert db._map_surface_type("water") == SurfaceType.WATER
+        assert db._map_surface_type("unknown_surface") == SurfaceType.UNKNOWN
