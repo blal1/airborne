@@ -70,7 +70,7 @@ bindings:
 
   # Context switching (global)
   - key: f1
-    action: toggle_atc_menu
+    action: atc_menu
     description: "Toggle ATC menu"
     toggle_context: atc_menu
 
@@ -91,12 +91,12 @@ bindings:
     description: "Request ATC repeat (say again)"
 
   - key: f2
-    action: toggle_checklist_menu
+    action: checklist_menu
     description: "Toggle checklist menu"
     toggle_context: checklist_menu
 
   - key: f3
-    action: toggle_ground_services_menu
+    action: ground_services_menu
     description: "Toggle ground services menu"
     toggle_context: ground_services_menu
 

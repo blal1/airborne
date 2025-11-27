@@ -75,11 +75,19 @@ class RadioPlugin(IPlugin):
         self._current_altitude: int = 0
         self._current_heading: int = 0
         self._callsign: str = "Cessna 123AB"
+        self._aircraft_type: str = "cessna172"  # Aircraft type for telephony
         self._current_atis: ATISInfo | None = None
+        self._atis_text: str | None = None  # Generated ATIS text for TTS
         self._push_to_talk_pressed: bool = False
         self._selected_radio: RadioType = "COM1"
         self._engine_running: bool = False
         self._on_ground: bool = True
+
+        # Weather and airport info
+        self._weather_service: Any = None
+        self._departure_airport: str = ""
+        self._departure_airport_name: str = ""  # Human-readable airport name
+        self._departure_runway: str = "31"  # Default, should be determined from wind
 
         # TTS voice for ATC (if available)
         self._atc_voice_rate: int = 150  # Slightly faster than normal
@@ -115,6 +123,13 @@ class RadioPlugin(IPlugin):
         # Get radio config
         radio_config = context.config.get("radio", {})
         self._callsign = radio_config.get("callsign", "Cessna 123AB")
+        self._aircraft_type = radio_config.get("aircraft_type", "cessna172")
+        self._departure_airport = radio_config.get("departure_airport", "KPAO")
+        self._departure_airport_name = self._get_airport_name(self._departure_airport)
+        self._weather_service = radio_config.get("weather_service")
+
+        # Generate initial ATIS from weather
+        self._generate_initial_atis()
 
         # Get TTS provider and audio manager from audio plugin
         tts_provider = None
@@ -132,7 +147,27 @@ class RadioPlugin(IPlugin):
             self.readback_system = ATCReadbackSystem(
                 self.atc_queue, tts_provider, callsign=self._callsign
             )
-            logger.info("Interactive ATC systems initialized")
+
+            # Set flight context for realistic phraseology
+            # Get ATIS info letter (default to "Alpha" if not yet generated)
+            atis_letter = "Alpha"
+            if self._current_atis:
+                atis_letter = self._current_atis.information_letter
+
+            self.atc_menu.set_flight_context(
+                callsign=self._callsign,
+                aircraft_type=self._aircraft_type,
+                airport_icao=self._departure_airport,
+                airport_name=self._departure_airport_name,
+                runway=self._departure_runway,
+                parking_location="ramp",
+                atis_info=atis_letter,
+            )
+
+            # Connect readback system to ATC menu for Shift+F1 functionality
+            self.atc_menu.set_readback_system(self.readback_system)
+
+            logger.info("Interactive ATC systems initialized with flight context")
         else:
             logger.warning("ATC audio manager or TTS not available - interactive ATC disabled")
 
@@ -308,11 +343,32 @@ class RadioPlugin(IPlugin):
         Args:
             _message: ATIS request message (unused).
         """
-        if self._current_atis:
+        # Prefer pre-generated ATIS text (from weather)
+        if self._atis_text:
+            logger.info("Playing ATIS for %s", self._departure_airport)
+            self._speak_atis(self._atis_text)
+            self._mark_atis_received()
+        elif self._current_atis:
+            # Fallback to legacy ATISInfo-based generation
             atis_text = self.atis_generator.generate(self._current_atis)
             self._speak_atis(atis_text)
+            self._mark_atis_received()
         else:
-            logger.warning("No ATIS available")
+            logger.warning("No ATIS available - generating default")
+            self._generate_default_atis()
+            if self._atis_text:
+                self._speak_atis(self._atis_text)
+                self._mark_atis_received()
+
+    def _mark_atis_received(self) -> None:
+        """Mark ATIS as received in the ATC menu."""
+        if self.atc_menu:
+            # Get ATIS letter from current ATIS
+            atis_letter = "Alpha"
+            if self._current_atis:
+                atis_letter = self._current_atis.information_letter
+            self.atc_menu.mark_atis_received(atis_letter)
+            logger.info(f"ATIS marked as received: information {atis_letter}")
 
     def _handle_nearby_airport(self, message: Message) -> None:
         """Handle nearby airport information.
@@ -451,40 +507,217 @@ class RadioPlugin(IPlugin):
         except Exception as e:
             logger.warning("Failed to announce frequency: %s", e)
 
+    def _speak_radio_text(self, text: str, voice: str = "tower", name: str = "radio") -> bool:
+        """Speak text with radio effects using ATCAudioManager.
+
+        This is the unified method for playing dynamically generated radio
+        communications (ATIS, ATC responses) with realistic radio effects.
+
+        Args:
+            text: Text to speak.
+            voice: Voice name for TTS (tower, atis, pilot, etc.).
+            name: Name for logging purposes.
+
+        Returns:
+            True if played successfully with radio effects, False otherwise.
+
+        Note:
+            Uses ATCAudioManager to apply radio effects (static noise, DSP filter)
+            to the dynamically generated TTS audio for realistic radio sound.
+        """
+        if not self.context or not self.context.plugin_registry:
+            return False
+
+        try:
+            audio_plugin = self.context.plugin_registry.get("audio_plugin")
+            if not audio_plugin:
+                return False
+
+            atc_audio_manager = getattr(audio_plugin, "atc_audio_manager", None)
+            tts_provider = getattr(audio_plugin, "tts_provider", None)
+
+            if not atc_audio_manager or not tts_provider:
+                return False
+
+            # Generate audio bytes using TTS
+            if not hasattr(tts_provider, "_get_realtime_tts"):
+                return False
+
+            realtime_tts = tts_provider._get_realtime_tts(voice)
+            if not realtime_tts:
+                return False
+
+            result = realtime_tts.generate_audio_bytes(text)
+            if not result:
+                return False
+
+            audio_bytes, _ = result
+            atc_audio_manager.play_dynamic_text(audio_bytes, volume=1.0, name=name)
+            logger.info("%s played with radio effects", name)
+            return True
+
+        except Exception as e:
+            logger.warning("Failed to speak %s: %s", name, e)
+            return False
+
     def _speak_atc(self, text: str) -> None:
-        """Speak ATC message with appropriate voice.
+        """Speak ATC message with radio effects.
 
         Args:
             text: Text to speak.
         """
-        if not self.context:
+        if self._speak_radio_text(text, voice="tower", name="atc_message"):
             return
 
-        try:
-            if self.context.plugin_registry:
-                audio_plugin = self.context.plugin_registry.get("audio_plugin")
-                if audio_plugin and hasattr(audio_plugin, "tts_provider"):
-                    # TODO: Set different voice/rate for ATC if supported
-                    audio_plugin.tts_provider.speak(text, interrupt=False)
-        except Exception as e:
-            logger.warning("Failed to speak ATC message: %s", e)
+        # Fallback: use TTS directly without radio effects
+        self._speak_fallback(text, voice="tower", interrupt=False)
 
     def _speak_atis(self, text: str) -> None:
-        """Speak ATIS broadcast.
+        """Speak ATIS broadcast with radio effects.
 
         Args:
             text: ATIS text to speak.
         """
-        if not self.context:
+        if self._speak_radio_text(text, voice="atis", name="atis_broadcast"):
+            return
+
+        # Fallback: use TTS directly without radio effects
+        self._speak_fallback(text, voice="atis", interrupt=True)
+
+    def _speak_fallback(self, text: str, voice: str, interrupt: bool) -> None:
+        """Fallback TTS playback without radio effects.
+
+        Args:
+            text: Text to speak.
+            voice: Voice name.
+            interrupt: Whether to interrupt current speech.
+        """
+        if not self.context or not self.context.plugin_registry:
             return
 
         try:
-            if self.context.plugin_registry:
-                audio_plugin = self.context.plugin_registry.get("audio_plugin")
-                if audio_plugin and hasattr(audio_plugin, "tts_provider"):
-                    audio_plugin.tts_provider.speak(text, interrupt=True)
+            audio_plugin = self.context.plugin_registry.get("audio_plugin")
+            if not audio_plugin:
+                return
+
+            tts_provider = getattr(audio_plugin, "tts_provider", None)
+            if tts_provider and hasattr(tts_provider, "speak_text"):
+                tts_provider.speak_text(text, voice=voice, interrupt=interrupt)
+                logger.info("%s played without radio effects (fallback)", voice)
+            elif tts_provider:
+                tts_provider.speak(text, interrupt=interrupt)
         except Exception as e:
-            logger.warning("Failed to speak ATIS: %s", e)
+            logger.warning("Fallback TTS failed: %s", e)
+
+    def _generate_initial_atis(self) -> None:
+        """Generate initial ATIS from weather service.
+
+        Gets weather from weather_service (real METAR if available, simulated otherwise)
+        and generates ATIS text for the departure airport.
+        """
+        if not self._weather_service:
+            logger.warning("No weather service available - using default ATIS")
+            self._generate_default_atis()
+            return
+
+        try:
+            # Wait briefly for background METAR fetch to complete (max 3 seconds)
+            if hasattr(self._weather_service, "wait_for_prefetch"):
+                if self._weather_service.wait_for_prefetch(self._departure_airport, timeout=3.0):
+                    logger.info("METAR prefetch completed for %s", self._departure_airport)
+                else:
+                    logger.debug("METAR prefetch timed out, using available data")
+
+            # Get weather (sync version - uses cache from background prefetch)
+            weather = self._weather_service.get_weather_sync(self._departure_airport)
+
+            # Get airport name - for now use a simple lookup, can expand later
+            airport_name = self._get_airport_name(self._departure_airport)
+
+            # Determine active runway from wind direction
+            active_runway = self._determine_active_runway(weather.wind.direction)
+
+            # Generate ATIS text from weather
+            self._atis_text = self.atis_generator.generate_from_weather(
+                airport_name=airport_name,
+                airport_icao=self._departure_airport,
+                active_runway=active_runway,
+                weather=weather,
+            )
+            self._departure_runway = active_runway
+
+            logger.info(
+                "ATIS generated for %s (runway %s, %s)",
+                self._departure_airport,
+                active_runway,
+                "real METAR" if not weather.is_simulated else "simulated",
+            )
+
+        except Exception as e:
+            logger.warning("Failed to generate ATIS from weather: %s", e)
+            self._generate_default_atis()
+
+    def _generate_default_atis(self) -> None:
+        """Generate default ATIS when weather is unavailable."""
+        airport_name = self._get_airport_name(self._departure_airport)
+        atis_info = self.atis_generator.create_default_atis(
+            airport_name=airport_name,
+            active_runway=self._departure_runway,
+        )
+        self._current_atis = atis_info
+        self._atis_text = self.atis_generator.generate(atis_info)
+        logger.info("Default ATIS generated for %s", self._departure_airport)
+
+    def _get_airport_name(self, icao: str) -> str:
+        """Get airport name from ICAO code.
+
+        Args:
+            icao: Airport ICAO code.
+
+        Returns:
+            Human-readable airport name.
+        """
+        # Common airports - can be expanded or loaded from database
+        airport_names = {
+            "KPAO": "Palo Alto Airport",
+            "KSFO": "San Francisco International",
+            "KSJC": "San Jose International",
+            "KOAK": "Oakland International",
+            "KLAX": "Los Angeles International",
+            "KJFK": "John F Kennedy International",
+            "KSEA": "Seattle-Tacoma International",
+            "KORD": "Chicago O'Hare International",
+            "KATL": "Atlanta Hartsfield-Jackson",
+            "KDFW": "Dallas Fort Worth International",
+            "EGLL": "London Heathrow",
+            "LFPG": "Paris Charles de Gaulle",
+            "LFLY": "Lyon Bron Airport",
+        }
+        return airport_names.get(icao.upper(), f"{icao} Airport")
+
+    def _determine_active_runway(self, wind_direction: int) -> str:
+        """Determine active runway based on wind direction.
+
+        Args:
+            wind_direction: Wind direction in degrees (0-360), or -1 for variable.
+
+        Returns:
+            Active runway identifier (e.g., "31", "04L").
+        """
+        # For variable wind, use default runway
+        if wind_direction < 0:
+            return self._departure_runway
+
+        # Round to nearest 10 degrees and divide by 10 to get runway number
+        runway_heading = round(wind_direction / 10) * 10
+        if runway_heading == 0:
+            runway_heading = 360
+
+        runway_num = runway_heading // 10
+        if runway_num == 0:
+            runway_num = 36
+
+        return f"{runway_num:02d}"
 
     def _handle_atc_menu(self, message: Message) -> None:
         """Handle ATC menu request (F1 key).

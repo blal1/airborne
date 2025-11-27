@@ -50,12 +50,14 @@ class ATCInstruction:
         full_text: Full instruction text (if available).
         elements: Dictionary of critical elements (altitude, heading, etc.).
         timestamp: When instruction was received.
+        readback_text: Pre-generated readback text (if available).
     """
 
     message_key: str | list[str]
     full_text: str = ""
     elements: dict[str, str] = field(default_factory=dict)
     timestamp: float = 0.0
+    readback_text: str = ""  # Pre-generated readback from phraseology system
 
 
 class ReadbackValidator:
@@ -200,12 +202,15 @@ class ATCReadbackSystem:
 
         logger.info(f"ATC readback system initialized (callsign: {callsign})")
 
-    def record_atc_instruction(self, message_key: str | list[str], full_text: str = "") -> None:
+    def record_atc_instruction(
+        self, message_key: str | list[str], full_text: str = "", readback_text: str = ""
+    ) -> None:
         """Record an ATC instruction for potential readback.
 
         Args:
             message_key: Message key(s) from atc_en.yaml.
             full_text: Full text of instruction (if available).
+            readback_text: Pre-generated readback text (for Shift+F1).
         """
         import time
 
@@ -219,17 +224,21 @@ class ATCReadbackSystem:
             full_text=full_text,
             elements=elements,
             timestamp=time.time(),
+            readback_text=readback_text,
         )
 
         self._instruction_history.append(instruction)
 
-        logger.debug(f"Recorded ATC instruction: {message_key} (elements: {list(elements.keys())})")
+        logger.debug(
+            f"Recorded ATC instruction: {message_key[:50] if isinstance(message_key, str) else message_key} "
+            f"(elements: {list(elements.keys())}, has_readback: {bool(readback_text)})"
+        )
 
     def acknowledge(self) -> bool:
         """Acknowledge last ATC instruction with readback (Shift+F1).
 
-        Generates appropriate readback based on critical elements in the
-        last ATC message and enqueues pilot message.
+        Uses pre-generated readback text if available, otherwise generates
+        readback from critical elements in the last ATC message.
 
         Returns:
             True if acknowledgment was sent, False if no instruction to acknowledge.
@@ -243,31 +252,29 @@ class ATCReadbackSystem:
         # Get last instruction
         last_instruction = self._instruction_history[-1]
 
-        # Generate readback
-        readback_text = self._validator.generate_readback(last_instruction.elements, self._callsign)
+        # Use pre-generated readback if available, otherwise generate from elements
+        if last_instruction.readback_text:
+            readback_text = last_instruction.readback_text
+        else:
+            readback_text = self._validator.generate_readback(
+                last_instruction.elements, self._callsign
+            )
 
-        logger.info(f"Acknowledging with readback: {readback_text}")
+        logger.info(f"Acknowledging with readback: {readback_text[:60]}...")
 
-        # Enqueue pilot readback message
+        # Enqueue pilot readback message with the actual readback text
         from airborne.plugins.radio.atc_queue import ATCMessage
 
         pilot_msg = ATCMessage(
-            message_key="PILOT_READBACK",  # Generic readback message
+            message_key=readback_text,  # Use the actual readback text
             sender="PILOT",
-            priority=0,
-            delay_after=2.0,
-        )
-        self._atc_queue.enqueue(pilot_msg)
-
-        # Enqueue ATC response ("Readback correct" or corrections)
-        # For now, assume correct (in full implementation, would validate)
-        atc_response = ATCMessage(
-            message_key="ATC_READBACK_CORRECT",
-            sender="ATC",
             priority=0,
             delay_after=0.0,
         )
-        self._atc_queue.enqueue(atc_response)
+        self._atc_queue.enqueue(pilot_msg)
+
+        # Clear this instruction from history (it's been acknowledged)
+        self._instruction_history.pop()
 
         return True
 

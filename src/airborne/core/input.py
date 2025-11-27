@@ -598,6 +598,7 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
                 return
 
         # Special handling for Alt+number keys for instrument readouts
+        # On macOS, Alt+Shift+Number works more reliably than Alt alone
         mods = pygame.key.get_mods()
         if mods & (pygame.KMOD_ALT | pygame.KMOD_LALT | pygame.KMOD_RALT):
             alt_number_actions = {

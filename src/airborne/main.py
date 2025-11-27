@@ -11,6 +11,7 @@ Typical usage:
 
 import argparse
 import sys
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pygame
@@ -58,7 +59,9 @@ class AirBorne:
             args: Command line arguments (optional)
         """
         # Store CLI arguments
-        self.args = args or argparse.Namespace(from_airport=None, to_airport=None, callsign=None)
+        self.args = args or argparse.Namespace(
+            from_airport=None, to_airport=None, callsign=None, tts=None
+        )
 
         # Initialize logging first (use platform-specific directories)
         logging_config = get_config_path("logging.yaml")
@@ -152,8 +155,12 @@ class AirBorne:
         from airborne.airports.database import AirportDatabase
         from airborne.aviation import CallsignGenerator
         from airborne.scenario import ScenarioBuilder, SpawnLocation, SpawnManager
+        from airborne.services.weather import WeatherService
 
         logger.info("Initializing navigation systems...")
+
+        # Initialize weather service and start background METAR fetch
+        self.weather_service = WeatherService()
 
         # Airport database (loads airports on-demand from X-Plane Gateway)
         self.airport_db = AirportDatabase()
@@ -172,11 +179,19 @@ class AirBorne:
             airport_icao = "KPAO"
             logger.info(f"Using default departure airport: {airport_icao}")
 
+        # Store departure airport for later use (e.g., radio plugin)
+        self.departure_airport_icao = airport_icao
+
+        # Start background METAR fetch for departure airport (non-blocking)
+        self.weather_service.prefetch_weather(airport_icao)
+
         # Generate or use provided callsign
         if self.args.callsign:
             callsign = self.args.callsign
         else:
-            callsign_obj = self.callsign_gen.generate_ga_callsign("N")
+            # Generate callsign based on departure airport country
+            country_prefix = self._get_country_prefix_from_icao(airport_icao)
+            callsign_obj = self.callsign_gen.generate_ga_callsign(country_prefix)
             callsign = callsign_obj.full
 
         # Build scenario
@@ -247,6 +262,13 @@ class AirBorne:
                     self.plugin_context.config["audio"] = {}
                 self.plugin_context.config["audio"]["aircraft"] = audio_config
 
+            # Set TTS mode from CLI argument (--tts=system or --tts=self-voiced)
+            if self.args.tts:
+                if "tts" not in self.plugin_context.config:
+                    self.plugin_context.config["tts"] = {}
+                self.plugin_context.config["tts"]["tts_mode"] = self.args.tts
+                logger.info(f"TTS mode set from CLI: {self.args.tts}")
+
             # Extract aircraft characteristics (fixed_gear, etc.) and performance config
             aircraft_info = config.get("aircraft", {})
             fixed_gear = aircraft_info.get("fixed_gear", False)
@@ -286,6 +308,16 @@ class AirBorne:
             # Load radio plugin
             logger.info("Loading radio plugin...")
             from airborne.plugins.radio.radio_plugin import RadioPlugin
+
+            # Add radio config with departure airport and weather service
+            # Extract aircraft type from config filename (e.g., "cessna172" from "cessna172.yaml")
+            aircraft_type_id = Path(aircraft_config_path).stem
+            self.plugin_context.config["radio"] = {
+                "callsign": self.scenario.callsign,
+                "aircraft_type": aircraft_type_id,
+                "departure_airport": self.departure_airport_icao,
+                "weather_service": self.weather_service,
+            }
 
             self.radio_plugin = RadioPlugin()
             self.radio_plugin.initialize(self.plugin_context)
@@ -365,6 +397,56 @@ class AirBorne:
         except Exception as e:
             logger.error("Failed to initialize plugins: %s", e)
             raise
+
+    def _get_country_prefix_from_icao(self, airport_icao: str) -> str:
+        """Get aircraft registration country prefix from airport ICAO code.
+
+        Maps ICAO airport prefixes to aircraft registration prefixes:
+        - K (USA) -> N
+        - EG (UK) -> G
+        - LF (France) -> F
+        - ED (Germany) -> D
+        - etc.
+
+        Args:
+            airport_icao: Airport ICAO code (e.g., "KPAO", "EGLL", "LFLY")
+
+        Returns:
+            Country registration prefix (e.g., "N" for US, "G" for UK)
+        """
+        icao_upper = airport_icao.upper()
+
+        # Map ICAO airport prefixes to registration country prefixes
+        icao_to_registration = {
+            "K": "N",  # USA
+            "P": "N",  # Pacific (USA)
+            "EG": "G",  # UK
+            "LF": "F",  # France
+            "ED": "D",  # Germany
+            "LE": "EC",  # Spain
+            "LI": "I",  # Italy
+            "EH": "PH",  # Netherlands
+            "EB": "OO",  # Belgium
+            "LS": "HB",  # Switzerland
+            "LO": "OE",  # Austria
+            "EK": "OY",  # Denmark
+            "EN": "LN",  # Norway
+            "ES": "SE",  # Sweden
+            "EF": "OH",  # Finland
+            "CY": "C",  # Canada
+            "VH": "VH",  # Australia
+            "ZK": "ZK",  # New Zealand
+        }
+
+        # Try 2-letter prefix first (more specific), then 1-letter
+        for prefix_len in [2, 1]:
+            if len(icao_upper) >= prefix_len:
+                prefix = icao_upper[:prefix_len]
+                if prefix in icao_to_registration:
+                    return icao_to_registration[prefix]
+
+        # Default to US registration if unknown
+        return "N"
 
     def _initialize_input_handlers(self) -> None:
         """Initialize and register input handlers with priority-based dispatch."""
@@ -467,8 +549,8 @@ class AirBorne:
                     priority=MessagePriority.NORMAL,
                 )
             )
-        # ATC Menu controls
-        elif event.action == "atc_menu":
+        # ATC Menu controls (toggle_atc_menu from context system)
+        elif event.action in ("atc_menu", "toggle_atc_menu"):
             # Send to radio plugin
             self.message_queue.publish(
                 Message(
@@ -536,8 +618,8 @@ class AirBorne:
                     priority=MessagePriority.HIGH,
                 )
             )
-        # Checklist menu controls
-        elif event.action == "checklist_menu":
+        # Checklist menu controls (toggle_checklist_menu from context system)
+        elif event.action in ("checklist_menu", "toggle_checklist_menu"):
             # Send to checklist plugin
             self.message_queue.publish(
                 Message(
@@ -548,8 +630,8 @@ class AirBorne:
                     priority=MessagePriority.HIGH,
                 )
             )
-        # Ground services menu controls
-        elif event.action == "ground_services_menu":
+        # Ground services menu controls (toggle_ground_services_menu from context system)
+        elif event.action in ("ground_services_menu", "toggle_ground_services_menu"):
             # Send to ground services plugin
             logger.info("F3 pressed - publishing ground_services_menu message")
             self.message_queue.publish(
@@ -899,6 +981,14 @@ def parse_args() -> argparse.Namespace:
         "--callsign",
         type=str,
         help="Aircraft callsign (e.g., N12345, Cessna 123)",
+    )
+
+    parser.add_argument(
+        "--tts",
+        type=str,
+        choices=["self-voiced", "system"],
+        default=None,
+        help="TTS backend: 'self-voiced' (pre-generated audio chunks) or 'system' (pyttsx3 real-time)",
     )
 
     return parser.parse_args()

@@ -1,4 +1,15 @@
 default_language: en
+
+# TTS backend configuration
+# backend: "self-voiced" (pre-generated audio chunks) or "system" (pyttsx3 real-time)
+tts:
+  default_backend: self-voiced
+  # System TTS uses pyttsx3 for cross-platform real-time speech synthesis
+  # Voice names vary by platform:
+  #   macOS: Alex, Samantha, Daniel, Oliver, etc.
+  #   Windows: David, Zira, Mark (SAPI5 voices)
+  #   Linux: espeak voices (en, en-us, etc.)
+
 voices:
   pilot:
     description: Pilot transmitting on radio and reading checklists
@@ -8,6 +19,11 @@ voices:
     rate: 200
     volume: 1.0
     output_dir: pilot
+    # pyttsx3 settings for system TTS mode
+    pyttsx3:
+      voice_name: Oliver  # macOS, fallback to system default
+      rate: 200
+      volume: 1.0
   cockpit:
     description: Cockpit computer for instrument readouts
     engine: say
@@ -16,6 +32,10 @@ voices:
     rate: 200
     volume: 1.0
     output_dir: cockpit
+    pyttsx3:
+      voice_name: Samantha
+      rate: 200
+      volume: 1.0
   ground:
     description: Ground control / Clearance delivery
     engine: say
@@ -24,6 +44,10 @@ voices:
     rate: 180
     volume: 1.0
     output_dir: atc/ground
+    pyttsx3:
+      voice_name: Evan
+      rate: 180
+      volume: 1.0
   tower:
     description: Tower control
     engine: say
@@ -32,6 +56,10 @@ voices:
     rate: 180
     volume: 1.0
     output_dir: atc/tower
+    pyttsx3:
+      voice_name: Evan
+      rate: 180
+      volume: 1.0
   approach:
     description: Approach/Departure control
     engine: say
@@ -40,6 +68,10 @@ voices:
     rate: 180
     volume: 1.0
     output_dir: atc/approach
+    pyttsx3:
+      voice_name: Evan
+      rate: 180
+      volume: 1.0
   atis:
     description: Automated Terminal Information Service
     engine: say
@@ -48,6 +80,10 @@ voices:
     rate: 160
     volume: 1.0
     output_dir: atc/atis
+    pyttsx3:
+      voice_name: Samantha
+      rate: 160
+      volume: 1.0
   steward:
     description: Flight attendant / cabin crew
     engine: say
@@ -56,6 +92,10 @@ voices:
     rate: 170
     volume: 1.0
     output_dir: cabin
+    pyttsx3:
+      voice_name: Samantha
+      rate: 170
+      volume: 1.0
   refuel:
     description: Refueling crew / fuel truck operator
     engine: say
@@ -64,6 +104,10 @@ voices:
     rate: 180
     volume: 1.0
     output_dir: ground/refuel
+    pyttsx3:
+      voice_name: Evan
+      rate: 180
+      volume: 1.0
   tug:
     description: Pushback tug operator
     engine: say
@@ -72,6 +116,10 @@ voices:
     rate: 180
     volume: 1.0
     output_dir: ground/tug
+    pyttsx3:
+      voice_name: Evan
+      rate: 180
+      volume: 1.0
   boarding:
     description: Boarding/gate agent
     engine: say
@@ -80,6 +128,10 @@ voices:
     rate: 180
     volume: 1.0
     output_dir: ground/boarding
+    pyttsx3:
+      voice_name: Evan
+      rate: 180
+      volume: 1.0
   ops:
     description: Ramp/operations coordinator
     engine: say
@@ -88,6 +140,10 @@ voices:
     rate: 180
     volume: 1.0
     output_dir: ground/ops
+    pyttsx3:
+      voice_name: Evan
+      rate: 180
+      volume: 1.0
   instructor:
     description: Flight instructor providing coaching and feedback
     engine: say
@@ -96,6 +152,10 @@ voices:
     rate: 200
     volume: 1.0
     output_dir: instructor
+    pyttsx3:
+      voice_name: Daniel
+      rate: 200
+      volume: 1.0
 messages:
   MSG_STARTUP:
     text: airborne flight simulator

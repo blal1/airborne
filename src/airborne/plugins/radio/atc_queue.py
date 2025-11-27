@@ -145,6 +145,10 @@ class ATCMessageQueue:
         """
         current_time = time.time()
 
+        # Update ATCAudioManager to cleanup finished playback
+        if hasattr(self._atc_audio, "update"):
+            self._atc_audio.update()
+
         # State: WAITING - Waiting for delay to expire
         if self._state == "WAITING":
             if current_time >= self._wait_until:
@@ -153,24 +157,36 @@ class ATCMessageQueue:
 
         # State: TRANSMITTING - Check if current message finished
         elif self._state == "TRANSMITTING" and self._current_message:
-            # Check if message is still playing
-            # Note: We rely on ATCAudioManager to handle playback completion
-            # For now, we estimate based on message complexity
-            # In a full implementation, ATCAudioManager would provide a callback
-            # when playback completes
+            # Check if audio is still playing using ATCAudioManager.is_playing()
+            is_still_playing = False
+            if hasattr(self._atc_audio, "is_playing"):
+                is_still_playing = self._atc_audio.is_playing()
 
-            # Simple heuristic: assume message played for at least 1 second
-            # A better approach would be to get actual playback duration from audio manager
-            elapsed = current_time - self._current_message.timestamp
-            min_duration = 1.0  # Minimum message duration
-
-            if elapsed >= min_duration:
-                # Message likely finished, transition to WAITING
+            if not is_still_playing:
+                # Audio finished, transition to WAITING
                 self._complete_current_message()
 
         # State: IDLE - Start next message if available
         if self._state == "IDLE" and len(self._queue) > 0:
             self._play_next_message()
+
+    def _is_dynamic_text(self, message_key: str | list[str]) -> bool:
+        """Check if message_key contains dynamic text vs a config key.
+
+        Dynamic text contains spaces (natural speech), while config keys
+        use underscores (e.g., "ATC_TOWER_CLEARED_TAKEOFF").
+
+        Args:
+            message_key: Message key or dynamic text.
+
+        Returns:
+            True if the message is dynamic text.
+        """
+        if isinstance(message_key, list):
+            # Lists of keys are always config keys
+            return False
+        # Dynamic text has spaces, config keys use underscores
+        return " " in message_key
 
     def _play_next_message(self) -> None:
         """Play the next message in the queue."""
@@ -179,15 +195,32 @@ class ATCMessageQueue:
 
         self._current_message = self._queue.popleft()
 
-        logger.info(
-            f"Playing {self._current_message.sender} message: {self._current_message.message_key}"
-        )
+        # Truncate for logging
+        msg_display = self._current_message.message_key
+        if isinstance(msg_display, str) and len(msg_display) > 60:
+            msg_display = msg_display[:60] + "..."
+
+        logger.info(f"Playing {self._current_message.sender} message: {msg_display}")
 
         try:
-            # Play message through ATC audio manager
-            self._current_source_id = self._atc_audio.play_atc_message(
-                self._current_message.message_key, volume=1.0
-            )
+            # Check if this is dynamic text or a config key
+            if self._is_dynamic_text(self._current_message.message_key):
+                # Dynamic text - use play_dynamic_speech
+                if hasattr(self._atc_audio, "play_dynamic_speech"):
+                    self._current_source_id = self._atc_audio.play_dynamic_speech(
+                        self._current_message.message_key,
+                        sender=self._current_message.sender,
+                        volume=1.0,
+                    )
+                else:
+                    logger.warning("play_dynamic_speech not available, skipping")
+                    self._complete_current_message()
+                    return
+            else:
+                # Config key - use play_atc_message
+                self._current_source_id = self._atc_audio.play_atc_message(
+                    self._current_message.message_key, volume=1.0
+                )
 
             self._state = "TRANSMITTING"
 

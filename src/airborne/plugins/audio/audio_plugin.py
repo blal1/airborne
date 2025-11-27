@@ -110,7 +110,8 @@ class AudioPlugin(IPlugin):
         # Stall warning state
         self._angle_of_attack = 0.0  # degrees
         self._stall_warning_active = False
-        self._stall_warning_sound_id: int | None = None
+        self._stall_warning_sound: Any = None  # Sound object
+        self._stall_warning_source_id: int | None = None  # Source ID for stopping
         self._stall_announced = False  # Track if we've announced "Stall!" for current stall event
         self._stall_warn_aoa_threshold = 14.0  # Start warning at 14° AOA
         self._stall_aoa_threshold = 16.0  # Full stall at 16° AOA
@@ -213,6 +214,9 @@ class AudioPlugin(IPlugin):
                 config_dir = get_resource_path("config")
                 speech_dir = get_data_path("speech/en")  # ATC uses same speech dir for now
                 self.atc_audio_manager = ATCAudioManager(self.audio_engine, config_dir, speech_dir)
+                # Wire up TTS provider for system TTS fallback
+                if self.tts_provider:
+                    self.atc_audio_manager.set_tts_provider(self.tts_provider)
                 logger.info("ATC audio manager initialized")
             except Exception as e:
                 logger.warning(f"Failed to initialize ATC audio manager: {e}")
@@ -314,8 +318,8 @@ class AudioPlugin(IPlugin):
         if self.tts_provider and hasattr(self.tts_provider, "update"):
             self.tts_provider.update()
 
-        # Update stall warning system
-        self._update_stall_warning()
+        # NOTE: Stall warning disabled - not working correctly with current AOA values
+        # self._update_stall_warning()
 
         # Update listener position (once per frame is fine)
         self.sound_manager.update_listener(
@@ -342,10 +346,10 @@ class AudioPlugin(IPlugin):
             logger.info(f"Stall warning activated (AOA={aoa:.1f}°)")
             sound_path = str(get_resource_path("assets/sounds/aircraft/stall_warn.mp3"))
             try:
-                self._stall_warning_sound_id = self.audio_engine.load_sound(sound_path)
-                if self._stall_warning_sound_id is not None:
-                    self.audio_engine.play_sound(
-                        self._stall_warning_sound_id, loop=True, volume=0.7
+                self._stall_warning_sound = self.audio_engine.load_sound(sound_path)
+                if self._stall_warning_sound is not None:
+                    self._stall_warning_source_id = self.audio_engine.play_2d(
+                        self._stall_warning_sound, loop=True, volume=0.7
                     )
                     self._stall_warning_active = True
             except Exception as e:
@@ -354,9 +358,9 @@ class AudioPlugin(IPlugin):
         elif not should_warn and self._stall_warning_active:
             # Stop playing stall warning sound
             logger.info(f"Stall warning deactivated (AOA={aoa:.1f}°)")
-            if self._stall_warning_sound_id is not None:
-                self.audio_engine.stop_sound(self._stall_warning_sound_id)
-                self._stall_warning_sound_id = None
+            if self._stall_warning_source_id is not None:
+                self.audio_engine.stop_source(self._stall_warning_source_id)
+                self._stall_warning_source_id = None
             self._stall_warning_active = False
             self._stall_announced = False  # Reset announcement flag when exiting stall
 
@@ -913,10 +917,9 @@ class AudioPlugin(IPlugin):
             return
 
         # Handle parking brake click sound (then continue to TTS)
-        if event.action in ("parking_brake_set", "parking_brake_release"):
-            if self.sound_manager:
-                sound_file = str(get_resource_path("assets/sounds/aircraft/click_switch.mp3"))
-                self.sound_manager.play_sound_2d(sound_file, volume=0.8)
+        if event.action in ("parking_brake_set", "parking_brake_release") and self.sound_manager:
+            sound_file = str(get_resource_path("assets/sounds/aircraft/click_switch.mp3"))
+            self.sound_manager.play_sound_2d(sound_file, volume=0.8)
 
         # Handle throttle released (announce percent)
         if event.action == "throttle_released" and event.value is not None:

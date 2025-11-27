@@ -42,10 +42,16 @@ class ATCAudioManager:
     The ATC voice is separate from cockpit TTS and uses a different
     voice (e.g., male voice for ATC, female voice for cockpit).
 
+    Note:
+        All playback methods are NON-BLOCKING. They start playback and return
+        immediately. Use is_playing() to check if audio is still playing.
+
     Examples:
         >>> atc_audio = ATCAudioManager(engine, Path("config"), Path("data/atc/en"))
         >>> atc_audio.play_atc_message("ATC_TOWER_CLEARED_TAKEOFF")
         42  # Returns source ID
+        >>> atc_audio.is_playing()
+        True
     """
 
     def __init__(
@@ -75,6 +81,9 @@ class ATCAudioManager:
         self._static_layer_config: dict[str, Any] = {}  # Static layer configuration
         self._static_sound: Any = None  # Loaded static sound
         self._sidechain_dsp: Any = None  # Side-chain compressor DSP
+        self._tts_provider: Any = None  # TTS provider for system TTS fallback
+        self._current_voice_channel: Any = None  # Current playing voice channel
+        self._current_static_channel_id: int | None = None  # Current static layer ID
 
         # Ensure speech directory exists
         if not self._speech_dir.exists():
@@ -306,8 +315,60 @@ class ATCAudioManager:
         except Exception as e:
             logger.warning(f"Error playing PTT beep: {e}")
 
+    def set_tts_provider(self, tts_provider: Any) -> None:
+        """Set the TTS provider for system TTS fallback.
+
+        When pre-recorded audio files don't exist, the manager can fall back
+        to generating audio using the system TTS provider.
+
+        Args:
+            tts_provider: TTS provider instance with _get_realtime_tts() method.
+        """
+        self._tts_provider = tts_provider
+        logger.info("TTS provider set for ATC audio manager")
+
+    def _get_voice_for_key(self, key: str) -> str:
+        """Get the appropriate TTS voice for a message key.
+
+        Args:
+            key: Message key (e.g., "PILOT_REQUEST_STARTUP", "ATC_CLEARED").
+
+        Returns:
+            Voice name (tower, pilot, etc.).
+        """
+        if key.startswith("PILOT_"):
+            return "pilot"
+        return "tower"
+
+    def _generate_tts_audio(self, text: str, voice: str) -> bytes | None:
+        """Generate audio bytes using system TTS.
+
+        Args:
+            text: Text to speak.
+            voice: Voice name (tower, pilot, etc.).
+
+        Returns:
+            Audio bytes or None if generation failed.
+        """
+        if not self._tts_provider:
+            return None
+
+        if not hasattr(self._tts_provider, "_get_realtime_tts"):
+            return None
+
+        realtime_tts = self._tts_provider._get_realtime_tts(voice)
+        if not realtime_tts:
+            return None
+
+        result = realtime_tts.generate_audio_bytes(text)
+        if not result:
+            return None
+
+        audio_bytes, _ = result
+        return audio_bytes
+
     def play_atc_message(self, message_key: str | list[str], volume: float = 1.0) -> int | None:
-        """Play an ATC message with radio effect and static layer.
+        """Play an ATC message with radio effect and static layer (NON-BLOCKING).
 
         Args:
             message_key: Message key (e.g., "ATC_TOWER_CLEARED_TAKEOFF") or
@@ -317,96 +378,235 @@ class ATCAudioManager:
         Returns:
             Source ID of the last played sound, or None if playback failed.
 
+        Note:
+            This method is NON-BLOCKING. It starts playback and returns immediately.
+            Use is_playing() to check if audio is still playing.
+
+            If message key is not found in configuration, a warning is logged
+            and None is returned. If pre-recorded file doesn't exist but a TTS
+            provider is set, it will fall back to system TTS.
+
         Examples:
             >>> # Single message
             >>> atc_audio.play_atc_message("ATC_TOWER_CLEARED_TAKEOFF")
             42
-
-            >>> # Multiple messages in sequence
-            >>> atc_audio.play_atc_message([
-            ...     "ATC_ROGER",
-            ...     "ATC_TOWER_CLEARED_TAKEOFF"
-            ... ])
-            43
-
-        Note:
-            If message key is not found in configuration, a warning is logged
-            and None is returned.
+            >>> atc_audio.is_playing()
+            True
         """
         if not self._initialized:
             logger.warning("ATC audio manager not initialized")
             return None
 
-        # Convert single key to list
-        if isinstance(message_key, str):
-            message_keys = [message_key]
-        else:
-            message_keys = message_key
+        # Convert single key to list (but only play first for now in non-blocking mode)
+        message_keys = [message_key] if isinstance(message_key, str) else message_key
 
         if not message_keys:
             return None
 
         # Start static layer (if enabled)
-        static_channel_id = self._start_static_layer()
-
-        # Play PTT start beep
-        time.sleep(0.2)  # Pre-roll delay for static
-        self._play_ptt_beep("start")
+        self._current_static_channel_id = self._start_static_layer()
 
         source_id = None
-        voice_channel = None
 
-        # Play each message in sequence
-        for key in message_keys:
-            # Resolve message key to filename
-            filename_base = self._message_map.get(key)
-            if not filename_base:
-                logger.warning(f"ATC message key not found: {key}")
-                continue
+        # Play the first message (sequence playback would need different handling)
+        key = message_keys[0]
 
-            filename = f"{filename_base}.{self._file_extension}"
-            filepath = self._speech_dir / filename
+        # Resolve message key to filename
+        filename_base = self._message_map.get(key)
+        if not filename_base:
+            logger.warning(f"ATC message key not found: {key}")
+            self._stop_static_layer(self._current_static_channel_id)
+            return None
 
-            if not filepath.exists():
-                logger.warning(f"ATC speech file not found: {filepath}")
-                continue
+        filename = f"{filename_base}.{self._file_extension}"
+        filepath = self._speech_dir / filename
 
-            # Load and play sound
+        # Try to load pre-recorded file, fall back to TTS if not found
+        sound = None
+        use_tts = False
+
+        if filepath.exists():
+            # Use pre-recorded file
             try:
                 sound = self._audio_engine.load_sound(str(filepath))
-                source_id = self._audio_engine.play_2d(sound, volume=volume, pitch=1.0, loop=False)
-
-                # Get the voice channel for side-chain
-                if source_id:
-                    voice_channel = self._audio_engine._channels.get(source_id)
-
-                # Apply radio effect to the channel
-                if self._radio_filter and self._radio_filter.is_enabled() and source_id:
-                    if voice_channel:
-                        self._radio_filter.apply_to_channel(voice_channel)
-                        logger.info(f"Playing ATC message with radio effect: {key}")
-                    else:
-                        logger.warning(f"Channel not found for source {source_id}")
-                else:
-                    logger.info(f"Playing ATC message without radio effect: {key}")
-
-                # Wait for message to finish
-                if voice_channel:
-                    while voice_channel.is_playing:
-                        self._audio_engine._system.update()
-                        time.sleep(0.016)
-
             except Exception as e:
-                logger.error(f"Error playing ATC message {key}: {e}")
+                logger.error(f"Error loading ATC audio file {filepath}: {e}")
+        else:
+            # Fall back to system TTS
+            if self._tts_provider:
+                # Convert filename to spoken text (replace underscores with spaces)
+                spoken_text = filename_base.replace("_", " ")
+                voice = self._get_voice_for_key(key)
+                audio_bytes = self._generate_tts_audio(spoken_text, voice)
+                if audio_bytes:
+                    try:
+                        sound = self._audio_engine.load_sound_from_bytes(
+                            audio_bytes, f"tts_{key}"
+                        )
+                        use_tts = True
+                    except Exception as e:
+                        logger.error(f"Error loading TTS audio for {key}: {e}")
+                else:
+                    logger.warning(f"TTS generation failed for: {key}")
+            else:
+                logger.warning(f"ATC speech file not found and no TTS fallback: {filepath}")
 
-        # Play PTT end beep
-        self._play_ptt_beep("end")
+        if not sound:
+            self._stop_static_layer(self._current_static_channel_id)
+            return None
 
-        # Stop static layer (with post-roll delay)
-        time.sleep(0.4)  # Post-roll delay for static
-        self._stop_static_layer(static_channel_id)
+        # Play sound (NON-BLOCKING)
+        try:
+            source_id = self._audio_engine.play_2d(sound, volume=volume, pitch=1.0, loop=False)
+
+            # Get the voice channel for radio effect
+            if source_id:
+                self._current_voice_channel = self._audio_engine._channels.get(source_id)
+
+            # Apply radio effect to the channel
+            if self._radio_filter and self._radio_filter.is_enabled() and source_id:
+                if self._current_voice_channel:
+                    self._radio_filter.apply_to_channel(self._current_voice_channel)
+                    mode = "TTS" if use_tts else "file"
+                    logger.info(f"Playing ATC message with radio effect ({mode}): {key}")
+                else:
+                    logger.warning(f"Channel not found for source {source_id}")
+            else:
+                logger.info(f"Playing ATC message without radio effect: {key}")
+
+            # NON-BLOCKING: Return immediately, caller uses is_playing() to check status
+
+        except Exception as e:
+            logger.error(f"Error playing ATC message {key}: {e}")
+            self._stop_static_layer(self._current_static_channel_id)
+            return None
 
         return source_id
+
+    def play_dynamic_text(
+        self,
+        audio_bytes: bytes,
+        volume: float = 1.0,
+        name: str = "dynamic_tts",
+    ) -> int | None:
+        """Play dynamically generated audio (e.g., system TTS) with radio effects (NON-BLOCKING).
+
+        This method allows playing audio generated at runtime (like ATIS from
+        system TTS) through the same radio effect chain as pre-recorded messages.
+
+        Args:
+            audio_bytes: Raw audio data (WAV format).
+            volume: Volume level (0.0 to 1.0, default: 1.0).
+            name: Name for the sound (for logging).
+
+        Returns:
+            Source ID of the played sound, or None if playback failed.
+
+        Note:
+            This method is NON-BLOCKING. It starts playback and returns immediately.
+            Use is_playing() to check if audio is still playing.
+
+        Examples:
+            >>> # Generate TTS audio bytes
+            >>> audio_bytes = tts.generate_audio_bytes("Hello world")
+            >>> atc_audio.play_dynamic_text(audio_bytes, name="atis")
+            42
+            >>> atc_audio.is_playing()
+            True
+        """
+        if not self._initialized:
+            logger.warning("ATC audio manager not initialized")
+            return None
+
+        if not audio_bytes:
+            logger.warning("No audio bytes provided for dynamic text")
+            return None
+
+        # Start static layer (if enabled)
+        self._current_static_channel_id = self._start_static_layer()
+
+        source_id = None
+
+        try:
+            # Load sound from bytes
+            sound = self._audio_engine.load_sound_from_bytes(audio_bytes, name)
+            if not sound:
+                logger.error(f"Failed to load dynamic audio: {name}")
+                self._stop_static_layer(self._current_static_channel_id)
+                return None
+
+            # Play the sound (NON-BLOCKING)
+            source_id = self._audio_engine.play_2d(sound, volume=volume, pitch=1.0, loop=False)
+
+            # Get the voice channel for radio effect
+            if source_id:
+                self._current_voice_channel = self._audio_engine._channels.get(source_id)
+
+            # Apply radio effect to the channel
+            if self._radio_filter and self._radio_filter.is_enabled() and source_id:
+                if self._current_voice_channel:
+                    self._radio_filter.apply_to_channel(self._current_voice_channel)
+                    logger.info(f"Playing dynamic text with radio effect: {name}")
+                else:
+                    logger.warning(f"Channel not found for source {source_id}")
+            else:
+                logger.info(f"Playing dynamic text without radio effect: {name}")
+
+            # NON-BLOCKING: Return immediately, caller uses is_playing() to check status
+
+        except Exception as e:
+            logger.error(f"Error playing dynamic text {name}: {e}")
+            self._stop_static_layer(self._current_static_channel_id)
+            return None
+
+        return source_id
+
+    def play_dynamic_speech(
+        self,
+        text: str,
+        sender: str = "ATC",
+        volume: float = 1.0,
+    ) -> int | None:
+        """Play dynamically generated speech text with radio effects.
+
+        This method generates TTS audio from text and plays it through the
+        radio effect chain. Used for dynamic phraseology generated at runtime.
+
+        Args:
+            text: Text to speak (e.g., "Palo Alto Ground, Skyhawk November...").
+            sender: Who is speaking - "PILOT" or "ATC" (determines voice).
+            volume: Volume level (0.0 to 1.0, default: 1.0).
+
+        Returns:
+            Source ID of the played sound, or None if playback failed.
+
+        Examples:
+            >>> atc_audio.play_dynamic_speech(
+            ...     "Palo Alto Ground, Skyhawk one two three, request taxi",
+            ...     sender="PILOT"
+            ... )
+            42
+        """
+        if not self._initialized:
+            logger.warning("ATC audio manager not initialized")
+            return None
+
+        if not text or not text.strip():
+            logger.warning("Empty text provided for dynamic speech")
+            return None
+
+        # Select voice based on sender
+        voice = "pilot" if sender == "PILOT" else "tower"
+
+        # Generate TTS audio bytes
+        audio_bytes = self._generate_tts_audio(text, voice)
+        if not audio_bytes:
+            logger.warning(f"Failed to generate TTS audio for: {text[:50]}...")
+            return None
+
+        # Play with radio effects
+        name = f"dynamic_{sender.lower()}"
+        return self.play_dynamic_text(audio_bytes, volume=volume, name=name)
 
     def _start_static_layer(self) -> int | None:
         """Start playing the static layer sound.
@@ -544,6 +744,47 @@ class ATCAudioManager:
             True if radio effect is enabled and functional.
         """
         return self._radio_filter is not None and self._radio_filter.is_enabled()
+
+    def is_playing(self) -> bool:
+        """Check if audio is currently playing.
+
+        Returns:
+            True if voice audio is currently playing.
+
+        Examples:
+            >>> atc_audio.play_atc_message("ATC_TOWER_CLEARED")
+            42
+            >>> atc_audio.is_playing()
+            True
+            >>> # After message finishes...
+            >>> atc_audio.is_playing()
+            False
+        """
+        if self._current_voice_channel:
+            try:
+                return bool(self._current_voice_channel.is_playing)
+            except Exception:
+                return False
+        return False
+
+    def update(self) -> None:
+        """Update audio state and cleanup finished playback.
+
+        Call this method every frame to check if playback has finished
+        and clean up resources (stop static layer, etc.).
+
+        Note:
+            This is essential for non-blocking audio to work correctly.
+            If not called, the static layer will continue playing after
+            the voice has finished.
+        """
+        # Check if voice finished playing
+        if self._current_voice_channel and not self.is_playing():
+            # Voice finished, cleanup
+            self._stop_static_layer(self._current_static_channel_id)
+            self._current_voice_channel = None
+            self._current_static_channel_id = None
+            logger.debug("Voice playback finished, cleaned up static layer")
 
     def get_available_messages(self) -> list[str]:
         """Get list of available ATC message keys.

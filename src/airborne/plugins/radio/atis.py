@@ -2,6 +2,189 @@
 
 from dataclasses import dataclass
 from datetime import datetime
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from airborne.services.weather.models import Weather
+
+
+# =============================================================================
+# Aviation Phraseology Helpers (English)
+# =============================================================================
+# NOTE: These functions are language-specific (English aviation phraseology).
+# For multi-language support, consider:
+# 1. Moving to a separate phraseology module per language
+# 2. Using a Phraseology class with language-specific subclasses
+# 3. Loading phraseology from configuration files
+# =============================================================================
+
+# Digit to spoken word mapping (aviation standard)
+_DIGIT_WORDS = {
+    "0": "zero",
+    "1": "one",
+    "2": "two",
+    "3": "three",
+    "4": "four",
+    "5": "five",
+    "6": "six",
+    "7": "seven",
+    "8": "eight",
+    "9": "niner",  # Aviation standard uses "niner" to avoid confusion with "five"
+}
+
+
+def _digits_to_words(value: str) -> str:
+    """Convert a string of digits to spoken words.
+
+    Args:
+        value: String containing digits (e.g., "310", "1455").
+
+    Returns:
+        Space-separated spoken words (e.g., "three one zero").
+
+    Examples:
+        >>> _digits_to_words("310")
+        'three one zero'
+        >>> _digits_to_words("1455")
+        'one four five five'
+    """
+    return " ".join(_DIGIT_WORDS.get(d, d) for d in value)
+
+
+def _format_time_spoken(time_str: str) -> str:
+    """Format time (HHMM) for spoken ATIS.
+
+    Args:
+        time_str: Time in HHMM format (e.g., "1455").
+
+    Returns:
+        Spoken time (e.g., "one four five five").
+
+    Examples:
+        >>> _format_time_spoken("1455")
+        'one four five five'
+        >>> _format_time_spoken("0830")
+        'zero eight three zero'
+    """
+    return _digits_to_words(time_str)
+
+
+def _format_wind_direction_spoken(direction: int) -> str:
+    """Format wind direction for spoken ATIS.
+
+    Args:
+        direction: Wind direction in degrees (0-360).
+
+    Returns:
+        Spoken direction (e.g., "three one zero").
+
+    Examples:
+        >>> _format_wind_direction_spoken(310)
+        'three one zero'
+        >>> _format_wind_direction_spoken(90)
+        'zero niner zero'
+    """
+    return _digits_to_words(f"{direction:03d}")
+
+
+def _format_altimeter_spoken(altimeter: float) -> str:
+    """Format altimeter setting for spoken ATIS (US format).
+
+    Args:
+        altimeter: Altimeter in inches Hg (e.g., 30.12).
+
+    Returns:
+        Spoken altimeter (e.g., "three zero one two").
+
+    Examples:
+        >>> _format_altimeter_spoken(30.12)
+        'three zero one two'
+        >>> _format_altimeter_spoken(29.92)
+        'two niner niner two'
+    """
+    # Remove decimal point and format as 4 digits
+    alt_str = f"{altimeter:.2f}".replace(".", "")
+    return _digits_to_words(alt_str)
+
+
+def _format_qnh_spoken(qnh: int) -> str:
+    """Format QNH for spoken ATIS (European format).
+
+    Args:
+        qnh: QNH in hectopascals (e.g., 1013).
+
+    Returns:
+        Spoken QNH (e.g., "one zero one three").
+
+    Examples:
+        >>> _format_qnh_spoken(1013)
+        'one zero one three'
+        >>> _format_qnh_spoken(998)
+        'niner niner eight'
+    """
+    return _digits_to_words(str(qnh))
+
+
+def _format_runway_spoken(runway: str) -> str:
+    """Format runway identifier for spoken ATIS.
+
+    Args:
+        runway: Runway identifier (e.g., "31", "31L", "07R").
+
+    Returns:
+        Spoken runway (e.g., "three one", "three one left").
+
+    Examples:
+        >>> _format_runway_spoken("31")
+        'three one'
+        >>> _format_runway_spoken("31L")
+        'three one left'
+        >>> _format_runway_spoken("07R")
+        'zero seven right'
+    """
+    # Mapping for runway suffix letters
+    suffix_map = {"L": "left", "R": "right", "C": "center"}
+
+    # Extract numbers and suffix
+    numbers = "".join(c for c in runway if c.isdigit())
+    suffix = "".join(c for c in runway if c.isalpha())
+
+    result = _digits_to_words(numbers)
+    if suffix and suffix.upper() in suffix_map:
+        result += f" {suffix_map[suffix.upper()]}"
+
+    return result
+
+
+def _format_visibility_spoken(visibility: float) -> str:
+    """Format visibility for spoken ATIS.
+
+    Args:
+        visibility: Visibility in statute miles.
+
+    Returns:
+        Spoken visibility phrase.
+
+    Examples:
+        >>> _format_visibility_spoken(10)
+        'one zero'
+        >>> _format_visibility_spoken(3)
+        'three'
+        >>> _format_visibility_spoken(0.5)
+        'one half'
+    """
+    if visibility >= 10:
+        return "one zero"
+    if visibility >= 1:
+        return _digits_to_words(str(int(visibility)))
+
+    # Common fractions for low visibility
+    fraction_map = {
+        0.25: "one quarter",
+        0.5: "one half",
+        0.75: "three quarters",
+    }
+    return fraction_map.get(visibility, f"{visibility:.1f}")
 
 
 @dataclass
@@ -336,3 +519,107 @@ class ATISGenerator:
             current_atis.time_zulu = now.strftime("%H%M")
 
         return current_atis
+
+    def generate_from_weather(
+        self,
+        airport_name: str,
+        airport_icao: str,
+        active_runway: str,
+        weather: "Weather",
+    ) -> str:
+        """Generate ATIS text directly from Weather model.
+
+        Creates a realistic ATIS broadcast with proper aviation phraseology.
+        Numbers are spoken digit-by-digit per aviation standards.
+        Handles both US (inHg) and European (hPa/QNH) pressure formats.
+
+        Args:
+            airport_name: Full airport name (e.g., "Palo Alto Airport").
+            airport_icao: Airport ICAO code (e.g., "KPAO").
+            active_runway: Active runway identifier (e.g., "31").
+            weather: Weather object from WeatherService.
+
+        Returns:
+            Complete ATIS broadcast text with proper phraseology for TTS.
+        """
+        # Get information letter
+        info_letter = self.get_next_information_letter()
+
+        # Format time from weather observation (spoken digit-by-digit)
+        time_zulu = weather.observation_time.strftime("%H%M")
+        time_spoken = _format_time_spoken(time_zulu)
+
+        parts = []
+
+        # 1. Introduction
+        parts.append(f"{airport_name} information {info_letter}.")
+
+        # 2. Time (Zulu) - spoken digit-by-digit
+        parts.append(f"Time {time_spoken} zulu.")
+
+        # 3. Wind - direction spoken digit-by-digit
+        wind = weather.wind
+        if wind.is_calm:
+            parts.append("Wind calm.")
+        elif wind.is_variable and wind.direction == -1:
+            wind_text = f"Wind variable at {wind.speed}"
+            if wind.gust:
+                wind_text += f", gusts {wind.gust}"
+            wind_text += "."
+            parts.append(wind_text)
+        else:
+            wind_dir_spoken = _format_wind_direction_spoken(wind.direction)
+            wind_text = f"Wind {wind_dir_spoken} at {wind.speed}"
+            if wind.gust:
+                wind_text += f", gusts {wind.gust}"
+            wind_text += "."
+            parts.append(wind_text)
+
+        # 4. Visibility - spoken with proper phraseology
+        vis_spoken = _format_visibility_spoken(weather.visibility)
+        if weather.visibility >= 10:
+            parts.append(f"Visibility {vis_spoken} miles or better.")
+        else:
+            parts.append(f"Visibility {vis_spoken} miles.")
+
+        # 5. Sky condition
+        sky_desc = weather.get_sky_condition_string()
+        parts.append(f"Sky condition {sky_desc}.")
+
+        # 6. Temperature and dewpoint
+        temp = weather.temperature
+        dew = weather.dewpoint
+        # Handle negative temperatures
+        temp_str = f"minus {abs(temp)}" if temp < 0 else str(temp)
+        dew_str = f"minus {abs(dew)}" if dew < 0 else str(dew)
+        parts.append(f"Temperature {temp_str}, dewpoint {dew_str}.")
+
+        # 7. Altimeter/QNH - spoken digit-by-digit, handle EU vs US formats
+        if weather.pressure_unit == "hPa":
+            # European format: QNH in hectopascals
+            qnh_spoken = _format_qnh_spoken(int(weather.altimeter))
+            parts.append(f"QNH {qnh_spoken}.")
+        else:
+            # US format: Altimeter in inches Hg
+            alt_spoken = _format_altimeter_spoken(weather.altimeter)
+            parts.append(f"Altimeter {alt_spoken}.")
+
+        # 8. Active runway - spoken digit-by-digit
+        runway_spoken = _format_runway_spoken(active_runway)
+        parts.append(f"Landing and departing runway {runway_spoken}.")
+
+        # 9. Remarks (if any)
+        if weather.remarks:
+            # Truncate long remarks
+            remarks = weather.remarks[:100]
+            parts.append(f"Remarks, {remarks}.")
+
+        # 10. METAR source indicator
+        if weather.is_simulated:
+            parts.append("Note, simulated weather data.")
+
+        # 11. Advise on initial contact
+        parts.append(f"Advise on initial contact you have information {info_letter}.")
+
+        # Join with spaces - periods provide natural pauses for TTS
+        return " ".join(parts)

@@ -1,15 +1,21 @@
-"""Audio file-based TTS provider implementation.
+"""Audio file-based TTS provider implementation with optional system TTS fallback.
 
-This module provides a TTS implementation using pre-recorded audio files (OGG format)
-instead of real-time text-to-speech synthesis. Messages are mapped to audio files
-using YAML configuration files in config/speech_{language}.yaml.
+This module provides a TTS implementation that can use either:
+1. Pre-recorded audio files (self-voiced mode, default)
+2. Real-time pyttsx3 synthesis (system mode)
+
+The mode can be configured via:
+- CLI argument: --tts=system or --tts=self-voiced
+- Config: tts_mode in initialization config
+
+Messages are mapped to audio files using YAML configuration files in config/speech.yaml.
 
 Typical usage example:
     from airborne.audio.tts.audio_provider import AudioSpeechProvider
     from airborne.audio.tts.speech_messages import MSG_STARTUP
 
     tts = AudioSpeechProvider()
-    tts.initialize({"language": "en", "audio_engine": engine})
+    tts.initialize({"language": "en", "audio_engine": engine, "tts_mode": "system"})
     tts.speak(MSG_STARTUP)
 """
 
@@ -29,6 +35,7 @@ except ImportError:
     pyfmodex = None
     CHANNELCONTROL_CALLBACK_TYPE = None
 
+from airborne.audio.realtime_tts import RealtimeTTS
 from airborne.audio.tts.base import ITTSProvider, TTSPriority, TTSState
 from airborne.core.logging_system import get_logger
 
@@ -86,6 +93,7 @@ class AudioSpeechProvider(ITTSProvider):
         self._file_extension = "wav"
         self._message_map: dict[str, dict[str, str]] = {}  # key -> {text, voice}
         self._voice_dirs: dict[str, Path] = {}  # voice -> directory path
+        self._voice_configs: dict[str, dict[str, Any]] = {}  # voice -> full config
 
         # Audio engine reference (will be injected)
         self._audio_engine: Any = None
@@ -96,6 +104,10 @@ class AudioSpeechProvider(ITTSProvider):
         self._playing = False
         self._callback_lock = threading.Lock()  # Protect callback access
 
+        # System TTS mode (pyttsx3)
+        self._tts_mode: str = "self-voiced"  # "self-voiced" or "system"
+        self._realtime_tts: dict[str, RealtimeTTS] = {}  # Per-voice TTS instances
+
     def initialize(self, config: dict[str, Any]) -> None:
         """Initialize audio speech provider.
 
@@ -105,6 +117,7 @@ class AudioSpeechProvider(ITTSProvider):
                 - speech_dir: Path to speech files directory (default: "data/speech")
                 - config_dir: Path to config directory (default: "config")
                 - audio_engine: Reference to audio engine (required)
+                - tts_mode: "self-voiced" (pre-recorded) or "system" (pyttsx3)
         """
         if self._initialized:
             logger.warning("AudioSpeechProvider already initialized")
@@ -115,6 +128,7 @@ class AudioSpeechProvider(ITTSProvider):
         self._config_dir = Path(config.get("config_dir", "config"))
         self._speech_dir = Path(speech_dir) / self._language
         self._audio_engine = config.get("audio_engine")
+        self._tts_mode = config.get("tts_mode", "self-voiced")
 
         if not self._audio_engine:
             logger.error("No audio engine provided to AudioSpeechProvider")
@@ -147,11 +161,12 @@ class AudioSpeechProvider(ITTSProvider):
                 with open(config_file, encoding="utf-8") as f:
                     speech_config = yaml.safe_load(f)
 
-                # Build voice directory map
+                # Build voice directory map and voice configs
                 voices = speech_config.get("voices", {})
                 for voice_name, voice_config in voices.items():
                     output_dir = voice_config.get("output_dir", voice_name)
                     self._voice_dirs[voice_name] = self._speech_dir / output_dir
+                    self._voice_configs[voice_name] = voice_config
 
                 # Load messages
                 self._message_map = speech_config.get("messages", {})
@@ -172,10 +187,11 @@ class AudioSpeechProvider(ITTSProvider):
 
         self._initialized = True
         logger.info(
-            "AudioSpeechProvider initialized: language=%s, dir=%s, format=%s",
+            "AudioSpeechProvider initialized: language=%s, dir=%s, format=%s, mode=%s",
             self._language,
             self._speech_dir,
             self._file_extension,
+            self._tts_mode,
         )
 
     def shutdown(self) -> None:
@@ -221,6 +237,11 @@ class AudioSpeechProvider(ITTSProvider):
         # Stop current speech if interrupt or critical
         if interrupt or priority == TTSPriority.CRITICAL:
             self.stop()
+
+        # Use system TTS mode (pyttsx3) if configured
+        if self._tts_mode == "system":
+            self._speak_system(message_keys, priority, interrupt, callback)
+            return
 
         # Resolve all file paths and preload sounds
         sound_objects = []
@@ -304,6 +325,183 @@ class AudioSpeechProvider(ITTSProvider):
         # Start playback if not already playing
         if not self._playing:
             self._play_next_in_sequence()
+
+    def _speak_system(
+        self,
+        message_keys: list[str],
+        priority: TTSPriority,
+        interrupt: bool,
+        callback: Callable[[], None] | None = None,
+    ) -> None:
+        """Speak using system TTS (pyttsx3) instead of audio files.
+
+        Converts message keys to text using the config and speaks via RealtimeTTS.
+
+        Args:
+            message_keys: List of message keys to speak.
+            priority: Priority level.
+            interrupt: If True, stop current speech.
+            callback: Optional callback when done.
+        """
+        # Build text from message keys
+        texts: list[str] = []
+        voice_name = "cockpit"  # Default voice
+
+        for key in message_keys:
+            message_config = self._message_map.get(key)
+            if message_config:
+                # Use text from config
+                text = message_config.get("text", key)
+                voice_name = message_config.get("voice", "cockpit")
+                texts.append(text)
+            else:
+                # Try to extract meaning from key
+                # Handle patterns like "cockpit/number_42_autogen" or "MSG_WORD_KNOTS"
+                if "/" in key:
+                    voice_name, filename = key.split("/", 1)
+                    # Parse autogen number keys like "number_42_autogen"
+                    if filename.startswith("number_") and "_autogen" in filename:
+                        num_str = filename.replace("number_", "").replace("_autogen", "")
+                        texts.append(num_str)
+                    else:
+                        texts.append(filename.replace("_", " "))
+                elif key.startswith("MSG_WORD_"):
+                    # Extract word from MSG_WORD_X pattern
+                    word = key.replace("MSG_WORD_", "").replace("_", " ").lower()
+                    texts.append(word)
+                elif key.startswith("MSG_DIGIT_"):
+                    # Extract digit
+                    digit = key.replace("MSG_DIGIT_", "")
+                    texts.append(digit)
+                elif key.startswith("MSG_"):
+                    # Generic MSG_ pattern - convert underscores to spaces
+                    text = key.replace("MSG_", "").replace("_", " ").lower()
+                    texts.append(text)
+                else:
+                    texts.append(key.replace("_", " "))
+
+        if not texts:
+            logger.warning(f"No text found for keys: {message_keys}")
+            return
+
+        # Join texts into single phrase
+        full_text = " ".join(texts)
+        logger.info(f"System TTS speaking: '{full_text}' (voice={voice_name})")
+
+        # Get or create RealtimeTTS for this voice
+        tts = self._get_realtime_tts(voice_name)
+        if not tts:
+            logger.error(f"Failed to get RealtimeTTS for voice: {voice_name}")
+            return
+
+        # Generate audio bytes
+        result = tts.generate_audio_bytes(full_text)
+        if not result:
+            logger.error(f"System TTS failed for: {full_text[:30]}")
+            return
+
+        audio_bytes, _ = result
+
+        # Load and play through FMOD
+        try:
+            sound = self._audio_engine.load_sound_from_bytes(audio_bytes, f"tts_{voice_name}")
+            if sound:
+                self._playback_queue.append(sound)
+                self._state = TTSState.SPEAKING
+                if not self._playing:
+                    self._play_next_in_sequence()
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.error(f"Error playing system TTS audio: {e}")
+
+    def _get_realtime_tts(self, voice_name: str) -> RealtimeTTS | None:
+        """Get or create RealtimeTTS instance for a voice.
+
+        Args:
+            voice_name: Voice name (pilot, cockpit, tower, etc.)
+
+        Returns:
+            RealtimeTTS instance or None if creation fails.
+        """
+        if voice_name not in self._realtime_tts:
+            # Get voice config
+            voice_config = self._voice_configs.get(voice_name, {})
+            pyttsx3_config = voice_config.get("pyttsx3", {})
+
+            # Create RealtimeTTS with voice-specific settings
+            try:
+                self._realtime_tts[voice_name] = RealtimeTTS(
+                    rate=pyttsx3_config.get("rate", 180),
+                    voice_name=pyttsx3_config.get("voice_name"),
+                    cache_enabled=True,
+                )
+                logger.info(f"Created RealtimeTTS for voice '{voice_name}': {pyttsx3_config}")
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                logger.error(f"Failed to create RealtimeTTS for voice {voice_name}: {e}")
+                return None
+
+        return self._realtime_tts[voice_name]
+
+    def speak_text(
+        self,
+        text: str,
+        voice: str = "tower",
+        priority: TTSPriority = TTSPriority.NORMAL,
+        interrupt: bool = False,
+        callback: Callable[[], None] | None = None,
+    ) -> None:
+        """Speak raw text directly using system TTS.
+
+        This method is for speaking arbitrary text (like ATIS broadcasts) that
+        isn't pre-recorded. Only works in system TTS mode.
+
+        Args:
+            text: Raw text to speak.
+            voice: Voice name (tower, cockpit, pilot, etc.).
+            priority: Priority level.
+            interrupt: If True, stop current speech.
+            callback: Optional callback when done.
+        """
+        if not self._initialized:
+            return
+
+        if not text or not text.strip():
+            return
+
+        # In self-voiced mode, we can't speak arbitrary text
+        if self._tts_mode != "system":
+            logger.warning("speak_text() only works in system TTS mode")
+            return
+
+        # Stop current speech if interrupt
+        if interrupt or priority == TTSPriority.CRITICAL:
+            self.stop()
+
+        logger.info(f"System TTS speaking text: '{text[:50]}...' (voice={voice})")
+
+        # Get or create RealtimeTTS for this voice
+        tts = self._get_realtime_tts(voice)
+        if not tts:
+            logger.error(f"Failed to get RealtimeTTS for voice: {voice}")
+            return
+
+        # Generate audio bytes
+        result = tts.generate_audio_bytes(text)
+        if not result:
+            logger.error(f"System TTS failed for text: {text[:30]}")
+            return
+
+        audio_bytes, _ = result
+
+        # Load and play through FMOD
+        try:
+            sound = self._audio_engine.load_sound_from_bytes(audio_bytes, f"tts_{voice}")
+            if sound:
+                self._playback_queue.append(sound)
+                self._state = TTSState.SPEAKING
+                if not self._playing:
+                    self._play_next_in_sequence()
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.error(f"Error playing system TTS audio: {e}")
 
     def stop(self) -> None:
         """Stop current speech immediately."""

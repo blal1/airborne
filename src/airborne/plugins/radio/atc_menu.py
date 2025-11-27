@@ -4,8 +4,10 @@ This module provides a context-aware menu system for player-initiated
 ATC communications. The menu displays options based on aircraft state
 (on ground, airborne, engine state, etc.) and handles player input.
 
+Generates realistic phraseology dynamically based on flight context.
+
 Typical usage example:
-    menu = ATCMenu(tts_provider, atc_queue)
+    menu = ATCMenu(tts_provider, atc_queue, phraseology)
 
     # Check if menu should be available
     if menu.is_available(aircraft_state):
@@ -19,6 +21,7 @@ from enum import Enum
 from typing import Any
 
 from airborne.core.logging_system import get_logger
+from airborne.plugins.radio.atc_phraseology import ATCPhraseology, FlightContext
 from airborne.ui.menu import Menu, MenuOption
 
 logger = get_logger(__name__)
@@ -38,19 +41,21 @@ class FlightPhase(Enum):
 
 
 class ATCMenu(Menu):
-    """Context-aware ATC menu system.
+    """Context-aware ATC menu system with realistic phraseology.
 
     Extends the generic Menu base class to provide ATC-specific functionality.
     Provides interactive menu for ATC communications with options that
     change based on aircraft state and flight phase.
 
+    Generates realistic radio phraseology dynamically using ATCPhraseology.
+
     The menu uses a state machine:
     - CLOSED: Menu not visible
     - OPEN: Menu displayed, waiting for selection
-    - WAITING_RESPONSE: Pilot message sent, waiting for ATC response (additional state)
+    - WAITING_RESPONSE: Pilot message sent, waiting for ATC response
 
     Examples:
-        >>> menu = ATCMenu(tts, queue)
+        >>> menu = ATCMenu(tts, queue, message_queue)
         >>> state = {"on_ground": True, "engine_running": True}
         >>> menu.open(state)
         >>> options = menu.get_current_options()
@@ -73,8 +78,130 @@ class ATCMenu(Menu):
         self._waiting_response = False
         self._current_phase: FlightPhase = FlightPhase.UNKNOWN
         self._last_aircraft_state: dict[str, Any] = {}
+        self._readback_system: Any = None  # ATCReadbackSystem for Shift+F1 functionality
+
+        # Flight context for phraseology generation
+        self._flight_context = FlightContext(
+            callsign="N12345",
+            aircraft_type="cessna172",
+            airport_icao="KPAO",
+            airport_name="Palo Alto",
+            runway="31",
+            parking_location="ramp",
+            atis_info="Alpha",
+            atis_received=False,
+            passengers=1,
+        )
+        self._phraseology: ATCPhraseology | None = None
 
         logger.info("ATC menu initialized")
+
+    def set_flight_context(
+        self,
+        callsign: str | None = None,
+        aircraft_type: str | None = None,
+        airport_icao: str | None = None,
+        airport_name: str | None = None,
+        runway: str | None = None,
+        parking_location: str | None = None,
+        atis_info: str | None = None,
+        atis_received: bool | None = None,
+        ground_freq: str | None = None,
+        tower_freq: str | None = None,
+        departure_freq: str | None = None,
+        passengers: int | None = None,
+    ) -> None:
+        """Set flight context for phraseology generation.
+
+        Args:
+            callsign: Aircraft callsign
+            aircraft_type: Aircraft type (e.g., "cessna172")
+            airport_icao: Airport ICAO code
+            airport_name: Airport name for radio calls
+            runway: Active runway
+            parking_location: Current parking location
+            atis_info: Current ATIS information letter
+            atis_received: Whether ATIS has been listened to
+            ground_freq: Ground frequency
+            tower_freq: Tower frequency
+            departure_freq: Departure frequency
+            passengers: Number of passengers on board
+        """
+        if callsign:
+            self._flight_context.callsign = callsign
+        if aircraft_type:
+            self._flight_context.aircraft_type = aircraft_type
+        if airport_icao:
+            self._flight_context.airport_icao = airport_icao
+        if airport_name:
+            self._flight_context.airport_name = airport_name
+        if runway:
+            self._flight_context.runway = runway
+        if parking_location:
+            self._flight_context.parking_location = parking_location
+        if atis_info:
+            self._flight_context.atis_info = atis_info
+        if atis_received is not None:
+            self._flight_context.atis_received = atis_received
+        if ground_freq:
+            self._flight_context.ground_freq = ground_freq
+        if tower_freq:
+            self._flight_context.tower_freq = tower_freq
+        if departure_freq:
+            self._flight_context.departure_freq = departure_freq
+        if passengers is not None:
+            self._flight_context.passengers = passengers
+
+        # Recreate phraseology with updated context
+        self._phraseology = ATCPhraseology(self._flight_context)
+        logger.debug(f"Flight context updated: callsign={callsign}, airport={airport_icao}")
+
+    def set_readback_system(self, readback_system: Any) -> None:
+        """Set the readback system for Shift+F1 acknowledge functionality.
+
+        Args:
+            readback_system: ATCReadbackSystem instance.
+        """
+        self._readback_system = readback_system
+        logger.debug("Readback system connected to ATC menu")
+
+    def get_phraseology(self) -> ATCPhraseology | None:
+        """Get the phraseology generator.
+
+        Returns:
+            ATCPhraseology instance or None if not initialized.
+        """
+        if not self._phraseology:
+            self._phraseology = ATCPhraseology(self._flight_context)
+        return self._phraseology
+
+    def mark_atis_received(self, atis_letter: str) -> None:
+        """Mark ATIS as received with the given information letter.
+
+        Args:
+            atis_letter: ATIS information letter (e.g., "Alpha", "Bravo")
+        """
+        self._flight_context.atis_info = atis_letter
+        self._flight_context.atis_received = True
+        # Recreate phraseology with updated context
+        self._phraseology = ATCPhraseology(self._flight_context)
+        logger.info(f"ATIS received: information {atis_letter}")
+
+    def is_atis_received(self) -> bool:
+        """Check if ATIS has been received.
+
+        Returns:
+            True if ATIS has been listened to.
+        """
+        return self._flight_context.atis_received
+
+    def get_atis_info(self) -> str:
+        """Get current ATIS information letter.
+
+        Returns:
+            ATIS information letter (e.g., "Alpha").
+        """
+        return self._flight_context.atis_info
 
     # Public API methods
 
@@ -131,8 +258,16 @@ class ATCMenu(Menu):
         # Store aircraft state
         self._last_aircraft_state = context if context else {}
 
+        # Update altitude in flight context
+        if context and "altitude_agl" in context:
+            self._flight_context.altitude = int(context.get("altitude_agl", 0))
+
         # Determine flight phase
         self._current_phase = self._determine_flight_phase(self._last_aircraft_state)
+
+        # Ensure phraseology is initialized
+        if not self._phraseology:
+            self._phraseology = ATCPhraseology(self._flight_context)
 
         # Get context-specific options
         return self._get_context_options(self._current_phase)
@@ -143,35 +278,120 @@ class ATCMenu(Menu):
         Args:
             option: The selected MenuOption.
         """
+        from airborne.core.messaging import Message
         from airborne.plugins.radio.atc_queue import ATCMessage
 
         # Extract ATC-specific data from option
-        pilot_message = option.data.get("pilot_message")
-        expected_atc_response = option.data.get("expected_atc_response")
-        callback = option.data.get("callback")
+        data = option.data or {}
+        pilot_text_func = data.get("pilot_text_func")
+        atc_text_func = data.get("atc_text_func")
+        readback_text_func = data.get("readback_text_func")  # Pilot readback
+        callback = data.get("callback")
 
         # Close menu silently (don't speak "menu closed" when selecting option)
         super().close(speak=False)
+
+        # Special handling for ATIS request - uses dynamic TTS
+        if data.get("is_atis_request"):
+            logger.info("ATIS request - using dynamic TTS")
+            # Publish to input.atis_request for radio_plugin to handle
+            if self._message_queue:
+                self._message_queue.publish(
+                    Message(
+                        sender="atc_menu",
+                        recipients=["*"],
+                        topic="input.atis_request",
+                        data={},
+                    )
+                )
+            # Execute callback if provided
+            if callback:
+                try:
+                    callback()
+                except Exception as e:
+                    logger.error(f"Error in option callback: {e}")
+            return
+
+        # Generate dynamic pilot and ATC messages
+        pilot_text = ""
+        atc_text = ""
+        readback_text = ""
+
+        if pilot_text_func and self._phraseology:
+            try:
+                pilot_text = pilot_text_func(self._phraseology)
+            except Exception as e:
+                logger.error(f"Error generating pilot text: {e}")
+                pilot_text = "Request acknowledged"
+
+        if atc_text_func and self._phraseology:
+            try:
+                atc_text = atc_text_func(self._phraseology)
+            except Exception as e:
+                logger.error(f"Error generating ATC text: {e}")
+                atc_text = "Roger"
+
+        if readback_text_func and self._phraseology:
+            try:
+                readback_text = readback_text_func(self._phraseology)
+            except Exception as e:
+                logger.error(f"Error generating readback text: {e}")
+                readback_text = ""
+
+        # Handle CTAF announcements (no ATC response expected)
+        if pilot_text and not atc_text:
+            self._waiting_response = True
+            pilot_msg = ATCMessage(
+                message_key=pilot_text,
+                sender="PILOT",
+                priority=0,
+                delay_after=0.5,
+                callback=self._on_atc_response_complete,
+            )
+            self._atc_queue.enqueue(pilot_msg)
+            logger.info(f"Enqueued CTAF: PILOT='{pilot_text[:50]}...'")
+            return
+
+        if not pilot_text or not atc_text:
+            logger.warning("Missing pilot or ATC text, skipping transmission")
+            return
+
         self._waiting_response = True
 
-        # Enqueue pilot message
+        # Enqueue pilot message with dynamic text
         pilot_msg = ATCMessage(
-            message_key=pilot_message,
+            message_key=pilot_text,  # Dynamic text instead of key
             sender="PILOT",
             priority=0,
-            delay_after=2.0,  # Wait 2 seconds after pilot transmission
+            delay_after=2.0,
         )
         self._atc_queue.enqueue(pilot_msg)
 
-        # Enqueue ATC response
+        # Enqueue ATC response with dynamic text
+        # Record ATC message for Shift+F1 readback functionality
         atc_msg = ATCMessage(
-            message_key=expected_atc_response,
+            message_key=atc_text,  # Dynamic text instead of key
             sender="ATC",
             priority=0,
-            delay_after=0.0,  # ATC gets random delay from queue
+            delay_after=0.0,  # No auto-delay - user uses Shift+F1 to readback
             callback=self._on_atc_response_complete,
         )
         self._atc_queue.enqueue(atc_msg)
+
+        # Record ATC instruction for Shift+F1 acknowledge and Option+F1 repeat
+        if self._readback_system and readback_text:
+            # Store the readback text along with the ATC message for later use
+            self._readback_system.record_atc_instruction(
+                message_key=atc_text,
+                full_text=atc_text,
+                readback_text=readback_text,  # Store the readback for Shift+F1
+            )
+            logger.info(
+                f"Enqueued ATC exchange (use Shift+F1 to readback): "
+                f"PILOT='{pilot_text[:40]}...' ATC='{atc_text[:40]}...'"
+            )
+        else:
+            logger.info(f"Enqueued ATC exchange: PILOT='{pilot_text[:50]}...' ATC='{atc_text[:50]}...'")
 
         # Execute callback if provided
         if callback:
@@ -179,8 +399,6 @@ class ATCMenu(Menu):
                 callback()
             except Exception as e:
                 logger.error(f"Error in option callback: {e}")
-
-        logger.debug(f"Enqueued pilot and ATC messages for: {option.label}")
 
     def _get_menu_opened_message(self) -> str:
         """Get TTS message key for menu opened.
@@ -275,48 +493,88 @@ class ATCMenu(Menu):
         Returns:
             List of MenuOption appropriate for phase.
         """
-        options = []
+        options: list[MenuOption] = []
 
         if phase == FlightPhase.ON_GROUND_ENGINE_OFF:
+            # Check if ATIS has been received for startup request
+            atis_received = self._flight_context.atis_received
+
             options = [
                 MenuOption(
                     key="1",
-                    label="Request Startup Clearance",
-                    message_key="MSG_ATC_OPTION_REQUEST_STARTUP",
-                    data={
-                        "pilot_message": "PILOT_REQUEST_STARTUP",
-                        "expected_atc_response": "ATC_CLEARED",
-                    },
+                    label="Listen to ATIS",
+                    message_key="MSG_ATC_OPTION_REQUEST_ATIS",
+                    data={"is_atis_request": True},
                 ),
                 MenuOption(
                     key="2",
-                    label="Request ATIS",
-                    message_key="MSG_ATC_OPTION_REQUEST_ATIS",
+                    label="Radio Check",
+                    message_key="MSG_ATC_OPTION_RADIO_CHECK",
                     data={
-                        "pilot_message": "PILOT_REQUEST_ATIS",
-                        "expected_atc_response": ["ATIS_AIRPORT_INFO", "ATIS_INFO_ALPHA"],
+                        "pilot_text_func": lambda p: p.pilot_radio_check(),
+                        "atc_text_func": lambda p: p.atc_radio_check_response(),
                     },
                 ),
             ]
+
+            # Add startup option - depends on ATIS status
+            if atis_received:
+                options.append(
+                    MenuOption(
+                        key="3",
+                        label="Request Startup",
+                        message_key="MSG_ATC_OPTION_REQUEST_STARTUP",
+                        data={
+                            "pilot_text_func": lambda p: p.pilot_request_startup(),
+                            "atc_text_func": lambda p: p.atc_startup_approved(),
+                            "readback_text_func": lambda p: p.pilot_readback_startup(),
+                        },
+                    )
+                )
+            else:
+                # Startup without ATIS - ATC will ask for information
+                options.append(
+                    MenuOption(
+                        key="3",
+                        label="Request Startup (no ATIS)",
+                        message_key="MSG_ATC_OPTION_REQUEST_STARTUP_NO_ATIS",
+                        data={
+                            "pilot_text_func": lambda p: p.pilot_request_startup_no_atis(),
+                            "atc_text_func": lambda p: p.atc_startup_denied_no_atis(),
+                        },
+                    )
+                )
 
         elif phase == FlightPhase.ON_GROUND_ENGINE_RUNNING:
             options = [
                 MenuOption(
                     key="1",
-                    label="Request Taxi",
-                    message_key="MSG_ATC_OPTION_REQUEST_TAXI",
-                    data={
-                        "pilot_message": "PILOT_REQUEST_TAXI",
-                        "expected_atc_response": "ATC_GROUND_TAXI_RWY_31",
-                    },
+                    label="Listen to ATIS",
+                    message_key="MSG_ATC_OPTION_REQUEST_ATIS",
+                    data={"is_atis_request": True},
                 ),
                 MenuOption(
                     key="2",
-                    label="Request ATIS",
-                    message_key="MSG_ATC_OPTION_REQUEST_ATIS",
+                    label="Request Taxi",
+                    message_key="MSG_ATC_OPTION_REQUEST_TAXI",
                     data={
-                        "pilot_message": "PILOT_REQUEST_ATIS",
-                        "expected_atc_response": ["ATIS_AIRPORT_INFO", "ATIS_INFO_ALPHA"],
+                        "pilot_text_func": lambda p: p.pilot_request_taxi(),
+                        "atc_text_func": lambda p: p.atc_taxi_clearance("Alpha"),
+                        "readback_text_func": lambda p: p.pilot_readback_taxi("Alpha"),
+                    },
+                ),
+                MenuOption(
+                    key="3",
+                    label="Announce Taxi (CTAF)",
+                    message_key="MSG_ATC_OPTION_ANNOUNCE_TAXI",
+                    data={
+                        "pilot_text_func": lambda p: (
+                            f"{p.context.airport_name} Traffic, "
+                            f"{p._full_pilot_callsign()}, "
+                            f"taxiing to runway {p._format_runway(p.context.runway)}, "
+                            f"{p.context.airport_name}"
+                        ),
+                        "atc_text_func": lambda p: "",  # No ATC response at uncontrolled
                     },
                 ),
             ]
@@ -325,20 +583,37 @@ class ATCMenu(Menu):
             options = [
                 MenuOption(
                     key="1",
-                    label="Request Takeoff Clearance",
-                    message_key="MSG_ATC_OPTION_REQUEST_TAKEOFF",
+                    label="Ready for Departure",
+                    message_key="MSG_ATC_OPTION_READY_DEPARTURE",
                     data={
-                        "pilot_message": "PILOT_REQUEST_TAKEOFF",
-                        "expected_atc_response": "ATC_TOWER_CLEARED_TAKEOFF_31",
+                        "pilot_text_func": lambda p: p.pilot_ready_for_departure(),
+                        "atc_text_func": lambda p: p.atc_cleared_takeoff(),
+                        "readback_text_func": lambda p: p.pilot_readback_takeoff(),
                     },
                 ),
                 MenuOption(
                     key="2",
-                    label="Report Ready for Departure",
-                    message_key="MSG_ATC_OPTION_READY_DEPARTURE",
+                    label="Request Takeoff",
+                    message_key="MSG_ATC_OPTION_REQUEST_TAKEOFF",
                     data={
-                        "pilot_message": "PILOT_READY_FOR_DEPARTURE",
-                        "expected_atc_response": "ATC_ROGER",
+                        "pilot_text_func": lambda p: p.pilot_request_takeoff(),
+                        "atc_text_func": lambda p: p.atc_cleared_takeoff(),
+                        "readback_text_func": lambda p: p.pilot_readback_takeoff(),
+                    },
+                ),
+                MenuOption(
+                    key="3",
+                    label="Announce Departure (CTAF)",
+                    message_key="MSG_ATC_OPTION_ANNOUNCE_DEPARTURE",
+                    data={
+                        "pilot_text_func": lambda p: (
+                            f"{p.context.airport_name} Traffic, "
+                            f"{p._full_pilot_callsign()}, "
+                            f"departing runway {p._format_runway(p.context.runway)}, "
+                            f"straight out departure, "
+                            f"{p.context.airport_name}"
+                        ),
+                        "atc_text_func": lambda p: "",  # No response at CTAF
                     },
                 ),
             ]
@@ -347,11 +622,25 @@ class ATCMenu(Menu):
             options = [
                 MenuOption(
                     key="1",
-                    label="Report Ready for Departure",
+                    label="Report Ready",
                     message_key="MSG_ATC_OPTION_READY_DEPARTURE",
                     data={
-                        "pilot_message": "PILOT_READY_FOR_DEPARTURE",
-                        "expected_atc_response": "ATC_TOWER_CLEARED_TAKEOFF_31",
+                        "pilot_text_func": lambda p: p.pilot_request_takeoff(),
+                        "atc_text_func": lambda p: p.atc_cleared_takeoff(),
+                    },
+                ),
+                MenuOption(
+                    key="2",
+                    label="Announce Takeoff (CTAF)",
+                    message_key="MSG_ATC_OPTION_ANNOUNCE_TAKEOFF",
+                    data={
+                        "pilot_text_func": lambda p: (
+                            f"{p.context.airport_name} Traffic, "
+                            f"{p._abbreviated_callsign()}, "
+                            f"rolling runway {p._format_runway(p.context.runway)}, "
+                            f"{p.context.airport_name}"
+                        ),
+                        "atc_text_func": lambda p: "",  # No response
                     },
                 ),
             ]
@@ -360,20 +649,39 @@ class ATCMenu(Menu):
             options = [
                 MenuOption(
                     key="1",
-                    label="Check In with Departure",
+                    label="Contact Departure",
                     message_key="MSG_ATC_OPTION_CHECKIN_DEPARTURE",
                     data={
-                        "pilot_message": "PILOT_CHECKIN_DEPARTURE",
-                        "expected_atc_response": "ATC_DEPARTURE_RADAR_CONTACT",
+                        "pilot_text_func": lambda p: p.pilot_departure_checkin(),
+                        "atc_text_func": lambda p: p.atc_radar_contact(),
                     },
                 ),
                 MenuOption(
                     key="2",
-                    label="Report Altitude",
-                    message_key="MSG_ATC_OPTION_REPORT_ALTITUDE",
+                    label="Request Frequency Change",
+                    message_key="MSG_ATC_OPTION_FREQ_CHANGE",
                     data={
-                        "pilot_message": "PILOT_REPORT_ALTITUDE",
-                        "expected_atc_response": "ATC_ROGER",
+                        "pilot_text_func": lambda p: (
+                            f"{p.context.airport_name} Tower, "
+                            f"{p._abbreviated_callsign()}, "
+                            f"request frequency change"
+                        ),
+                        "atc_text_func": lambda p: p.atc_frequency_change_approved(),
+                    },
+                ),
+                MenuOption(
+                    key="3",
+                    label="Announce Departure (CTAF)",
+                    message_key="MSG_ATC_OPTION_ANNOUNCE_DEPARTURE_CTAF",
+                    data={
+                        "pilot_text_func": lambda p: (
+                            f"{p.context.airport_name} Traffic, "
+                            f"{p._abbreviated_callsign()}, "
+                            f"departing to the north, "
+                            f"climbing through {p._format_altitude(p.context.altitude)}, "
+                            f"{p.context.airport_name}"
+                        ),
+                        "atc_text_func": lambda p: "",  # No response
                     },
                 ),
             ]
@@ -385,21 +693,52 @@ class ATCMenu(Menu):
                     label="Request Flight Following",
                     message_key="MSG_ATC_OPTION_REQUEST_FLIGHT_FOLLOWING",
                     data={
-                        "pilot_message": "PILOT_REQUEST_FLIGHT_FOLLOWING",
-                        "expected_atc_response": "ATC_ROGER",
+                        "pilot_text_func": lambda p: (
+                            f"NorCal Approach, "
+                            f"{p._full_pilot_callsign()}, "
+                            f"request flight following"
+                        ),
+                        "atc_text_func": lambda p: (
+                            f"{p._abbreviated_callsign()}, "
+                            f"NorCal Approach, "
+                            f"squawk {p._format_number(4521)}, "
+                            f"say altitude and destination"
+                        ),
                     },
                 ),
                 MenuOption(
                     key="2",
-                    label="Report Position",
+                    label="Position Report",
                     message_key="MSG_ATC_OPTION_REPORT_POSITION",
                     data={
-                        "pilot_message": "PILOT_REPORT_POSITION",
-                        "expected_atc_response": "ATC_ROGER",
+                        "pilot_text_func": lambda p: (
+                            f"NorCal Approach, "
+                            f"{p._abbreviated_callsign()}, "
+                            f"level {p._format_altitude(p.context.altitude)}"
+                        ),
+                        "atc_text_func": lambda p: p.atc_roger(),
+                    },
+                ),
+                MenuOption(
+                    key="3",
+                    label="Request Higher Altitude",
+                    message_key="MSG_ATC_OPTION_REQUEST_HIGHER",
+                    data={
+                        "pilot_text_func": lambda p: (
+                            f"NorCal Approach, "
+                            f"{p._abbreviated_callsign()}, "
+                            f"request higher"
+                        ),
+                        "atc_text_func": lambda p: (
+                            f"{p._abbreviated_callsign()}, "
+                            f"climb and maintain {p._format_altitude(p.context.altitude + 2000)}"
+                        ),
                     },
                 ),
             ]
 
+        # Filter out options with empty ATC responses (CTAF announcements)
+        # These are valid but don't need a response
         return options
 
     def _on_atc_response_complete(self) -> None:

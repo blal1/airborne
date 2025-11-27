@@ -123,6 +123,201 @@ class FMODEngine(IAudioEngine):
         self._channels.clear()
         logger.info("FMOD engine shut down")
 
+    def load_sound_from_bytes(
+        self,
+        audio_bytes: bytes,
+        name: str = "memory_sound",
+    ) -> Sound:
+        """Load a sound from raw audio file bytes in memory.
+
+        FMOD will decode the audio format automatically (WAV, AIFF, MP3, etc.).
+        This is the simplest way to play dynamically generated audio.
+
+        Args:
+            audio_bytes: Raw audio file bytes (WAV, AIFF, MP3, etc.).
+            name: Identifier name for the sound.
+
+        Returns:
+            Loaded sound resource.
+
+        Raises:
+            FMODError: If loading fails.
+
+        Examples:
+            >>> audio_bytes, fmt = tts.generate_audio_bytes("Hello")
+            >>> sound = engine.load_sound_from_bytes(audio_bytes)
+            >>> engine.play_2d(sound)
+        """
+        if not self._initialized:
+            raise FMODError("Engine not initialized")
+
+        import ctypes
+
+        from pyfmodex.structures import CREATESOUNDEXINFO
+
+        try:
+            # Set up CREATESOUNDEXINFO for memory loading
+            exinfo = CREATESOUNDEXINFO()
+            exinfo.cbsize = ctypes.sizeof(CREATESOUNDEXINFO)
+            exinfo.length = len(audio_bytes)
+
+            # Create sound from memory - FMOD will auto-detect format
+            mode_flags = (
+                pyfmodex.flags.MODE.OPENMEMORY
+                | pyfmodex.flags.MODE.CREATESAMPLE
+                | pyfmodex.flags.MODE.TWOD
+            )
+
+            fmod_sound = self._system.create_sound(audio_bytes, mode=mode_flags, exinfo=exinfo)
+
+            # Create Sound object
+            sound = Sound(
+                path=name,
+                format=AudioFormat.UNKNOWN,  # Let FMOD figure it out
+                duration=0.0,
+                sample_rate=44100,
+                channels=2,
+                handle=fmod_sound,
+            )
+
+            # Store in sounds dict with unique name
+            unique_name = f"{name}_{id(sound)}"
+            self._sounds[unique_name] = sound
+            sound.path = unique_name
+
+            logger.debug(
+                "Loaded sound from bytes: %s (%d bytes)",
+                unique_name,
+                len(audio_bytes),
+            )
+            return sound
+
+        except Exception as e:
+            raise FMODError(f"Failed to load sound from bytes: {e}") from e
+
+    def load_sound_from_memory(
+        self,
+        pcm_data: bytes,
+        sample_rate: int,
+        channels: int,
+        name: str = "memory_sound",
+    ) -> Sound:
+        """Load a sound from raw PCM data in memory.
+
+        This allows playing dynamically generated audio (like TTS) without
+        writing to disk.
+
+        Args:
+            pcm_data: Raw PCM samples as bytes (16-bit signed, little-endian).
+            sample_rate: Sample rate in Hz (e.g., 22050, 44100).
+            channels: Number of channels (1=mono, 2=stereo).
+            name: Identifier name for the sound.
+
+        Returns:
+            Loaded sound resource.
+
+        Raises:
+            FMODError: If loading fails.
+
+        Examples:
+            >>> pcm_bytes = tts.generate_pcm("Hello").bytes
+            >>> sound = engine.load_sound_from_memory(pcm_bytes, 22050, 1)
+            >>> engine.play_2d(sound)
+        """
+        if not self._initialized:
+            raise FMODError("Engine not initialized")
+
+        import ctypes
+
+        from pyfmodex.structures import CREATESOUNDEXINFO
+
+        try:
+            # Create WAV header + PCM data in memory
+            # FMOD can decode WAV format from memory with OPENMEMORY
+            wav_data = self._create_wav_buffer(pcm_data, sample_rate, channels)
+
+            # Set up CREATESOUNDEXINFO for memory loading
+            exinfo = CREATESOUNDEXINFO()
+            exinfo.cbsize = ctypes.sizeof(CREATESOUNDEXINFO)
+            exinfo.length = len(wav_data)
+
+            # Create sound from memory
+            # OPENMEMORY tells FMOD the "path" is actually a memory pointer
+            mode_flags = (
+                pyfmodex.flags.MODE.OPENMEMORY
+                | pyfmodex.flags.MODE.CREATESAMPLE
+                | pyfmodex.flags.MODE.TWOD
+            )
+
+            fmod_sound = self._system.create_sound(wav_data, mode=mode_flags, exinfo=exinfo)
+
+            # Create Sound object
+            sound = Sound(
+                path=name,
+                format=AudioFormat.WAV,
+                duration=len(pcm_data) / (sample_rate * channels * 2),  # 2 bytes per sample
+                sample_rate=sample_rate,
+                channels=channels,
+                handle=fmod_sound,
+            )
+
+            # Store in sounds dict with unique name
+            unique_name = f"{name}_{id(sound)}"
+            self._sounds[unique_name] = sound
+            sound.path = unique_name
+
+            logger.debug(
+                "Loaded sound from memory: %s (%d bytes, %dHz, %dch)",
+                unique_name,
+                len(pcm_data),
+                sample_rate,
+                channels,
+            )
+            return sound
+
+        except Exception as e:
+            raise FMODError(f"Failed to load sound from memory: {e}") from e
+
+    def _create_wav_buffer(self, pcm_data: bytes, sample_rate: int, channels: int) -> bytes:
+        """Create a WAV file buffer in memory from raw PCM data.
+
+        Args:
+            pcm_data: Raw PCM samples (16-bit signed, little-endian).
+            sample_rate: Sample rate in Hz.
+            channels: Number of channels.
+
+        Returns:
+            Complete WAV file as bytes.
+        """
+        import struct
+
+        # WAV header parameters
+        bits_per_sample = 16
+        byte_rate = sample_rate * channels * bits_per_sample // 8
+        block_align = channels * bits_per_sample // 8
+        data_size = len(pcm_data)
+        file_size = 36 + data_size  # Header size (44) - 8 + data
+
+        # Build WAV header
+        header = struct.pack(
+            "<4sI4s4sIHHIIHH4sI",
+            b"RIFF",  # ChunkID
+            file_size,  # ChunkSize
+            b"WAVE",  # Format
+            b"fmt ",  # Subchunk1ID
+            16,  # Subchunk1Size (PCM = 16)
+            1,  # AudioFormat (PCM = 1)
+            channels,  # NumChannels
+            sample_rate,  # SampleRate
+            byte_rate,  # ByteRate
+            block_align,  # BlockAlign
+            bits_per_sample,  # BitsPerSample
+            b"data",  # Subchunk2ID
+            data_size,  # Subchunk2Size
+        )
+
+        return header + pcm_data
+
     def load_sound(self, path: str, preload: bool = True, loop_mode: bool = False) -> Sound:
         """Load a sound from file.
 

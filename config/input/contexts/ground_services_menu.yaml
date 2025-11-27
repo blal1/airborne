@@ -1,0 +1,56 @@
+# Ground Services Menu context
+# Active when ground services menu is open (F3)
+
+context: ground_services_menu
+description: "Ground services menu - fuel, tug, etc."
+priority: 75
+
+on_enter:
+  announce: "MSG_GROUND_SERVICES_MENU_OPENED"
+
+on_exit:
+  announce: "MSG_GROUND_SERVICES_MENU_CLOSED"
+
+bindings:
+  # Menu navigation
+  - keys: [up, w]
+    action: menu_previous
+    description: "Select previous menu option"
+    repeat: false
+
+  - keys: [down, s]
+    action: menu_next
+    description: "Select next menu option"
+    repeat: false
+
+  # Selection
+  - key: return
+    action: menu_select
+    description: "Select current option"
+
+  # Number keys for quick selection
+  - keys: ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+    action: menu_select_number
+    description: "Select option by number"
+
+  # Close menu
+  - key: escape
+    action: close_ground_services_menu
+    description: "Close ground services menu"
+    pop_context: true
+
+  - key: f3
+    action: close_ground_services_menu
+    description: "Close ground services menu (toggle)"
+    pop_context: true
+
+# Block flight controls while in menu
+block_actions:
+  - pitch_up
+  - pitch_down
+  - roll_left
+  - roll_right
+  - yaw_left
+  - yaw_right
+  - throttle_increase
+  - throttle_decrease

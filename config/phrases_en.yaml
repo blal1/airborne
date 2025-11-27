@@ -1,0 +1,215 @@
+# English Phrase Chunks for ATC/ATIS
+# Each chunk is a complete phrase recorded as a single audio file
+# This provides natural-sounding speech instead of word-by-word concatenation
+#
+# Chunk IDs are used in code to reference the audio file
+# Audio files are stored as: data/speech/en/atc/atis/{chunk_id}.ogg
+
+# ATIS-specific phrase chunks
+atis:
+  # Opening
+  INFORMATION: "information"
+
+  # Time
+  TIME: "time"
+  ZULU: "zulu"
+
+  # Wind phrases
+  WIND: "wind"
+  WIND_CALM: "wind calm"
+  WIND_VARIABLE: "wind variable"
+  GUSTING: "gusting"
+  AT: "at"
+
+  # Visibility
+  VISIBILITY: "visibility"
+  MILES: "miles"
+
+  # Sky condition
+  SKY_CLEAR: "sky clear"
+  SKY_CONDITION: "sky condition"
+  FEW: "few"
+  SCATTERED: "scattered"
+  BROKEN: "broken"
+  OVERCAST: "overcast"
+  CEILING: "ceiling"
+
+  # Temperature
+  TEMPERATURE: "temperature"
+  DEWPOINT: "dewpoint"
+  MINUS: "minus"
+
+  # Altimeter/QNH
+  ALTIMETER: "altimeter"
+  QNH: "QNH"
+
+  # Runway
+  RUNWAY: "runway"
+  LANDING_AND_DEPARTING_RUNWAY: "landing and departing runway"
+  LEFT: "left"
+  RIGHT: "right"
+  CENTER: "center"
+
+  # Contact instructions
+  INBOUND_AIRCRAFT_CONTACT_GROUND_ON: "inbound aircraft contact ground on"
+  FOR_PARKING_ASSIGNMENT: "for parking assignment"
+  ADVISE_ON_INITIAL_CONTACT: "advise on initial contact."
+  YOU_HAVE_INFORMATION: "you have information"
+
+  # Remarks
+  REMARKS: "remarks"
+  SIMULATED: "simulated"
+
+# ATC controller phrase chunks
+atc:
+  # Facility identification
+  GROUND: "ground"
+  TOWER: "tower"
+  APPROACH: "approach"
+  DEPARTURE: "departure"
+
+  # Startup and taxi
+  STARTUP_APPROVED: "start up approved"
+  ADVISE_READY_TO_TAXI: "advise ready to taxi"
+  TAXI_TO_RUNWAY: "taxi to runway"
+  VIA: "via"
+  HOLD_SHORT_OF_RUNWAY: "hold short of runway"
+  HOLD_SHORT: "hold short"
+  CROSS_RUNWAY: "cross runway"
+  CONTINUE_TAXI: "continue taxi"
+
+  # Takeoff and departure
+  CLEARED_FOR_TAKEOFF: "cleared for takeoff"
+  CLEARED_IMMEDIATE_TAKEOFF: "cleared immediate takeoff"
+  LINE_UP_AND_WAIT: "line up and wait"
+  RUNWAY_HEADING: "runway heading"
+  FLY_HEADING: "fly heading"
+  TURN_LEFT_HEADING: "turn left heading"
+  TURN_RIGHT_HEADING: "turn right heading"
+  CLIMB_AND_MAINTAIN: "climb and maintain"
+
+  # Approach and landing
+  CLEARED_TO_LAND: "cleared to land"
+  CLEARED_FOR_THE_OPTION: "cleared for the option"
+  CLEARED_APPROACH: "cleared approach"
+  CLEARED_VISUAL_APPROACH: "cleared visual approach"
+  CLEARED_ILS_APPROACH: "cleared ILS approach"
+  DESCEND_AND_MAINTAIN: "descend and maintain"
+  EXPECT_RUNWAY: "expect runway"
+  REPORT_FIELD_IN_SIGHT: "report field in sight"
+  TRAFFIC_IN_SIGHT: "traffic in sight"
+
+  # Go around
+  GO_AROUND: "go around"
+  FLY_RUNWAY_HEADING: "fly runway heading"
+
+  # After landing
+  EXIT_RUNWAY: "exit runway"
+  CONTACT_GROUND: "contact ground"
+  CONTACT_TOWER: "contact tower"
+  ON: "on"
+  MONITOR: "monitor"
+
+  # Position reports
+  RADAR_CONTACT: "radar contact"
+  RADAR_SERVICE_TERMINATED: "radar service terminated"
+  SQUAWK: "squawk"
+  IDENT: "ident"
+
+  # General responses
+  ROGER: "roger"
+  WILCO: "wilco"
+  AFFIRM: "affirm"
+  NEGATIVE: "negative"
+  STANDBY: "standby"
+  SAY_AGAIN: "say again"
+  CORRECTION: "correction"
+  UNABLE: "unable"
+
+  # Traffic advisories
+  TRAFFIC: "traffic"
+  OCLOCK: "o'clock"
+  NO_FACTOR: "no factor"
+
+  # Altitude/Speed
+  THOUSAND: "thousand"
+  HUNDRED: "hundred"
+  FEET: "feet"
+  KNOTS: "knots"
+
+  # Numbers (for compound phrases)
+  POINT: "point"
+  DECIMAL: "decimal"
+
+# Pilot phrase chunks
+pilot:
+  # Requests
+  REQUEST_STARTUP: "request startup"
+  REQUEST_TAXI: "request taxi"
+  REQUEST_TAKEOFF: "request takeoff"
+  REQUEST_LANDING: "request landing"
+  READY_FOR_DEPARTURE: "ready for departure"
+  READY_TO_TAXI: "ready to taxi"
+
+  # Readback
+  WILCO: "wilco"
+  ROGER: "roger"
+  CLEARED_TO_LAND: "cleared to land"
+  CLEARED_FOR_TAKEOFF: "cleared for takeoff"
+
+  # Position reports
+  ON_FINAL: "on final"
+  SHORT_FINAL: "short final"
+  BASE_LEG: "base leg"
+  DOWNWIND: "downwind"
+  CROSSWIND: "crosswind"
+  DEPARTING: "departing"
+  INBOUND: "inbound"
+
+  # Acknowledgments
+  WITH_INFORMATION: "with information"
+  LOOKING_FOR_TRAFFIC: "looking for traffic"
+  TRAFFIC_IN_SIGHT: "traffic in sight"
+  NEGATIVE_CONTACT: "negative contact"
+
+# Phonetic alphabet (kept as individual for callsigns/IDs)
+phonetic:
+  ALPHA: "alpha"
+  BRAVO: "bravo"
+  CHARLIE: "charlie"
+  DELTA: "delta"
+  ECHO: "echo"
+  FOXTROT: "foxtrot"
+  GOLF: "golf"
+  HOTEL: "hotel"
+  INDIA: "india"
+  JULIET: "juliet"
+  KILO: "kilo"
+  LIMA: "lima"
+  MIKE: "mike"
+  NOVEMBER: "november"
+  OSCAR: "oscar"
+  PAPA: "papa"
+  QUEBEC: "quebec"
+  ROMEO: "romeo"
+  SIERRA: "sierra"
+  TANGO: "tango"
+  UNIFORM: "uniform"
+  VICTOR: "victor"
+  WHISKEY: "whiskey"
+  XRAY: "x-ray"
+  YANKEE: "yankee"
+  ZULU: "zulu"
+
+# Numbers (aviation pronunciation)
+numbers:
+  ZERO: "zero"
+  ONE: "one"
+  TWO: "two"
+  THREE: "three"
+  FOUR: "four"
+  FIVE: "five"
+  SIX: "six"
+  SEVEN: "seven"
+  EIGHT: "eight"
+  NINER: "niner"

@@ -127,6 +127,8 @@ def generate_with_kokoro_batch(items, voice_name, language, rate):
         language: Language code (e.g., "en-us", "fr-fr")
         rate: Words per minute (converted to speed multiplier)
     """
+    import time
+
     import soundfile as sf
 
     kokoro = get_kokoro_instance()
@@ -135,8 +137,11 @@ def generate_with_kokoro_batch(items, voice_name, language, rate):
         return
 
     speed = wpm_to_speed(rate)
+    total = len(items)
+    start_time = time.time()
+    last_status_time = start_time
 
-    for text, output_path in items:
+    for i, (text, output_path) in enumerate(items):
         try:
             # Generate audio with Kokoro
             samples, sample_rate = kokoro.create(text, voice=voice_name, lang=language, speed=speed)
@@ -146,6 +151,19 @@ def generate_with_kokoro_batch(items, voice_name, language, rate):
 
         except Exception as e:
             print(f"    Error generating with Kokoro: {e}")
+
+        # Print status every 10 seconds
+        current_time = time.time()
+        if current_time - last_status_time >= 10:
+            elapsed = current_time - start_time
+            progress = (i + 1) / total * 100
+            rate_per_sec = (i + 1) / elapsed if elapsed > 0 else 0
+            eta = (total - i - 1) / rate_per_sec if rate_per_sec > 0 else 0
+            print(
+                f"    [Kokoro] {i + 1}/{total} ({progress:.1f}%) - "
+                f"{elapsed:.0f}s elapsed, ~{eta:.0f}s remaining"
+            )
+            last_status_time = current_time
 
 
 def generate_with_kokoro(text, output_path, voice_name, language, rate):
@@ -171,6 +189,12 @@ def generate_with_say_batch(items, voice_name, rate, batch_size=8):
         batch_size: Number of files to process simultaneously
     """
     import concurrent.futures
+    import time
+
+    total = len(items)
+    start_time = time.time()
+    last_status_time = start_time
+    processed = 0
 
     # Process in batches
     for i in range(0, len(items), batch_size):
@@ -228,6 +252,20 @@ def generate_with_say_batch(items, voice_name, rate, batch_size=8):
                 if temp_path.exists():
                     temp_path.rename(output_path.with_suffix(".aiff"))
             print("    Warning: ffmpeg not available, kept as AIFF")
+
+        # Update progress and print status every 10 seconds
+        processed += len(batch)
+        current_time = time.time()
+        if current_time - last_status_time >= 10:
+            elapsed = current_time - start_time
+            progress = processed / total * 100
+            rate_per_sec = processed / elapsed if elapsed > 0 else 0
+            eta = (total - processed) / rate_per_sec if rate_per_sec > 0 else 0
+            print(
+                f"    [say] {processed}/{total} ({progress:.1f}%) - "
+                f"{elapsed:.0f}s elapsed, ~{eta:.0f}s remaining"
+            )
+            last_status_time = current_time
 
 
 def generate_with_say(text, output_path, voice_name, rate):
@@ -710,8 +748,14 @@ def generate_voice_messages(voice_name, voice_config, messages, base_dir, force=
             )
         else:
             # pyttsx3 doesn't benefit from batching, process normally
+            import time
+
             print(f"\n  Generating {len(items_to_generate)} files with pyttsx3...")
-            for text, output_path in items_to_generate:
+            total = len(items_to_generate)
+            start_time = time.time()
+            last_status_time = start_time
+
+            for idx, (text, output_path) in enumerate(items_to_generate):
                 try:
                     generate_with_pyttsx3(
                         text,
@@ -721,6 +765,19 @@ def generate_voice_messages(voice_name, voice_config, messages, base_dir, force=
                     )
                 except Exception as e:
                     print(f"    Error: {e}")
+
+                # Print status every 10 seconds
+                current_time = time.time()
+                if current_time - last_status_time >= 10:
+                    elapsed = current_time - start_time
+                    progress = (idx + 1) / total * 100
+                    rate_per_sec = (idx + 1) / elapsed if elapsed > 0 else 0
+                    eta = (total - idx - 1) / rate_per_sec if rate_per_sec > 0 else 0
+                    print(
+                        f"    [pyttsx3] {idx + 1}/{total} ({progress:.1f}%) - "
+                        f"{elapsed:.0f}s elapsed, ~{eta:.0f}s remaining"
+                    )
+                    last_status_time = current_time
 
     print(f"  Generated: {generated}, Skipped: {skipped}")
     return generated
