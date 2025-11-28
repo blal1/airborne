@@ -440,9 +440,7 @@ class ATCAudioManager:
                 audio_bytes = self._generate_tts_audio(spoken_text, voice)
                 if audio_bytes:
                     try:
-                        sound = self._audio_engine.load_sound_from_bytes(
-                            audio_bytes, f"tts_{key}"
-                        )
+                        sound = self._audio_engine.load_sound_from_bytes(audio_bytes, f"tts_{key}")
                         use_tts = True
                     except Exception as e:
                         logger.error(f"Error loading TTS audio for {key}: {e}")

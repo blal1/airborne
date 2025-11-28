@@ -1,6 +1,5 @@
 """Tests for METAR parser."""
 
-
 import pytest
 
 from airborne.services.weather.metar_parser import METARParser

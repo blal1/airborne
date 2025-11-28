@@ -198,6 +198,10 @@ class AudioSpeechProvider(ITTSProvider):
                 logger.error(f"Error loading speech config: {e}")
                 return
 
+        # Apply user's saved TTS settings to override speech.yaml defaults
+        # This ensures menu voice selections are applied when game starts
+        self._apply_user_voice_settings()
+
         # Create speech directory if it doesn't exist
         self._speech_dir.mkdir(parents=True, exist_ok=True)
 
@@ -444,6 +448,84 @@ class AudioSpeechProvider(ITTSProvider):
             self._tts_result_queue.append((audio_bytes, voice_name))
 
         self._request_tts_generation(full_text, voice_name, rate, pyttsx3_voice, on_audio_ready)
+
+    def _apply_user_voice_settings(self) -> None:
+        """Apply user's saved TTS voice settings to override speech.yaml defaults.
+
+        Loads voice preferences from ~/.airborne/settings.json and updates
+        _voice_configs to use user-selected voices and rates.
+
+        This maps user settings categories to speech.yaml voice types:
+        - cockpit -> cockpit, pilot (uses cockpit settings)
+        - tower -> tower
+        - ground -> ground
+        - approach -> approach
+        - atis -> atis
+        - atc -> atc (fallback for other ATC voices)
+        """
+        try:
+            from airborne.settings import get_tts_settings
+
+            tts_settings = get_tts_settings()
+
+            # Map user settings categories to speech.yaml voice names
+            # Some voice types in speech.yaml don't have direct user settings,
+            # so we use related categories as fallbacks
+            category_mapping = {
+                "cockpit": "cockpit",
+                "pilot": "cockpit",  # Pilot uses cockpit settings
+                "tower": "tower",
+                "ground": "ground",
+                "approach": "approach",
+                "atis": "atis",
+                "steward": "ui",  # Steward uses UI voice
+                "refuel": "ground",  # Ground service voices use ground settings
+                "tug": "ground",
+                "boarding": "ground",
+                "ops": "ground",
+                "instructor": "cockpit",  # Instructor uses cockpit settings
+            }
+
+            updated_count = 0
+            for voice_type, config in self._voice_configs.items():
+                # Get the user settings category for this voice type
+                settings_category = category_mapping.get(voice_type, "atc")
+                user_voice = tts_settings.get_voice(settings_category)
+
+                # Update the pyttsx3 config with user's voice preference
+                if "pyttsx3" not in config:
+                    config["pyttsx3"] = {}
+
+                old_voice = config["pyttsx3"].get("voice_name", "unknown")
+                old_rate = config["pyttsx3"].get("rate", 180)
+
+                config["pyttsx3"]["voice_name"] = user_voice.voice_name
+                config["pyttsx3"]["rate"] = user_voice.rate
+
+                # Also update top-level voice_name for consistency
+                config["voice_name"] = user_voice.voice_name
+                config["rate"] = user_voice.rate
+
+                if old_voice != user_voice.voice_name or old_rate != user_voice.rate:
+                    logger.debug(
+                        "Voice '%s': %s@%d -> %s@%d (from %s settings)",
+                        voice_type,
+                        old_voice,
+                        old_rate,
+                        user_voice.voice_name,
+                        user_voice.rate,
+                        settings_category,
+                    )
+                    updated_count += 1
+
+            logger.info(
+                "Applied user TTS settings: %d voices updated, language=%s",
+                updated_count,
+                tts_settings.language,
+            )
+
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.warning("Failed to apply user voice settings: %s", e)
 
     def _get_realtime_tts(self, voice_name: str) -> RealtimeTTS | None:
         """Get or create RealtimeTTS instance for a voice.

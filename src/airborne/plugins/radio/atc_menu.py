@@ -391,7 +391,9 @@ class ATCMenu(Menu):
                 f"PILOT='{pilot_text[:40]}...' ATC='{atc_text[:40]}...'"
             )
         else:
-            logger.info(f"Enqueued ATC exchange: PILOT='{pilot_text[:50]}...' ATC='{atc_text[:50]}...'")
+            logger.info(
+                f"Enqueued ATC exchange: PILOT='{pilot_text[:50]}...' ATC='{atc_text[:50]}...'"
+            )
 
         # Execute callback if provided
         if callback:
@@ -694,9 +696,7 @@ class ATCMenu(Menu):
                     message_key="MSG_ATC_OPTION_REQUEST_FLIGHT_FOLLOWING",
                     data={
                         "pilot_text_func": lambda p: (
-                            f"NorCal Approach, "
-                            f"{p._full_pilot_callsign()}, "
-                            f"request flight following"
+                            f"NorCal Approach, {p._full_pilot_callsign()}, request flight following"
                         ),
                         "atc_text_func": lambda p: (
                             f"{p._abbreviated_callsign()}, "
@@ -725,9 +725,7 @@ class ATCMenu(Menu):
                     message_key="MSG_ATC_OPTION_REQUEST_HIGHER",
                     data={
                         "pilot_text_func": lambda p: (
-                            f"NorCal Approach, "
-                            f"{p._abbreviated_callsign()}, "
-                            f"request higher"
+                            f"NorCal Approach, {p._abbreviated_callsign()}, request higher"
                         ),
                         "atc_text_func": lambda p: (
                             f"{p._abbreviated_callsign()}, "

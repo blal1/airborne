@@ -35,10 +35,15 @@ from airborne.tts_cache_service.cache import TTSDiskCache, VoiceSettings
 from airborne.tts_cache_service.protocol import (
     ContextRequest,
     ContextResponse,
+    EngineInfo,
     GenerateRequest,
     GenerateResponse,
     InvalidateRequest,
     InvalidateResponse,
+    ListEnginesRequest,
+    ListEnginesResponse,
+    ListVoicesRequest,
+    ListVoicesResponse,
     PingRequest,
     PingResponse,
     QueueRequest,
@@ -47,6 +52,7 @@ from airborne.tts_cache_service.protocol import (
     ShutdownRequest,
     StatsRequest,
     StatsResponse,
+    VoiceInfo,
     parse_request,
 )
 
@@ -155,9 +161,9 @@ class TTSCacheService:
         self._queue_lock = asyncio.Lock()
 
         # Generation request queue - for main thread to process
-        # Items are (text, voice, rate, voice_name, result_future) tuples
+        # Items are (text, voice, rate, voice_name, language, result_future) tuples
         self._generation_request_queue: asyncio.Queue[
-            tuple[str, str, int, str | None, asyncio.Future[bytes | None]]
+            tuple[str, str, int, str | None, str | None, asyncio.Future[bytes | None]]
         ] = asyncio.Queue()
 
         # State
@@ -175,23 +181,28 @@ class TTSCacheService:
             self.port,
         )
 
-    def _get_cache(self, voice: str, rate: int, voice_name: str | None) -> TTSDiskCache:
+    def _get_cache(
+        self, voice: str, rate: int, voice_name: str | None, language: str | None = None
+    ) -> TTSDiskCache:
         """Get or create cache for voice settings.
 
         Args:
             voice: Logical voice name (e.g., "cockpit", "tower").
             rate: Speech rate.
             voice_name: Platform-specific voice name.
+            language: Language code for voice selection (e.g., "fr", "en").
 
         Returns:
             TTSDiskCache instance for these settings.
         """
-        settings = VoiceSettings(voice=voice, rate=rate, voice_name=voice_name)
+        settings = VoiceSettings(voice=voice, rate=rate, voice_name=voice_name, language=language)
         cache_key = settings.get_hash()
 
         if cache_key not in self._caches:
             self._caches[cache_key] = TTSDiskCache(settings, self._cache_base)
-            logger.info("Created cache for voice=%s, rate=%d: %s", voice, rate, cache_key)
+            logger.info(
+                "Created cache for voice=%s, rate=%d, lang=%s: %s", voice, rate, language, cache_key
+            )
 
         return self._caches[cache_key]
 
@@ -227,6 +238,10 @@ class TTSCacheService:
                 return await self._handle_shutdown(request)
             elif isinstance(request, ContextRequest):
                 return await self._handle_context(request)
+            elif isinstance(request, ListEnginesRequest):
+                return await self._handle_list_engines(request)
+            elif isinstance(request, ListVoicesRequest):
+                return await self._handle_list_voices(request)
             else:
                 return Response(
                     id=request.id,
@@ -247,7 +262,7 @@ class TTSCacheService:
         start_time = time.time()
 
         # Get cache for this voice configuration
-        cache = self._get_cache(request.voice, request.rate, request.voice_name)
+        cache = self._get_cache(request.voice, request.rate, request.voice_name, request.language)
 
         # Remove from background queue if present
         queue_key = f"{request.voice}:{request.text}"
@@ -271,7 +286,14 @@ class TTSCacheService:
         # Put request in generation queue and wait for result
         result_future: asyncio.Future[bytes | None] = asyncio.get_event_loop().create_future()
         await self._generation_request_queue.put(
-            (request.text, request.voice, request.rate, request.voice_name, result_future)
+            (
+                request.text,
+                request.voice,
+                request.rate,
+                request.voice_name,
+                request.language,
+                result_future,
+            )
         )
 
         try:
@@ -494,6 +516,216 @@ class TTSCacheService:
             queued=total_queued,
         ).to_dict()
 
+    async def _handle_list_engines(self, request: ListEnginesRequest) -> dict[str, Any]:
+        """Handle list_engines request - return available TTS engines.
+
+        Currently only Apple TTS is supported. Future engines: Edge TTS, Kokoro.
+        """
+        engines = [
+            EngineInfo(
+                name="apple",
+                display_name="Apple TTS",
+                available=True,
+                description="macOS built-in text-to-speech using NSSpeechSynthesizer",
+            ),
+            EngineInfo(
+                name="edge",
+                display_name="Microsoft Edge TTS",
+                available=False,  # Not implemented yet
+                description="Microsoft Edge online TTS service (requires internet)",
+            ),
+            EngineInfo(
+                name="kokoro",
+                display_name="Kokoro TTS",
+                available=False,  # Not implemented yet
+                description="Local neural TTS engine (requires model download)",
+            ),
+        ]
+
+        return ListEnginesResponse(
+            id=request.id,
+            ok=True,
+            engines=engines,
+        ).to_dict()
+
+    async def _handle_list_voices(self, request: ListVoicesRequest) -> dict[str, Any]:
+        """Handle list_voices request - return available voices.
+
+        Queries macOS `say -v ?` to get available voices, optionally filtered
+        by engine and/or language.
+        """
+        import re
+        import subprocess
+
+        voices: list[VoiceInfo] = []
+
+        # For now, only Apple engine is supported
+        if request.engine is None or request.engine == "apple":
+            try:
+                # Get voices from macOS say command
+                result = subprocess.run(
+                    ["say", "-v", "?"],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+
+                # Voice format examples:
+                # "Albert              en_US    # Hello! ..."
+                # "Alex (Anglais (É.-U.)) en_US    # Hello! ..."
+                # "(null) - Adam (Anglais) en_US    # ..."
+                # We want to extract: voice_name, lang_code
+                # Skip lines starting with "(null)"
+
+                for line in result.stdout.strip().split("\n"):
+                    if not line.strip():
+                        continue
+
+                    # Skip personal/premium voices that aren't installed
+                    if line.startswith("(null)"):
+                        continue
+
+                    # Find language code pattern (xx_XX) before the #
+                    lang_match = re.search(r"\b([a-z]{2}_[A-Z]{2})\b", line)
+                    if not lang_match:
+                        continue
+
+                    lang_code = lang_match.group(1)
+
+                    # Extract voice name - everything before the language code
+                    # or before the parenthetical description
+                    name_part = line[: lang_match.start()].strip()
+
+                    # Handle "Name (Description)" format - extract just the name
+                    paren_match = re.match(r"^([A-Za-zÀ-ÿ\-]+)", name_part)
+                    if paren_match:
+                        name = paren_match.group(1).strip()
+                    else:
+                        name = name_part.split()[0] if name_part.split() else ""
+
+                    if not name:
+                        continue
+
+                    # Apply language filter if specified
+                    if request.language:
+                        # Match prefix (e.g., "en" matches "en_US", "en_GB")
+                        if not lang_code.lower().startswith(request.language.lower()):
+                            continue
+
+                    # Infer gender from voice name (rough heuristic)
+                    female_names = {
+                        "Samantha",
+                        "Victoria",
+                        "Siri",
+                        "Karen",
+                        "Moira",
+                        "Tessa",
+                        "Fiona",
+                        "Veena",
+                        "Ava",
+                        "Allison",
+                        "Susan",
+                        "Kate",
+                        "Serena",
+                        "Emily",
+                        "Zoe",
+                        "Ellen",
+                        "Paulina",
+                        "Monica",
+                        "Luciana",
+                        "Joana",
+                        "Amélie",
+                        "Amelie",
+                        "Anna",
+                        "Carmit",
+                        "Damayanti",
+                        "Helena",
+                        "Ioana",
+                        "Kanya",
+                        "Kyoko",
+                        "Laura",
+                        "Lekha",
+                        "Mariska",
+                        "Mei-Jia",
+                        "Melina",
+                        "Milena",
+                        "Nora",
+                        "Sara",
+                        "Satu",
+                        "Sin-ji",
+                        "Thi-Mai",
+                        "Ting-Ting",
+                        "Yuna",
+                        "Zosia",
+                        "Lesya",
+                        "Alice",
+                        "Amira",
+                        "Alva",
+                        "Linh",
+                        "Lana",
+                        "Soumya",
+                    }
+                    male_names = {
+                        "Alex",
+                        "Daniel",
+                        "Fred",
+                        "Tom",
+                        "Oliver",
+                        "Evan",
+                        "Aaron",
+                        "Rishi",
+                        "Thomas",
+                        "Gordon",
+                        "Luca",
+                        "Maged",
+                        "Xander",
+                        "Jacques",
+                        "Yuri",
+                        "Diego",
+                        "Jorge",
+                        "Juan",
+                        "Martin",
+                        "Nicolas",
+                        "Albert",
+                        "Aman",
+                        "Lekha",
+                        "Bruce",
+                        "Lee",
+                        "Ralph",
+                    }
+
+                    if name in female_names:
+                        gender = "female"
+                    elif name in male_names:
+                        gender = "male"
+                    else:
+                        gender = "neutral"
+
+                    voices.append(
+                        VoiceInfo(
+                            name=name,
+                            engine="apple",
+                            language=lang_code,
+                            gender=gender,
+                        )
+                    )
+
+            except subprocess.CalledProcessError as e:
+                logger.error("Failed to list voices: %s", e)
+                return ListVoicesResponse(
+                    id=request.id,
+                    ok=False,
+                    error=f"Failed to list voices: {e}",
+                ).to_dict()
+
+        return ListVoicesResponse(
+            id=request.id,
+            ok=True,
+            voices=voices,
+            engine_filter=request.engine,
+            language_filter=request.language,
+        ).to_dict()
+
     async def websocket_handler(self, websocket: Any) -> None:
         """Handle WebSocket connection."""
         client_addr = websocket.remote_address
@@ -528,13 +760,15 @@ class TTSCacheService:
         while not self._shutdown_event.is_set():
             # First, check for user generation requests (priority)
             try:
-                text, voice, rate, voice_name, result_future = (
+                text, voice, rate, voice_name, language, result_future = (
                     self._generation_request_queue.get_nowait()
                 )
-                logger.debug("Processing user request: %s (voice=%s)", text[:30], voice)
+                logger.debug(
+                    "Processing user request: %s (voice=%s, lang=%s)", text[:30], voice, language
+                )
 
                 # Get cache for this voice
-                cache = self._get_cache(voice, rate, voice_name)
+                cache = self._get_cache(voice, rate, voice_name, language)
 
                 # Generate synchronously in main thread
                 audio_bytes = cache.generate(text)

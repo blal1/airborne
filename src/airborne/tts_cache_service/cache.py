@@ -46,11 +46,13 @@ class VoiceSettings:
         voice: Logical voice name (e.g., "cockpit", "tower", "atis").
         rate: Speech rate in words per minute.
         voice_name: Platform-specific voice name (e.g., "Samantha", "Alex").
+        language: Language code for voice selection (e.g., "fr_FR", "en_US").
     """
 
     voice: str = "cockpit"
     rate: int = 180
     voice_name: str | None = None
+    language: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
@@ -58,12 +60,14 @@ class VoiceSettings:
             "voice": self.voice,
             "rate": self.rate,
             "voice_name": self.voice_name,
+            "language": self.language,
             "platform": platform.system(),
         }
 
     def get_hash(self) -> str:
         """Get hash string for these settings."""
-        key = f"{self.voice}:{self.rate}:{self.voice_name or 'default'}:{platform.system()}"
+        lang = self.language or "default"
+        key = f"{self.voice}:{self.rate}:{self.voice_name or 'default'}:{lang}:{platform.system()}"
         return hashlib.sha256(key.encode()).hexdigest()[:12]
 
 
@@ -263,6 +267,97 @@ class TTSDiskCache:
         filepath = self.cache_dir / self._manifest[text_hash].filename
         return filepath.exists()
 
+    def _find_voice_id(self, engine: Any, voice_name: str) -> str | None:
+        """Find the best matching voice ID for a voice name.
+
+        Uses smarter matching to prefer Apple voices over espeak-ng,
+        and matches the correct language variant when multiple exist.
+
+        Args:
+            engine: pyttsx3 engine instance.
+            voice_name: Voice name to find (e.g., "Grandma", "Amélie").
+
+        Returns:
+            Voice ID string, or None if not found.
+        """
+        voices = engine.getProperty("voices")
+        voice_name_lower = voice_name.lower()
+
+        # Get target language from settings (e.g., "fr" from "fr_FR" or "fr")
+        target_lang = None
+        if self.settings.language:
+            target_lang = self.settings.language.split("_")[0].lower()
+
+        # Collect matching voices with priority scoring
+        # Priority: Apple voices > Eloquence > espeak-ng
+        # Also prefer matching language
+        candidates: list[tuple[int, str, str]] = []  # (priority, voice_id, name)
+
+        for v in voices:
+            # Check if voice name matches (at start of name or exact match)
+            v_name = v.name or ""
+            v_name_lower = v_name.lower()
+            v_id = v.id or ""
+            v_id_lower = v_id.lower()
+
+            # Match voice name: exact match or starts with voice_name
+            # e.g., "Grandma" matches "Grandma (Français (France))"
+            name_matches = (
+                v_name_lower == voice_name_lower
+                or v_name_lower.startswith(voice_name_lower + " ")
+                or v_name_lower.startswith(voice_name_lower + "(")
+            )
+
+            # Also check if voice name is in the ID (for some voices)
+            id_contains_name = voice_name_lower in v_id_lower
+
+            if not (name_matches or id_contains_name):
+                continue
+
+            # Calculate priority score (lower = better)
+            priority = 100
+
+            # Prefer Apple voices (com.apple.voice or com.apple.eloquence)
+            if v_id.startswith("com.apple.voice"):
+                priority -= 50  # Best: Apple TTS voices
+            elif v_id.startswith("com.apple.eloquence"):
+                priority -= 40  # Good: Apple Eloquence voices
+            elif v_id.startswith("com.apple"):
+                priority -= 30  # Other Apple voices
+            elif "espeak" in v_id_lower or "dj.phoenix" in v_id_lower:
+                priority += 50  # Avoid espeak-ng voices
+
+            # Prefer matching language in voice ID
+            if target_lang:
+                if f".{target_lang}-" in v_id_lower or f".{target_lang}_" in v_id_lower:
+                    priority -= 20  # Matches target language
+                elif f"({target_lang}" in v_name_lower:
+                    priority -= 15  # Language mentioned in name
+
+            # Prefer exact name match
+            if v_name_lower == voice_name_lower:
+                priority -= 10
+
+            candidates.append((priority, v_id, v_name))
+
+        if not candidates:
+            logger.warning("No voice found matching: %s", voice_name)
+            return None
+
+        # Sort by priority and pick the best
+        candidates.sort(key=lambda x: x[0])
+        best_priority, best_id, best_name = candidates[0]
+
+        logger.debug(
+            "Voice match for '%s' (lang=%s): %s (priority=%d)",
+            voice_name,
+            target_lang,
+            best_name,
+            best_priority,
+        )
+
+        return best_id
+
     def generate(self, text: str) -> bytes | None:
         """Generate TTS audio using pyttsx3.
 
@@ -284,11 +379,10 @@ class TTSDiskCache:
                 engine.setProperty("rate", self.settings.rate)
 
                 if self.settings.voice_name:
-                    voices = engine.getProperty("voices")
-                    for v in voices:
-                        if self.settings.voice_name.lower() in v.name.lower():
-                            engine.setProperty("voice", v.id)
-                            break
+                    voice_id = self._find_voice_id(engine, self.settings.voice_name)
+                    if voice_id:
+                        engine.setProperty("voice", voice_id)
+                        logger.debug("Using voice ID: %s", voice_id)
 
                 engine.save_to_file(text, str(aiff_path))
                 engine.runAndWait()

@@ -41,6 +41,7 @@ class GenerateRequest(Request):
         voice: Voice name for cache organization (e.g., "cockpit", "tower").
         rate: Speech rate in words per minute.
         voice_name: Platform-specific voice name (e.g., "Samantha", "Alex").
+        language: Language code for voice selection (e.g., "fr", "en", "fr_FR").
         priority: Generation priority (lower = higher priority).
     """
 
@@ -48,6 +49,7 @@ class GenerateRequest(Request):
     voice: str = "cockpit"
     rate: int = 180
     voice_name: str | None = None
+    language: str | None = None
     priority: int = 0
     cmd: str = field(default="generate", init=False)
 
@@ -62,6 +64,8 @@ class GenerateRequest(Request):
         }
         if self.voice_name:
             d["voice_name"] = self.voice_name
+        if self.language:
+            d["language"] = self.language
         return d
 
 
@@ -166,6 +170,43 @@ class ContextRequest(Request):
             "context": self.context,
             "voices": self.voices,
         }
+
+
+@dataclass
+class ListEnginesRequest(Request):
+    """Request to list available TTS engines.
+
+    Returns information about available TTS backends (e.g., "apple", "edge", "kokoro").
+    """
+
+    cmd: str = field(default="list_engines", init=False)
+
+
+@dataclass
+class ListVoicesRequest(Request):
+    """Request to list available TTS voices.
+
+    Attributes:
+        engine: Optional engine filter (e.g., "apple", "edge", "kokoro").
+                If not specified, returns voices from all engines.
+        language: Optional language filter (e.g., "en", "fr", "de").
+                  If not specified, returns all voices.
+    """
+
+    engine: str | None = None
+    language: str | None = None
+    cmd: str = field(default="list_voices", init=False)
+
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = {
+            "cmd": self.cmd,
+            "id": self.id,
+        }
+        if self.engine:
+            d["engine"] = self.engine
+        if self.language:
+            d["language"] = self.language
+        return d
 
 
 @dataclass
@@ -328,6 +369,102 @@ class ContextResponse(Response):
         return d
 
 
+@dataclass
+class EngineInfo:
+    """Information about an available TTS engine.
+
+    Attributes:
+        name: Engine identifier (e.g., "apple", "edge", "kokoro").
+        display_name: Human-readable name (e.g., "Apple TTS", "Microsoft Edge TTS").
+        available: Whether this engine is currently available/installed.
+        description: Brief description of the engine.
+    """
+
+    name: str
+    display_name: str
+    available: bool = True
+    description: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "display_name": self.display_name,
+            "available": self.available,
+            "description": self.description,
+        }
+
+
+@dataclass
+class VoiceInfo:
+    """Information about an available TTS voice.
+
+    Attributes:
+        name: Voice name (platform-specific, e.g., "Samantha").
+        engine: TTS engine this voice belongs to (e.g., "apple", "edge").
+        language: Language code (e.g., "en_US", "fr_FR").
+        gender: Voice gender ("male", "female", "neutral").
+    """
+
+    name: str
+    engine: str
+    language: str
+    gender: str = "neutral"
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "engine": self.engine,
+            "language": self.language,
+            "gender": self.gender,
+        }
+
+
+@dataclass
+class ListEnginesResponse(Response):
+    """Response to list_engines request.
+
+    Attributes:
+        engines: List of available TTS engines.
+    """
+
+    engines: list[EngineInfo] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        d = super().to_dict()
+        d.update(
+            {
+                "engines": [e.to_dict() for e in self.engines],
+            }
+        )
+        return d
+
+
+@dataclass
+class ListVoicesResponse(Response):
+    """Response to list_voices request.
+
+    Attributes:
+        voices: List of available voices.
+        engine_filter: The engine filter that was applied (if any).
+        language_filter: The language filter that was applied (if any).
+    """
+
+    voices: list[VoiceInfo] = field(default_factory=list)
+    engine_filter: str | None = None
+    language_filter: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        d = super().to_dict()
+        d.update(
+            {
+                "voices": [v.to_dict() for v in self.voices],
+                "engine_filter": self.engine_filter,
+                "language_filter": self.language_filter,
+            }
+        )
+        return d
+
+
 def parse_request(data: dict[str, Any]) -> Request | None:
     """Parse a request dictionary into a Request object.
 
@@ -347,6 +484,7 @@ def parse_request(data: dict[str, Any]) -> Request | None:
             voice=data.get("voice", "cockpit"),
             rate=data.get("rate", 180),
             voice_name=data.get("voice_name"),
+            language=data.get("language"),
             priority=data.get("priority", 0),
         )
     elif cmd == "invalidate":
@@ -375,6 +513,14 @@ def parse_request(data: dict[str, Any]) -> Request | None:
             id=req_id,
             context=data.get("context", "menu"),
             voices=data.get("voices", {}),
+        )
+    elif cmd == "list_engines":
+        return ListEnginesRequest(id=req_id)
+    elif cmd == "list_voices":
+        return ListVoicesRequest(
+            id=req_id,
+            engine=data.get("engine"),
+            language=data.get("language"),
         )
     else:
         return None
@@ -444,6 +590,40 @@ def parse_response(data: dict[str, Any]) -> Response:
             error=data.get("error"),
             context=data.get("context", ""),
             queued=data.get("queued", 0),
+        )
+    elif "engines" in data and isinstance(data.get("engines"), list):
+        engines = [
+            EngineInfo(
+                name=e.get("name", ""),
+                display_name=e.get("display_name", ""),
+                available=e.get("available", True),
+                description=e.get("description", ""),
+            )
+            for e in data.get("engines", [])
+        ]
+        return ListEnginesResponse(
+            id=data.get("id", ""),
+            ok=data.get("ok", False),
+            error=data.get("error"),
+            engines=engines,
+        )
+    elif "voices" in data and isinstance(data.get("voices"), list):
+        voices = [
+            VoiceInfo(
+                name=v.get("name", ""),
+                engine=v.get("engine", ""),
+                language=v.get("language", ""),
+                gender=v.get("gender", "neutral"),
+            )
+            for v in data.get("voices", [])
+        ]
+        return ListVoicesResponse(
+            id=data.get("id", ""),
+            ok=data.get("ok", False),
+            error=data.get("error"),
+            voices=voices,
+            engine_filter=data.get("engine_filter"),
+            language_filter=data.get("language_filter"),
         )
     else:
         return Response(

@@ -41,6 +41,10 @@ from airborne.tts_cache_service.protocol import (
     GenerateResponse,
     InvalidateRequest,
     InvalidateResponse,
+    ListEnginesRequest,
+    ListEnginesResponse,
+    ListVoicesRequest,
+    ListVoicesResponse,
     PingRequest,
     PingResponse,
     QueueRequest,
@@ -404,6 +408,7 @@ class TTSServiceClient:
         voice: str = "cockpit",
         rate: int = 180,
         voice_name: str | None = None,
+        language: str | None = None,
         priority: int = 0,
     ) -> bytes | None:
         """Generate TTS audio with voice-specific settings.
@@ -413,6 +418,7 @@ class TTSServiceClient:
             voice: Logical voice name (e.g., "cockpit", "tower").
             rate: Speech rate in words per minute.
             voice_name: Platform-specific voice name (e.g., "Samantha").
+            language: Language code for voice selection (e.g., "fr", "en").
             priority: Generation priority.
 
         Returns:
@@ -424,6 +430,7 @@ class TTSServiceClient:
             voice=voice,
             rate=rate,
             voice_name=voice_name,
+            language=language,
             priority=priority,
         )
 
@@ -631,3 +638,49 @@ class TTSServiceClient:
             logger.info("Queued priority 2: %d items", response.queued)
 
         return total_queued
+
+    async def list_engines(self) -> ListEnginesResponse | None:
+        """List available TTS engines.
+
+        Returns:
+            Response with list of available engines, or None if failed.
+        """
+        request = ListEnginesRequest(id=str(uuid.uuid4()))
+
+        response_data = await self._send_request(request.to_dict())
+        if not response_data:
+            return None
+
+        response = parse_response(response_data)
+        if isinstance(response, ListEnginesResponse):
+            return response
+        return None
+
+    async def list_voices(
+        self,
+        engine: str | None = None,
+        language: str | None = None,
+    ) -> ListVoicesResponse | None:
+        """List available TTS voices.
+
+        Args:
+            engine: Optional engine filter (e.g., "apple", "edge").
+            language: Optional language filter (e.g., "en", "fr").
+
+        Returns:
+            Response with list of available voices, or None if failed.
+        """
+        request = ListVoicesRequest(
+            id=str(uuid.uuid4()),
+            engine=engine,
+            language=language,
+        )
+
+        response_data = await self._send_request(request.to_dict())
+        if not response_data:
+            return None
+
+        response = parse_response(response_data)
+        if isinstance(response, ListVoicesResponse):
+            return response
+        return None

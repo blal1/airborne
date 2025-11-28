@@ -7,6 +7,9 @@ Supports two modes:
 1. File-based: Generate WAV files (default, for caching)
 2. Memory-based: Generate PCM samples directly for FMOD playback
 
+Supports optional persistent disk cache via TTSCacheManager for
+cross-session caching with background generation.
+
 Typical usage:
     from airborne.audio.realtime_tts import RealtimeTTS
 
@@ -18,20 +21,27 @@ Typical usage:
     tts = RealtimeTTS()
     pcm_data = tts.generate_pcm("Cleared for takeoff")
     # pcm_data is a TTSAudioData with samples, sample_rate, channels, etc.
+
+    # With persistent disk cache
+    from airborne.audio.tts.cache_manager import TTSCacheManager
+    cache = TTSCacheManager(voice="cockpit", rate=180)
+    tts = RealtimeTTS(rate=180, persistent_cache=cache)
+    result = tts.generate_audio_bytes("altitude 12000")  # Uses disk cache
 """
 
-import io
 import logging
-import platform
-import struct
 import tempfile
 import threading
 import wave
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
+from typing import TYPE_CHECKING
 
 import numpy as np
+
+if TYPE_CHECKING:
+    from airborne.audio.tts.cache_manager import TTSCacheManager
 
 logger = logging.getLogger(__name__)
 
@@ -86,6 +96,7 @@ class RealtimeTTS:
         voice_name: str | None = None,
         output_dir: Path | None = None,
         cache_enabled: bool = True,
+        persistent_cache: "TTSCacheManager | None" = None,
     ) -> None:
         """Initialize real-time TTS generator.
 
@@ -93,11 +104,15 @@ class RealtimeTTS:
             rate: Speech rate in words per minute (default: 180).
             voice_name: Voice name to use. If None, uses system default.
             output_dir: Directory for output files. If None, uses temp directory.
-            cache_enabled: If True, cache generated files by text hash.
+            cache_enabled: If True, cache generated files by text hash (in-memory).
+            persistent_cache: Optional TTSCacheManager for disk-based caching
+                that persists across sessions. If provided, this takes priority
+                over in-memory cache for generate_audio_bytes().
         """
         self.rate = rate
         self.voice_name = voice_name
         self.cache_enabled = cache_enabled
+        self._persistent_cache = persistent_cache
         self._generation_count = 0
         self._lock = threading.Lock()
         self._cache: dict[str, Path] = {}
@@ -112,10 +127,11 @@ class RealtimeTTS:
             self.output_dir = Path(tempfile.mkdtemp(prefix="tts_"))
 
         logger.info(
-            "RealtimeTTS initialized: rate=%d, voice=%s, output=%s",
+            "RealtimeTTS initialized: rate=%d, voice=%s, output=%s, persistent_cache=%s",
             rate,
             voice_name or "default",
             self.output_dir,
+            "enabled" if persistent_cache else "disabled",
         )
 
     def generate(self, text: str) -> Path | None:
@@ -273,6 +289,9 @@ class RealtimeTTS:
         This is the recommended method for FMOD playback. Always returns WAV
         format for cross-platform compatibility (converts AIFF to WAV on macOS).
 
+        If a persistent_cache (TTSCacheManager) is configured, it will be used
+        for disk-based caching that persists across sessions.
+
         Args:
             text: Text to convert to speech.
 
@@ -286,7 +305,15 @@ class RealtimeTTS:
             ...     audio_bytes, fmt = result
             ...     sound = fmod_engine.load_sound_from_bytes(audio_bytes)
         """
-        # Check bytes cache
+        # Check persistent disk cache first (if available)
+        if self._persistent_cache is not None:
+            audio_bytes = self._persistent_cache.get_audio(text)
+            if audio_bytes:
+                return (audio_bytes, "wav")
+            # If persistent cache failed to generate, fall through to legacy path
+            logger.warning("Persistent cache failed for: %s, using legacy path", text[:30])
+
+        # Check in-memory bytes cache
         cache_key = self._get_cache_key(text) + "_bytes"
         if self.cache_enabled and cache_key in self._bytes_cache:
             logger.debug("Bytes cache hit for: %s", text[:30])
@@ -555,6 +582,7 @@ class RealtimeTTS:
             text: Text to convert to speech.
             callback: Function called with result path (or None on failure).
         """
+
         def _generate():
             result = self.generate(text)
             callback(result)
@@ -604,6 +632,28 @@ class RealtimeTTS:
 
         self._generation_count = 0
         logger.info("TTS cleanup complete")
+
+    def set_persistent_cache(self, cache: "TTSCacheManager | None") -> None:
+        """Set or update the persistent cache manager.
+
+        Args:
+            cache: TTSCacheManager instance, or None to disable.
+
+        Note:
+            This can be called after initialization to enable/disable
+            persistent caching, e.g., when the cache manager is created
+            later in the application lifecycle.
+        """
+        self._persistent_cache = cache
+        logger.info(
+            "Persistent cache %s",
+            "enabled" if cache else "disabled",
+        )
+
+    @property
+    def persistent_cache(self) -> "TTSCacheManager | None":
+        """Get the current persistent cache manager."""
+        return self._persistent_cache
 
 
 class TTSQueue:

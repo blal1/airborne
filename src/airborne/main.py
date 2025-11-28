@@ -262,12 +262,34 @@ class AirBorne:
                     self.plugin_context.config["audio"] = {}
                 self.plugin_context.config["audio"]["aircraft"] = audio_config
 
-            # Set TTS mode from CLI argument (--tts=system or --tts=self-voiced)
+            # Load TTS settings from saved settings (menu selections persist here)
+            # CLI argument (--tts) takes precedence if specified
+            if "tts" not in self.plugin_context.config:
+                self.plugin_context.config["tts"] = {}
+
+            from airborne.settings import get_tts_settings
+            from airborne.settings.tts_settings import TTS_MODE_REALTIME
+
+            tts_settings = get_tts_settings()
+            saved_mode = tts_settings.mode
+            saved_language = tts_settings.language
+
+            # Map mode to expected values
+            if saved_mode == TTS_MODE_REALTIME:
+                self.plugin_context.config["tts"]["tts_mode"] = "system"
+            else:
+                self.plugin_context.config["tts"]["tts_mode"] = "self-voiced"
+
+            self.plugin_context.config["tts"]["language"] = saved_language
+            logger.info(
+                f"TTS settings loaded from saved settings: mode={saved_mode}, "
+                f"language={saved_language}"
+            )
+
+            # CLI argument overrides saved settings
             if self.args.tts:
-                if "tts" not in self.plugin_context.config:
-                    self.plugin_context.config["tts"] = {}
                 self.plugin_context.config["tts"]["tts_mode"] = self.args.tts
-                logger.info(f"TTS mode set from CLI: {self.args.tts}")
+                logger.info(f"TTS mode overridden by CLI: {self.args.tts}")
 
             # Extract aircraft characteristics (fixed_gear, etc.) and performance config
             aircraft_info = config.get("aircraft", {})
@@ -991,7 +1013,26 @@ def parse_args() -> argparse.Namespace:
         help="TTS backend: 'self-voiced' (pre-generated audio chunks) or 'system' (pyttsx3 real-time)",
     )
 
+    parser.add_argument(
+        "--skip-menu",
+        action="store_true",
+        help="Skip main menu and start flight directly (for development)",
+    )
+
     return parser.parse_args()
+
+
+def run_main_menu() -> tuple[str | None, dict]:
+    """Run the main menu before game startup.
+
+    Returns:
+        Tuple of (result, flight_config) where result is "fly", "exit", or None.
+    """
+    from airborne.ui.menus import MenuRunner
+
+    runner = MenuRunner()
+    result = runner.run()
+    return result, runner.get_flight_config()
 
 
 def main() -> int:
@@ -1002,6 +1043,23 @@ def main() -> int:
     """
     try:
         args = parse_args()
+
+        # Run main menu unless skipped
+        if not getattr(args, "skip_menu", False):
+            result, flight_config = run_main_menu()
+
+            if result == "exit" or result is None:
+                logger.info("User exited from main menu")
+                return 0
+
+            # Apply menu selections to args
+            if flight_config.get("departure"):
+                args.from_airport = flight_config["departure"]
+            if flight_config.get("arrival"):
+                args.to_airport = flight_config["arrival"]
+            # Aircraft selection would be used here once aircraft loading is refactored
+            logger.info("Starting flight with config: %s", flight_config)
+
         app = AirBorne(args)
         app.run()
         return 0
