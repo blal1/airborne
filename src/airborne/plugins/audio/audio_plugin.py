@@ -1127,23 +1127,25 @@ class AudioPlugin(IPlugin):
         from airborne.audio.tts.speech_messages import SpeechMessages
 
         # Map instrument reading actions to helper methods
-        # Use concise format (no prefixes) for airspeed, altitude, and vertical speed
+        # Include instrument names for clarity
         if action == "read_airspeed":
-            # Concise: just number + "knots" (no "Airspeed" prefix)
             exact_knots = int(round(self._airspeed))
             exact_knots = max(0, min(300, exact_knots))
             return [
+                SpeechMessages.MSG_WORD_AIRSPEED,
                 f"cockpit/number_{exact_knots}_autogen",
                 SpeechMessages.MSG_WORD_KNOTS,
             ]
         elif action == "read_altitude":
-            # Concise: just number + "feet" (no "Altitude" prefix)
             feet = int(self._altitude)
-            return SpeechMessages._digits_to_keys(feet) + [SpeechMessages.MSG_WORD_FEET]
+            return (
+                [SpeechMessages.MSG_WORD_ALTITUDE]
+                + SpeechMessages._digits_to_keys(feet)
+                + [SpeechMessages.MSG_WORD_FEET]
+            )
         elif action == "read_heading":
             return SpeechMessages.heading(int(self._heading))
         elif action == "read_vspeed":
-            # Concise: just "climbing/descending" + number (no "Vertical speed" prefix, no "feet per minute" suffix)
             fpm = int(self._vspeed)
             if abs(fpm) < 50:
                 return [SpeechMessages.MSG_LEVEL_FLIGHT]

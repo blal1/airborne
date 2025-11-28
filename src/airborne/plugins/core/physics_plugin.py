@@ -301,32 +301,14 @@ class PhysicsPlugin(IPlugin):
             # Update control inputs
             data = message.data
 
-            # Debug: Log what keys are in the message data
-            if not hasattr(self, "_control_message_logged"):
-                logger.info(f"[PHYSICS_TRIM_DEBUG] CONTROL_INPUT message keys: {list(data.keys())}")
-                self._control_message_logged = True
-
             # Get base control inputs
             pitch_input = float(data.get("pitch", 0.0))
             roll_input = float(data.get("roll", 0.0))
             yaw_input = float(data.get("yaw", 0.0))
 
             # Get trim values and store for telemetry
-            pitch_trim_from_message = data.get("pitch_trim", 0.0)
-            rudder_trim_from_message = data.get("rudder_trim", 0.0)
-
-            logger.info(
-                f"[PHYSICS_TRIM_DEBUG] Message data: pitch_trim={pitch_trim_from_message}, rudder_trim={rudder_trim_from_message}, type={type(pitch_trim_from_message)}"
-            )
-
-            self._pitch_trim = float(pitch_trim_from_message)
-            self._rudder_trim = float(rudder_trim_from_message)
-
-            # Debug: Log trim values if non-zero
-            if abs(self._pitch_trim) > 0.001 or abs(self._rudder_trim) > 0.001:
-                logger.info(
-                    f"[PHYSICS_TRIM_DEBUG] Stored trim: pitch_trim={self._pitch_trim:.3f}, rudder_trim={self._rudder_trim:.3f}"
-                )
+            self._pitch_trim = float(data.get("pitch_trim", 0.0))
+            self._rudder_trim = float(data.get("rudder_trim", 0.0))
 
             # Apply trim: trim adds to the control input
             # This means trim relieves the need to hold a control deflection

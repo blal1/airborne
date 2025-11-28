@@ -133,6 +133,12 @@ class SpeechMessages:
     MSG_WORD_MINUTES = "MSG_WORD_MINUTES"
     MSG_WORD_POINT = "MSG_WORD_POINT"
 
+    # Cardinal directions
+    MSG_WORD_NORTH = "MSG_WORD_NORTH"
+    MSG_WORD_SOUTH = "MSG_WORD_SOUTH"
+    MSG_WORD_EAST = "MSG_WORD_EAST"
+    MSG_WORD_WEST = "MSG_WORD_WEST"
+
     @staticmethod
     def _digits_to_keys(number: int, num_digits: int = 0) -> list[str]:
         """Convert number to list of digit message keys.
@@ -217,10 +223,22 @@ class SpeechMessages:
             degrees: Heading in degrees (0-359).
 
         Returns:
-            List of message keys to assemble heading (e.g., ["MSG_WORD_HEADING", "MSG_DIGIT_0", "MSG_DIGIT_9", "MSG_DIGIT_0"]).
+            List of message keys to assemble heading.
+            Uses cardinal directions for exact cardinal headings (0, 90, 180, 270).
         """
         # Normalize to 0-359
         degrees = degrees % 360
+
+        # Use cardinal directions for exact cardinal headings
+        cardinal_map = {
+            0: SpeechMessages.MSG_WORD_NORTH,
+            90: SpeechMessages.MSG_WORD_EAST,
+            180: SpeechMessages.MSG_WORD_SOUTH,
+            270: SpeechMessages.MSG_WORD_WEST,
+        }
+
+        if degrees in cardinal_map:
+            return [SpeechMessages.MSG_WORD_HEADING, cardinal_map[degrees]]
 
         # Assemble: "heading" + 3 digits
         return [SpeechMessages.MSG_WORD_HEADING] + SpeechMessages._digits_to_keys(degrees, 3)

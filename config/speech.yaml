@@ -881,6 +881,25 @@ messages:
     text: feet per minute
     voice: cockpit
     filename: feet_per_minute
+
+  # Cardinal directions
+  MSG_WORD_NORTH:
+    text: north
+    voice: cockpit
+    filename: word_north
+  MSG_WORD_SOUTH:
+    text: south
+    voice: cockpit
+    filename: word_south
+  MSG_WORD_EAST:
+    text: east
+    voice: cockpit
+    filename: word_east
+  MSG_WORD_WEST:
+    text: west
+    voice: cockpit
+    filename: word_west
+
   MSG_LEVEL_FLIGHT:
     text: level flight
     voice: cockpit

@@ -508,19 +508,20 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
 
         for event in events:
             if event.type == pygame.KEYDOWN:
-                self._handle_key_down(event.key)
+                self._handle_key_down(event.key, event.scancode)
             elif event.type == pygame.KEYUP:
-                self._handle_key_up(event.key)
+                self._handle_key_up(event.key, event.scancode)
             elif event.type == pygame.JOYBUTTONDOWN:
                 self._handle_joy_button_down(event.button)
             elif event.type == pygame.JOYBUTTONUP:
                 self._handle_joy_button_up(event.button)
 
-    def _handle_key_down(self, key: int) -> None:
+    def _handle_key_down(self, key: int, scancode: int) -> None:
         """Handle key press event.
 
         Args:
-            key: Pygame key constant.
+            key: Pygame key constant (affected by keyboard layout).
+            scancode: Physical key scancode (layout-independent).
         """
         is_repeat = key in self._keys_pressed
 
@@ -542,11 +543,34 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
         mod_str = "+".join(mod_names) + "+" if mod_names else ""
 
         if bound_action:
-            logger.info(f"KEY: {mod_str}{key_name} (code={key}) -> BOUND to {bound_action.name}")
+            logger.info(
+                f"KEY: {mod_str}{key_name} (code={key}, scan={scancode}) -> BOUND to {bound_action.name}"
+            )
         else:
-            logger.info(f"KEY: {mod_str}{key_name} (code={key}) -> NOT BOUND")
+            logger.info(f"KEY: {mod_str}{key_name} (code={key}, scan={scancode}) -> NOT BOUND")
 
-        # Try context-aware input system first (YAML-based)
+        # IMPORTANT: Handle Alt+number keys BEFORE context manager
+        # On macOS, Alt+number generates Unicode characters (¡™£¢∞§¶•ª) instead of
+        # number keycodes, so the context manager (which uses key names) won't match them.
+        # We use scancodes here which are layout-independent physical key positions.
+        if mods & (pygame.KMOD_ALT | pygame.KMOD_LALT | pygame.KMOD_RALT):
+            alt_scancode_actions = {
+                pygame.KSCAN_1: InputAction.READ_AIRSPEED,  # Alt+1: Airspeed
+                pygame.KSCAN_2: InputAction.READ_ALTITUDE,  # Alt+2: Altitude
+                pygame.KSCAN_3: InputAction.READ_HEADING,  # Alt+3: Heading
+                pygame.KSCAN_4: InputAction.READ_VSPEED,  # Alt+4: Vertical speed
+                pygame.KSCAN_5: InputAction.READ_ENGINE,  # Alt+5: Engine status
+                pygame.KSCAN_6: InputAction.READ_ELECTRICAL,  # Alt+6: Electrical status
+                pygame.KSCAN_7: InputAction.READ_FUEL,  # Alt+7: Fuel status
+                pygame.KSCAN_8: InputAction.READ_ATTITUDE,  # Alt+8: Attitude (bank/pitch)
+                pygame.KSCAN_9: InputAction.READ_ACTIVE_RADIO,  # Alt+9: Active radio frequency
+            }
+            if scancode in alt_scancode_actions:
+                if not is_repeat:
+                    self._handle_action_pressed(alt_scancode_actions[scancode])
+                return
+
+        # Try context-aware input system (YAML-based)
         if self.context_manager:
             handled = self.context_manager.handle_key_press(key, mods, is_repeat)
             if handled:
@@ -597,26 +621,6 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
                     self._handle_action_pressed(InputAction.QUIT)
                 return
 
-        # Special handling for Alt+number keys for instrument readouts
-        # On macOS, Alt+Shift+Number works more reliably than Alt alone
-        mods = pygame.key.get_mods()
-        if mods & (pygame.KMOD_ALT | pygame.KMOD_LALT | pygame.KMOD_RALT):
-            alt_number_actions = {
-                pygame.K_1: InputAction.READ_AIRSPEED,  # Alt+1: Airspeed
-                pygame.K_2: InputAction.READ_ALTITUDE,  # Alt+2: Altitude
-                pygame.K_3: InputAction.READ_HEADING,  # Alt+3: Heading
-                pygame.K_4: InputAction.READ_VSPEED,  # Alt+4: Vertical speed
-                pygame.K_5: InputAction.READ_ENGINE,  # Alt+5: Engine status
-                pygame.K_6: InputAction.READ_ELECTRICAL,  # Alt+6: Electrical status
-                pygame.K_7: InputAction.READ_FUEL,  # Alt+7: Fuel status
-                pygame.K_8: InputAction.READ_ATTITUDE,  # Alt+8: Attitude (bank/pitch)
-                pygame.K_9: InputAction.READ_ACTIVE_RADIO,  # Alt+9: Active radio frequency
-            }
-            if key in alt_number_actions:
-                if not is_repeat:
-                    self._handle_action_pressed(alt_number_actions[key])
-                return
-
         # Special handling for Shift+P (parking brake SET) and Ctrl+P (parking brake RELEASE)
         if key == pygame.K_p:
             if mods & (pygame.KMOD_SHIFT | pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT):
@@ -630,24 +634,15 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
 
         # Special handling for Semicolon key (AZERTY - key to right of comma) - Pitch trim
         # Shift+Semicolon = pitch trim up, Ctrl+Semicolon = pitch trim down, plain Semicolon = read pitch trim
-        logger.info(
-            f"[TRIM_DEBUG] Before semicolon check: key={key}, pygame.K_SEMICOLON={pygame.K_SEMICOLON}, match={key == pygame.K_SEMICOLON}"
-        )
         if key == pygame.K_SEMICOLON:
-            logger.info(
-                f"[TRIM_DEBUG] Semicolon key pressed: mods={mods:#x}, has_shift={bool(mods & (pygame.KMOD_SHIFT | pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT))}, has_ctrl={bool(mods & (pygame.KMOD_CTRL | pygame.KMOD_LCTRL | pygame.KMOD_RCTRL))}"
-            )
             if mods & (pygame.KMOD_SHIFT | pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT):
-                logger.info("[TRIM_DEBUG] Shift+Semicolon detected - triggering TRIM_PITCH_UP")
                 self._handle_action_pressed(InputAction.TRIM_PITCH_UP)
                 return
             elif mods & (pygame.KMOD_CTRL | pygame.KMOD_LCTRL | pygame.KMOD_RCTRL):
-                logger.info("Ctrl+Semicolon detected - triggering TRIM_PITCH_DOWN")
                 self._handle_action_pressed(InputAction.TRIM_PITCH_DOWN)
                 return
             else:
                 # No modifier - read pitch trim
-                logger.info("Semicolon (no modifier) detected - triggering READ_PITCH_TRIM")
                 self._handle_action_pressed(InputAction.READ_PITCH_TRIM)
                 return
 
@@ -819,12 +814,14 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
 
             self._handle_action_pressed(bound_action)
 
-    def _handle_key_up(self, key: int) -> None:
+    def _handle_key_up(self, key: int, scancode: int) -> None:
         """Handle key release event.
 
         Args:
-            key: Pygame key constant.
+            key: Pygame key constant (affected by keyboard layout).
+            scancode: Physical key scancode (layout-independent, for future use).
         """
+        _ = scancode  # Reserved for future scancode-based key tracking
         if key not in self._keys_pressed:
             return  # Not pressed
 
@@ -886,11 +883,7 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
             InputAction.TRIM_RUDDER_LEFT,
             InputAction.TRIM_RUDDER_RIGHT,
         ):
-            logger.info(
-                f"[TRIM_DEBUG] _handle_action_pressed called with {action}, adding to _modifier_actions"
-            )
             self._modifier_actions.add(action)
-            logger.info(f"[TRIM_DEBUG] _modifier_actions now contains: {self._modifier_actions}")
             return  # Handled in update loop
 
         # Discrete controls
@@ -1079,11 +1072,6 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
                     self._target_throttle,
                 )
                 self._previous_throttle = self.state.throttle
-
-            # Debug: Log trim values ALWAYS to see if they're being reset
-            logger.info(
-                f"[TRIM_DEBUG] About to send message: pitch_trim={self.state.pitch_trim:.3f}, rudder_trim={self.state.rudder_trim:.3f}, id(state)={id(self.state)}"
-            )
 
             # Publish control inputs message for physics plugin
             self.message_queue.publish(
@@ -1289,34 +1277,18 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
         # Collect actions that were processed so we can remove them after
         actions_to_remove: set[InputAction] = set()
 
-        # Debug: Log what's in _modifier_actions
-        if self._modifier_actions:
-            logger.info(f"[TRIM_DEBUG] _modifier_actions contains: {self._modifier_actions}")
-
         for action in self._modifier_actions:
             if action == InputAction.TRIM_PITCH_UP:
-                logger.info(
-                    f"[TRIM_DEBUG] Found TRIM_PITCH_UP action! time_since_click={self._time_since_last_trim_click:.3f}, interval={self._trim_click_interval:.3f}"
-                )
                 # Rate-limited trim increase (10 clicks/second max)
                 if self._time_since_last_trim_click >= self._trim_click_interval:
                     increment = 0.05  # 5% per click
                     old_trim = self.state.pitch_trim
                     self.state.pitch_trim = min(1.0, self.state.pitch_trim + increment)
-                    logger.info(
-                        f"[TRIM_DEBUG] TRIM_PITCH_UP: {old_trim:.3f} -> {self.state.pitch_trim:.3f}, id(state)={id(self.state)}"
-                    )
                     # Publish event for TTS announcement
                     if abs(self.state.pitch_trim - old_trim) > 0.001:
                         trim_percent = self._trim_to_percent(self.state.pitch_trim)
-                        logger.info(
-                            f"[TRIM_DEBUG] About to publish TTS, pitch_trim={self.state.pitch_trim:.3f}"
-                        )
                         self.event_bus.publish(
                             InputActionEvent(action="trim_pitch_adjusted", value=trim_percent)
-                        )
-                        logger.info(
-                            f"[TRIM_DEBUG] After TTS publish, pitch_trim={self.state.pitch_trim:.3f}"
                         )
                         self._time_since_last_trim_click = 0.0
                         # Mark for removal - trim click should only apply once

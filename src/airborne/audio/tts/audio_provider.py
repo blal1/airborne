@@ -256,10 +256,16 @@ class AudioSpeechProvider(ITTSProvider):
                     voice_name, filename_base = key.split("/", 1)
                     voice_dir = self._voice_dirs.get(voice_name)
                     if voice_dir:
+                        # Try primary extension first, then fallback to ogg
                         filepath = voice_dir / f"{filename_base}.{self._file_extension}"
                         if filepath.exists():
                             found = True
-                        else:
+                        elif self._file_extension != "ogg":
+                            # Fallback to .ogg (many autogen files are ogg)
+                            filepath = voice_dir / f"{filename_base}.ogg"
+                            if filepath.exists():
+                                found = True
+                        if not found:
                             logger.warning(f"Speech file not found: {filepath}")
                             continue
                     else:
@@ -271,10 +277,17 @@ class AudioSpeechProvider(ITTSProvider):
                     for voice_name in ["cockpit", "pilot"]:
                         voice_dir = self._voice_dirs.get(voice_name)
                         if voice_dir:
+                            # Try primary extension first
                             filepath = voice_dir / f"{key}.{self._file_extension}"
                             if filepath.exists():
                                 found = True
                                 break
+                            # Fallback to .ogg
+                            if self._file_extension != "ogg":
+                                filepath = voice_dir / f"{key}.ogg"
+                                if filepath.exists():
+                                    found = True
+                                    break
 
                     if not found:
                         logger.warning(f"Message key not found: {key}")
@@ -286,8 +299,11 @@ class AudioSpeechProvider(ITTSProvider):
 
                 # Build filename (use filename field from config, fallback to key name)
                 filename_base = message_config.get("filename", key)
-                filename = f"{filename_base}.{self._file_extension}"
-                filepath = voice_dir / filename
+                filepath = voice_dir / f"{filename_base}.{self._file_extension}"
+
+                # Fallback to .ogg if primary extension not found
+                if not filepath.exists() and self._file_extension != "ogg":
+                    filepath = voice_dir / f"{filename_base}.ogg"
 
                 if not filepath.exists():
                     logger.warning(f"Speech file not found: {filepath}")
