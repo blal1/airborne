@@ -1,0 +1,9284 @@
+{
+  "icao": "KSFO",
+  "name": "San Francisco Intl",
+  "latitude": 37.621146855,
+  "longitude": -122.37529699999999,
+  "elevation_ft": 13.0,
+  "transition_altitude": 18000,
+  "has_atc": false,
+  "taxi_nodes": [
+    {
+      "id": 0,
+      "latitude": 37.63589583,
+      "longitude": -122.39487753,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 1,
+      "latitude": 37.63477034,
+      "longitude": -122.39425252,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 2,
+      "latitude": 37.63502273,
+      "longitude": -122.39313619,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 3,
+      "latitude": 37.62812884,
+      "longitude": -122.38077026,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 4,
+      "latitude": 37.62757204,
+      "longitude": -122.38111253,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 5,
+      "latitude": 37.6268619,
+      "longitude": -122.38124514,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 6,
+      "latitude": 37.61561296,
+      "longitude": -122.37178312,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 7,
+      "latitude": 37.6155228,
+      "longitude": -122.37240158,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 8,
+      "latitude": 37.61530039,
+      "longitude": -122.37294036,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 9,
+      "latitude": 37.61490366,
+      "longitude": -122.37345637,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 10,
+      "latitude": 37.6204647,
+      "longitude": -122.39388961,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 11,
+      "latitude": 37.62736925,
+      "longitude": -122.39711136,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 12,
+      "latitude": 37.62753869,
+      "longitude": -122.39720158,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 13,
+      "latitude": 37.62367768,
+      "longitude": -122.39118227,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 14,
+      "latitude": 37.61917107,
+      "longitude": -122.38538788,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 15,
+      "latitude": 37.61054411,
+      "longitude": -122.38975122,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 16,
+      "latitude": 37.61058376,
+      "longitude": -122.38952424,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 17,
+      "latitude": 37.62342,
+      "longitude": -122.3753307,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 18,
+      "latitude": 37.62337471,
+      "longitude": -122.37552212,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 19,
+      "latitude": 37.63570808,
+      "longitude": -122.38788407,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 20,
+      "latitude": 37.63518149,
+      "longitude": -122.38855346,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 21,
+      "latitude": 37.62347169,
+      "longitude": -122.39157224,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 22,
+      "latitude": 37.62360755,
+      "longitude": -122.39156603,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 23,
+      "latitude": 37.62876535,
+      "longitude": -122.37877859,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 24,
+      "latitude": 37.61324198,
+      "longitude": -122.38252073,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 25,
+      "latitude": 37.6320875,
+      "longitude": -122.39254158,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 26,
+      "latitude": 37.62616647,
+      "longitude": -122.39591846,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 27,
+      "latitude": 37.61790669,
+      "longitude": -122.38910484,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 28,
+      "latitude": 37.61333261,
+      "longitude": -122.38303919,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 29,
+      "latitude": 37.61080334,
+      "longitude": -122.38475596,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 30,
+      "latitude": 37.60980082,
+      "longitude": -122.38563346,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 31,
+      "latitude": 37.60965607,
+      "longitude": -122.38581619,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 32,
+      "latitude": 37.60959977,
+      "longitude": -122.38598623,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 33,
+      "latitude": 37.60962189,
+      "longitude": -122.38616134,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 34,
+      "latitude": 37.61279144,
+      "longitude": -122.38646655,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 35,
+      "latitude": 37.6115346,
+      "longitude": -122.38728757,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 36,
+      "latitude": 37.61089421,
+      "longitude": -122.38758845,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 37,
+      "latitude": 37.61036737,
+      "longitude": -122.38793851,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 38,
+      "latitude": 37.61080247,
+      "longitude": -122.35917808,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 39,
+      "latitude": 37.61058171,
+      "longitude": -122.35951564,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 40,
+      "latitude": 37.61048532,
+      "longitude": -122.35995132,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 41,
+      "latitude": 37.63008003,
+      "longitude": -122.39638447,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 42,
+      "latitude": 37.63040464,
+      "longitude": -122.39595103,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 43,
+      "latitude": 37.63347169,
+      "longitude": -122.39166685,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 44,
+      "latitude": 37.60777157,
+      "longitude": -122.38477564,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 45,
+      "latitude": 37.60734952,
+      "longitude": -122.37847441,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 46,
+      "latitude": 37.60566336,
+      "longitude": -122.38294632,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 47,
+      "latitude": 37.60603115,
+      "longitude": -122.38282951,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 48,
+      "latitude": 37.60583076,
+      "longitude": -122.38316308,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 49,
+      "latitude": 37.60719874,
+      "longitude": -122.3820427,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 50,
+      "latitude": 37.60753819,
+      "longitude": -122.38196068,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 51,
+      "latitude": 37.6059321,
+      "longitude": -122.3835723,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 52,
+      "latitude": 37.60667181,
+      "longitude": -122.38239775,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 53,
+      "latitude": 37.60672363,
+      "longitude": -122.38208484,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 54,
+      "latitude": 37.60695193,
+      "longitude": -122.38198628,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 55,
+      "latitude": 37.60517054,
+      "longitude": -122.38026955,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 56,
+      "latitude": 37.605283,
+      "longitude": -122.37998014,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 57,
+      "latitude": 37.60582621,
+      "longitude": -122.37948164,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 58,
+      "latitude": 37.60548351,
+      "longitude": -122.37971737,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 59,
+      "latitude": 37.62506718,
+      "longitude": -122.36756725,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 60,
+      "latitude": 37.62502053,
+      "longitude": -122.37256847,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 61,
+      "latitude": 37.6243762,
+      "longitude": -122.37105217,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 62,
+      "latitude": 37.62404746,
+      "longitude": -122.37027742,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 63,
+      "latitude": 37.6234119,
+      "longitude": -122.36875007,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 64,
+      "latitude": 37.61837975,
+      "longitude": -122.36647309,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 65,
+      "latitude": 37.61705116,
+      "longitude": -122.3673775,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 66,
+      "latitude": 37.61643472,
+      "longitude": -122.3677604,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 67,
+      "latitude": 37.6148515,
+      "longitude": -122.36955365,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 68,
+      "latitude": 37.61553382,
+      "longitude": -122.37117394,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 69,
+      "latitude": 37.6152324,
+      "longitude": -122.36857119,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 70,
+      "latitude": 37.6148828,
+      "longitude": -122.36896086,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 71,
+      "latitude": 37.61584509,
+      "longitude": -122.36815802,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 72,
+      "latitude": 37.62562901,
+      "longitude": -122.39336808,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 73,
+      "latitude": 37.627865,
+      "longitude": -122.3891202,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 74,
+      "latitude": 37.62678034,
+      "longitude": -122.39054578,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 75,
+      "latitude": 37.62615128,
+      "longitude": -122.39096212,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 76,
+      "latitude": 37.61032018,
+      "longitude": -122.38134906,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 77,
+      "latitude": 37.61034019,
+      "longitude": -122.38047083,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 78,
+      "latitude": 37.61186538,
+      "longitude": -122.37790054,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 79,
+      "latitude": 37.62685911,
+      "longitude": -122.36636768,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 80,
+      "latitude": 37.6248611,
+      "longitude": -122.39815829,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 81,
+      "latitude": 37.62522224,
+      "longitude": -122.3966202,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 82,
+      "latitude": 37.62488999,
+      "longitude": -122.39731325,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 83,
+      "latitude": 37.62579003,
+      "longitude": -122.39463617,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 84,
+      "latitude": 37.6271787,
+      "longitude": -122.36722487,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 85,
+      "latitude": 37.6079501,
+      "longitude": -122.38000664,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 86,
+      "latitude": 37.61243843,
+      "longitude": -122.37702788,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 87,
+      "latitude": 37.61621949,
+      "longitude": -122.37340302,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 88,
+      "latitude": 37.61631675,
+      "longitude": -122.37445082,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 89,
+      "latitude": 37.61678364,
+      "longitude": -122.37413693,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 90,
+      "latitude": 37.61800592,
+      "longitude": -122.3733249,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 91,
+      "latitude": 37.61539659,
+      "longitude": -122.36530707,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 92,
+      "latitude": 37.61481382,
+      "longitude": -122.3656917,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 93,
+      "latitude": 37.61442602,
+      "longitude": -122.36598637,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 94,
+      "latitude": 37.61736385,
+      "longitude": -122.3717902,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 95,
+      "latitude": 37.61673403,
+      "longitude": -122.37220497,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 96,
+      "latitude": 37.61981546,
+      "longitude": -122.37212272,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 97,
+      "latitude": 37.62102829,
+      "longitude": -122.37131446,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 98,
+      "latitude": 37.62373219,
+      "longitude": -122.36951976,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 99,
+      "latitude": 37.6254041,
+      "longitude": -122.36839251,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 100,
+      "latitude": 37.6252331,
+      "longitude": -122.36795786,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 101,
+      "latitude": 37.62634347,
+      "longitude": -122.3707067,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 102,
+      "latitude": 37.60877785,
+      "longitude": -122.38233786,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 103,
+      "latitude": 37.61338822,
+      "longitude": -122.37931409,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 104,
+      "latitude": 37.61896289,
+      "longitude": -122.37561108,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 105,
+      "latitude": 37.62077361,
+      "longitude": -122.37440865,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 106,
+      "latitude": 37.62198905,
+      "longitude": -122.37360192,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 107,
+      "latitude": 37.62469436,
+      "longitude": -122.37180091,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 108,
+      "latitude": 37.61392179,
+      "longitude": -122.35806181,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 109,
+      "latitude": 37.62867394,
+      "longitude": -122.39324686,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 110,
+      "latitude": 37.62762707,
+      "longitude": -122.39077609,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 111,
+      "latitude": 37.62695738,
+      "longitude": -122.39042723,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 112,
+      "latitude": 37.62736497,
+      "longitude": -122.39015429,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 113,
+      "latitude": 37.62713448,
+      "longitude": -122.38960444,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 114,
+      "latitude": 37.62844807,
+      "longitude": -122.39272163,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 115,
+      "latitude": 37.62491557,
+      "longitude": -122.38427753,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 116,
+      "latitude": 37.62193336,
+      "longitude": -122.37772468,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 117,
+      "latitude": 37.62500543,
+      "longitude": -122.38487536,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 118,
+      "latitude": 37.62463092,
+      "longitude": -122.38139816,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 119,
+      "latitude": 37.62389833,
+      "longitude": -122.38188147,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 120,
+      "latitude": 37.62165513,
+      "longitude": -122.3765117,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 121,
+      "latitude": 37.61211728,
+      "longitude": -122.35925701,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 122,
+      "latitude": 37.61172912,
+      "longitude": -122.35889525,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 123,
+      "latitude": 37.62629186,
+      "longitude": -122.3931199,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 124,
+      "latitude": 37.62620227,
+      "longitude": -122.3929069,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 125,
+      "latitude": 37.62019931,
+      "longitude": -122.37856246,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 126,
+      "latitude": 37.62828923,
+      "longitude": -122.38744199,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 127,
+      "latitude": 37.61356254,
+      "longitude": -122.39076886,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 128,
+      "latitude": 37.61185795,
+      "longitude": -122.39181581,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 129,
+      "latitude": 37.61209771,
+      "longitude": -122.39174169,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 130,
+      "latitude": 37.61114664,
+      "longitude": -122.39154322,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 131,
+      "latitude": 37.61001687,
+      "longitude": -122.38975152,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 132,
+      "latitude": 37.63584118,
+      "longitude": -122.395727,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 133,
+      "latitude": 37.61668724,
+      "longitude": -122.39217278,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 134,
+      "latitude": 37.61783956,
+      "longitude": -122.39492055,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 135,
+      "latitude": 37.61930283,
+      "longitude": -122.39525536,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 136,
+      "latitude": 37.61976925,
+      "longitude": -122.39460883,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 137,
+      "latitude": 37.61908334,
+      "longitude": -122.38900933,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 138,
+      "latitude": 37.62035455,
+      "longitude": -122.3920573,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 139,
+      "latitude": 37.62194585,
+      "longitude": -122.3910875,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 140,
+      "latitude": 37.61947337,
+      "longitude": -122.38609642,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 141,
+      "latitude": 37.61821876,
+      "longitude": -122.38326244,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 142,
+      "latitude": 37.61622261,
+      "longitude": -122.38261702,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 143,
+      "latitude": 37.61416209,
+      "longitude": -122.38385743,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 144,
+      "latitude": 37.61319016,
+      "longitude": -122.38710264,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 145,
+      "latitude": 37.60754003,
+      "longitude": -122.38500593,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 146,
+      "latitude": 37.60782772,
+      "longitude": -122.38525266,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 147,
+      "latitude": 37.60940281,
+      "longitude": -122.38886732,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 148,
+      "latitude": 37.60882213,
+      "longitude": -122.38559024,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 149,
+      "latitude": 37.60995027,
+      "longitude": -122.3882234,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 150,
+      "latitude": 37.6103343,
+      "longitude": -122.38898278,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 151,
+      "latitude": 37.60961586,
+      "longitude": -122.38440757,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 152,
+      "latitude": 37.62837724,
+      "longitude": -122.38166462,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 153,
+      "latitude": 37.62643536,
+      "longitude": -122.38295109,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 154,
+      "latitude": 37.62621009,
+      "longitude": -122.38315556,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 155,
+      "latitude": 37.6077599,
+      "longitude": -122.38501165,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 156,
+      "latitude": 37.6072962,
+      "longitude": -122.38499959,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 157,
+      "latitude": 37.60804318,
+      "longitude": -122.38575694,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 158,
+      "latitude": 37.60799925,
+      "longitude": -122.38501787,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 159,
+      "latitude": 37.60798433,
+      "longitude": -122.38549637,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 160,
+      "latitude": 37.60827403,
+      "longitude": -122.38503857,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 161,
+      "latitude": 37.60928594,
+      "longitude": -122.38473767,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 162,
+      "latitude": 37.60876748,
+      "longitude": -122.38504927,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 163,
+      "latitude": 37.62295592,
+      "longitude": -122.38979922,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 164,
+      "latitude": 37.62094138,
+      "longitude": -122.38511853,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 165,
+      "latitude": 37.62059123,
+      "longitude": -122.38535505,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 166,
+      "latitude": 37.61967754,
+      "longitude": -122.38211996,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 167,
+      "latitude": 37.61935482,
+      "longitude": -122.3824092,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 168,
+      "latitude": 37.61907624,
+      "longitude": -122.38068279,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 169,
+      "latitude": 37.61889646,
+      "longitude": -122.38024696,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 170,
+      "latitude": 37.61857454,
+      "longitude": -122.37995705,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 171,
+      "latitude": 37.61780924,
+      "longitude": -122.37953176,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 172,
+      "latitude": 37.61717302,
+      "longitude": -122.379476,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 173,
+      "latitude": 37.61673434,
+      "longitude": -122.37958417,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 174,
+      "latitude": 37.61543509,
+      "longitude": -122.38045236,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 175,
+      "latitude": 37.61332021,
+      "longitude": -122.38187143,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 176,
+      "latitude": 37.60834266,
+      "longitude": -122.38362608,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 177,
+      "latitude": 37.60802721,
+      "longitude": -122.38286147,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 178,
+      "latitude": 37.60609678,
+      "longitude": -122.38011932,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 179,
+      "latitude": 37.60699046,
+      "longitude": -122.3849463,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 180,
+      "latitude": 37.60666906,
+      "longitude": -122.38463511,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 181,
+      "latitude": 37.60529718,
+      "longitude": -122.38265664,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 182,
+      "latitude": 37.60502758,
+      "longitude": -122.3819878,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 183,
+      "latitude": 37.6067795,
+      "longitude": -122.38174747,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 184,
+      "latitude": 37.60645982,
+      "longitude": -122.38097033,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 185,
+      "latitude": 37.60497501,
+      "longitude": -122.3817396,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 186,
+      "latitude": 37.60852728,
+      "longitude": -122.38407589,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 187,
+      "latitude": 37.61112642,
+      "longitude": -122.38335366,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 188,
+      "latitude": 37.60916923,
+      "longitude": -122.38362101,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 189,
+      "latitude": 37.61631696,
+      "longitude": -122.37893413,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 190,
+      "latitude": 37.61390135,
+      "longitude": -122.38053086,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 191,
+      "latitude": 37.60790883,
+      "longitude": -122.38451741,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 192,
+      "latitude": 37.61675667,
+      "longitude": -122.37865933,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 193,
+      "latitude": 37.61743301,
+      "longitude": -122.37865039,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 194,
+      "latitude": 37.61792903,
+      "longitude": -122.37870909,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 195,
+      "latitude": 37.61834728,
+      "longitude": -122.37885414,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 196,
+      "latitude": 37.61051956,
+      "longitude": -122.37999666,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 197,
+      "latitude": 37.61421854,
+      "longitude": -122.38126715,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 198,
+      "latitude": 37.62036129,
+      "longitude": -122.3836871,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 199,
+      "latitude": 37.62153851,
+      "longitude": -122.38651334,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 200,
+      "latitude": 37.62089867,
+      "longitude": -122.38334425,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 201,
+      "latitude": 37.62136325,
+      "longitude": -122.38318666,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 202,
+      "latitude": 37.62348109,
+      "longitude": -122.3904689,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 203,
+      "latitude": 37.61345337,
+      "longitude": -122.35770183,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 204,
+      "latitude": 37.61323315,
+      "longitude": -122.35766708,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 205,
+      "latitude": 37.61299102,
+      "longitude": -122.35770923,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 206,
+      "latitude": 37.61432685,
+      "longitude": -122.35681775,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 207,
+      "latitude": 37.61385779,
+      "longitude": -122.35735715,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 208,
+      "latitude": 37.61505992,
+      "longitude": -122.35708342,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 209,
+      "latitude": 37.61468628,
+      "longitude": -122.35676104,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 210,
+      "latitude": 37.62070777,
+      "longitude": -122.37054992,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 211,
+      "latitude": 37.62038693,
+      "longitude": -122.36978491,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 212,
+      "latitude": 37.61885974,
+      "longitude": -122.36615913,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 213,
+      "latitude": 37.61991029,
+      "longitude": -122.37009905,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 214,
+      "latitude": 37.62134066,
+      "longitude": -122.37207617,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 215,
+      "latitude": 37.62165536,
+      "longitude": -122.37284759,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 216,
+      "latitude": 37.62230959,
+      "longitude": -122.37436614,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 217,
+      "latitude": 37.6293771,
+      "longitude": -122.39119781,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 218,
+      "latitude": 37.62835811,
+      "longitude": -122.38880198,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 219,
+      "latitude": 37.62790714,
+      "longitude": -122.38769043,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 220,
+      "latitude": 37.62695323,
+      "longitude": -122.38542511,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 221,
+      "latitude": 37.62512586,
+      "longitude": -122.38107467,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 222,
+      "latitude": 37.62592527,
+      "longitude": -122.38298352,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 223,
+      "latitude": 37.6261313,
+      "longitude": -122.38347841,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 224,
+      "latitude": 37.62534785,
+      "longitude": -122.38159652,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 225,
+      "latitude": 37.62264711,
+      "longitude": -122.37517588,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 226,
+      "latitude": 37.62227145,
+      "longitude": -122.37562579,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 227,
+      "latitude": 37.62112674,
+      "longitude": -122.37726245,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 228,
+      "latitude": 37.62068737,
+      "longitude": -122.37786474,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 229,
+      "latitude": 37.61970703,
+      "longitude": -122.37926659,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 230,
+      "latitude": 37.62966217,
+      "longitude": -122.3918947,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 231,
+      "latitude": 37.63006247,
+      "longitude": -122.39283665,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 232,
+      "latitude": 37.63057871,
+      "longitude": -122.39454656,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 233,
+      "latitude": 37.63033518,
+      "longitude": -122.39374733,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 234,
+      "latitude": 37.62572393,
+      "longitude": -122.36915712,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 235,
+      "latitude": 37.62312013,
+      "longitude": -122.37480201,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 236,
+      "latitude": 37.62643972,
+      "longitude": -122.37256999,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 237,
+      "latitude": 37.62533611,
+      "longitude": -122.37333216,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 238,
+      "latitude": 37.62605402,
+      "longitude": -122.36993914,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 239,
+      "latitude": 37.62666489,
+      "longitude": -122.37150294,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 240,
+      "latitude": 37.62679721,
+      "longitude": -122.37183485,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 241,
+      "latitude": 37.62677066,
+      "longitude": -122.37228789,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 242,
+      "latitude": 37.61238999,
+      "longitude": -122.35811294,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 243,
+      "latitude": 37.61221931,
+      "longitude": -122.35834577,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 244,
+      "latitude": 37.61211746,
+      "longitude": -122.35857513,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 245,
+      "latitude": 37.61930905,
+      "longitude": -122.37968122,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 246,
+      "latitude": 37.61638736,
+      "longitude": -122.37542703,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 247,
+      "latitude": 37.61707934,
+      "longitude": -122.37492558,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 248,
+      "latitude": 37.61738532,
+      "longitude": -122.37565637,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 249,
+      "latitude": 37.61647013,
+      "longitude": -122.37622624,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 250,
+      "latitude": 37.61762169,
+      "longitude": -122.37650172,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 251,
+      "latitude": 37.61656977,
+      "longitude": -122.3771975,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 252,
+      "latitude": 37.61668889,
+      "longitude": -122.37809081,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 253,
+      "latitude": 37.61787941,
+      "longitude": -122.37735287,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 254,
+      "latitude": 37.61640605,
+      "longitude": -122.37324814,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 255,
+      "latitude": 37.6136997,
+      "longitude": -122.36790393,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 256,
+      "latitude": 37.61613438,
+      "longitude": -122.37260009,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 257,
+      "latitude": 37.61297642,
+      "longitude": -122.37470769,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 258,
+      "latitude": 37.61805465,
+      "longitude": -122.36422342,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 259,
+      "latitude": 37.61772445,
+      "longitude": -122.36394443,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 260,
+      "latitude": 37.6173698,
+      "longitude": -122.36408609,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 261,
+      "latitude": 37.61766973,
+      "longitude": -122.36330883,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 262,
+      "latitude": 37.61762925,
+      "longitude": -122.36381919,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 263,
+      "latitude": 37.61602323,
+      "longitude": -122.36489788,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 264,
+      "latitude": 37.61426159,
+      "longitude": -122.36630835,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 265,
+      "latitude": 37.61404891,
+      "longitude": -122.36719326,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 266,
+      "latitude": 37.6141012,
+      "longitude": -122.36775105,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 267,
+      "latitude": 37.61058872,
+      "longitude": -122.36048695,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 268,
+      "latitude": 37.61116747,
+      "longitude": -122.35891805,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 269,
+      "latitude": 37.61268997,
+      "longitude": -122.37496945,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 270,
+      "latitude": 37.61247365,
+      "longitude": -122.37529968,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 271,
+      "latitude": 37.61233661,
+      "longitude": -122.37568039,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 272,
+      "latitude": 37.61228096,
+      "longitude": -122.37598573,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 273,
+      "latitude": 37.61226234,
+      "longitude": -122.37641145,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 274,
+      "latitude": 37.61212389,
+      "longitude": -122.37653853,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 275,
+      "latitude": 37.61076668,
+      "longitude": -122.37620003,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 276,
+      "latitude": 37.61274832,
+      "longitude": -122.37777725,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 277,
+      "latitude": 37.61186769,
+      "longitude": -122.37629903,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 278,
+      "latitude": 37.61161761,
+      "longitude": -122.37616234,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 279,
+      "latitude": 37.61129531,
+      "longitude": -122.37609002,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 280,
+      "latitude": 37.61306626,
+      "longitude": -122.37852661,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 281,
+      "latitude": 37.61371421,
+      "longitude": -122.380066,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 282,
+      "latitude": 37.60756949,
+      "longitude": -122.37910156,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 283,
+      "latitude": 37.62602765,
+      "longitude": -122.366045,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 284,
+      "latitude": 37.6247961,
+      "longitude": -122.36689471,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 285,
+      "latitude": 37.62311385,
+      "longitude": -122.36797533,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 286,
+      "latitude": 37.61663817,
+      "longitude": -122.36454132,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 287,
+      "latitude": 37.61917313,
+      "longitude": -122.370589,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 288,
+      "latitude": 37.6176598,
+      "longitude": -122.36698157,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 289,
+      "latitude": 37.61855767,
+      "longitude": -122.37099752,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 290,
+      "latitude": 37.61795851,
+      "longitude": -122.37139354,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 291,
+      "latitude": 37.62650166,
+      "longitude": -122.36587256,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 292,
+      "latitude": 37.61106176,
+      "longitude": -122.37908899,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 293,
+      "latitude": 37.62211532,
+      "longitude": -122.38612898,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 294,
+      "latitude": 37.6235118,
+      "longitude": -122.38943447,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 295,
+      "latitude": 37.62247525,
+      "longitude": -122.38589407,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 296,
+      "latitude": 37.62231056,
+      "longitude": -122.38123946,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 297,
+      "latitude": 37.62229745,
+      "longitude": -122.38175177,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 298,
+      "latitude": 37.62497221,
+      "longitude": -122.38786203,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 299,
+      "latitude": 37.62224296,
+      "longitude": -122.38222894,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 300,
+      "latitude": 37.62486397,
+      "longitude": -122.38837267,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 301,
+      "latitude": 37.62269086,
+      "longitude": -122.38268039,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 302,
+      "latitude": 37.62370636,
+      "longitude": -122.38507021,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 303,
+      "latitude": 37.6244705,
+      "longitude": -122.38879209,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 304,
+      "latitude": 37.62415411,
+      "longitude": -122.38803297,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 305,
+      "latitude": 37.62419746,
+      "longitude": -122.38863834,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 306,
+      "latitude": 37.62387978,
+      "longitude": -122.3891879,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 307,
+      "latitude": 37.62309055,
+      "longitude": -122.3854812,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 308,
+      "latitude": 37.62170275,
+      "longitude": -122.38273233,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 309,
+      "latitude": 37.62199944,
+      "longitude": -122.38287561,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 310,
+      "latitude": 37.6216133,
+      "longitude": -122.38195017,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 311,
+      "latitude": 37.62501202,
+      "longitude": -122.38663547,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 312,
+      "latitude": 37.62219285,
+      "longitude": -122.38012532,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 313,
+      "latitude": 37.62329885,
+      "longitude": -122.38227309,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 314,
+      "latitude": 37.62430116,
+      "longitude": -122.3846851,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 315,
+      "latitude": 37.62564835,
+      "longitude": -122.38378329,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 316,
+      "latitude": 37.62807607,
+      "longitude": -122.39365586,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 317,
+      "latitude": 37.62698826,
+      "longitude": -122.39270256,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 318,
+      "latitude": 37.62652028,
+      "longitude": -122.39019953,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 319,
+      "latitude": 37.62584693,
+      "longitude": -122.39208185,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 320,
+      "latitude": 37.62555326,
+      "longitude": -122.39136258,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 321,
+      "latitude": 37.62517665,
+      "longitude": -122.39164764,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 322,
+      "latitude": 37.62463658,
+      "longitude": -122.38917651,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 323,
+      "latitude": 37.62487817,
+      "longitude": -122.39180383,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 324,
+      "latitude": 37.62444064,
+      "longitude": -122.39167664,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 325,
+      "latitude": 37.62768674,
+      "longitude": -122.39274488,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 326,
+      "latitude": 37.62894448,
+      "longitude": -122.39661607,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 327,
+      "latitude": 37.62770706,
+      "longitude": -122.39390764,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 328,
+      "latitude": 37.62734539,
+      "longitude": -122.39282816,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 329,
+      "latitude": 37.62790961,
+      "longitude": -122.3926549,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 330,
+      "latitude": 37.62810781,
+      "longitude": -122.3926257,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 331,
+      "latitude": 37.6257625,
+      "longitude": -122.38978588,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 332,
+      "latitude": 37.62897476,
+      "longitude": -122.39151999,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 333,
+      "latitude": 37.62980622,
+      "longitude": -122.3934555,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 334,
+      "latitude": 37.60910318,
+      "longitude": -122.38480435,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 335,
+      "latitude": 37.60872508,
+      "longitude": -122.38454871,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 336,
+      "latitude": 37.60897449,
+      "longitude": -122.38479029,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 337,
+      "latitude": 37.60876787,
+      "longitude": -122.38533855,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 338,
+      "latitude": 37.61081062,
+      "longitude": -122.38257886,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 339,
+      "latitude": 37.60896332,
+      "longitude": -122.38317375,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 340,
+      "latitude": 37.60858156,
+      "longitude": -122.3815131,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 341,
+      "latitude": 37.60869714,
+      "longitude": -122.38198304,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 342,
+      "latitude": 37.60779305,
+      "longitude": -122.38227929,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 343,
+      "latitude": 37.60826623,
+      "longitude": -122.38075782,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 344,
+      "latitude": 37.62401972,
+      "longitude": -122.39068224,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 345,
+      "latitude": 37.62473395,
+      "longitude": -122.39241236,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 346,
+      "latitude": 37.62600599,
+      "longitude": -122.39497189,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 347,
+      "latitude": 37.62527609,
+      "longitude": -122.3936515,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 348,
+      "latitude": 37.62745064,
+      "longitude": -122.39645076,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 349,
+      "latitude": 37.62768223,
+      "longitude": -122.39662166,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 350,
+      "latitude": 37.62798451,
+      "longitude": -122.39665584,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 351,
+      "latitude": 37.62964876,
+      "longitude": -122.39658689,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 352,
+      "latitude": 37.63055835,
+      "longitude": -122.39532734,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 353,
+      "latitude": 37.63114542,
+      "longitude": -122.39350753,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 354,
+      "latitude": 37.63137967,
+      "longitude": -122.39281535,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 355,
+      "latitude": 37.63180379,
+      "longitude": -122.39158767,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 356,
+      "latitude": 37.63222152,
+      "longitude": -122.39139778,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 357,
+      "latitude": 37.63287243,
+      "longitude": -122.39175567,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 358,
+      "latitude": 37.63316117,
+      "longitude": -122.39179896,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 359,
+      "latitude": 37.6337188,
+      "longitude": -122.39132498,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 360,
+      "latitude": 37.63433056,
+      "longitude": -122.38970479,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 361,
+      "latitude": 37.63439914,
+      "longitude": -122.38921485,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 362,
+      "latitude": 37.6350964,
+      "longitude": -122.38811566,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 363,
+      "latitude": 37.63554974,
+      "longitude": -122.38814726,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 364,
+      "latitude": 37.63715191,
+      "longitude": -122.38938844,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 365,
+      "latitude": 37.63463438,
+      "longitude": -122.39259737,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 366,
+      "latitude": 37.62827741,
+      "longitude": -122.38291032,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 367,
+      "latitude": 37.62906474,
+      "longitude": -122.37910627,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 368,
+      "latitude": 37.61658777,
+      "longitude": -122.39494933,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 369,
+      "latitude": 37.61602584,
+      "longitude": -122.39355897,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 370,
+      "latitude": 37.61669428,
+      "longitude": -122.39504106,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 371,
+      "latitude": 37.61850892,
+      "longitude": -122.3957491,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 372,
+      "latitude": 37.62276633,
+      "longitude": -122.39041657,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 373,
+      "latitude": 37.62236632,
+      "longitude": -122.39032898,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 374,
+      "latitude": 37.62304236,
+      "longitude": -122.3905366,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 375,
+      "latitude": 37.62320156,
+      "longitude": -122.39063553,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 376,
+      "latitude": 37.62359667,
+      "longitude": -122.39102609,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 377,
+      "latitude": 37.62372405,
+      "longitude": -122.39136071,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 378,
+      "latitude": 37.63587304,
+      "longitude": -122.38789571,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 379,
+      "latitude": 37.63711928,
+      "longitude": -122.38880484,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 380,
+      "latitude": 37.63543302,
+      "longitude": -122.38832811,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 381,
+      "latitude": 37.63531488,
+      "longitude": -122.38846215,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 382,
+      "latitude": 37.63476299,
+      "longitude": -122.38918212,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 383,
+      "latitude": 37.63470023,
+      "longitude": -122.38941126,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 384,
+      "latitude": 37.63467881,
+      "longitude": -122.38964988,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 385,
+      "latitude": 37.63453149,
+      "longitude": -122.39035869,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 386,
+      "latitude": 37.63443353,
+      "longitude": -122.39078867,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 387,
+      "latitude": 37.63408914,
+      "longitude": -122.39146013,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 388,
+      "latitude": 37.63395736,
+      "longitude": -122.39180044,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 389,
+      "latitude": 37.63381865,
+      "longitude": -122.39195183,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 390,
+      "latitude": 37.63365428,
+      "longitude": -122.39206816,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 391,
+      "latitude": 37.63341341,
+      "longitude": -122.39221581,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 392,
+      "latitude": 37.6332955,
+      "longitude": -122.39226086,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 393,
+      "latitude": 37.63242161,
+      "longitude": -122.39246353,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 394,
+      "latitude": 37.62556493,
+      "longitude": -122.37385907,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 395,
+      "latitude": 37.6237698,
+      "longitude": -122.37504797,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 396,
+      "latitude": 37.62353581,
+      "longitude": -122.37517047,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 397,
+      "latitude": 37.62340169,
+      "longitude": -122.3757379,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 398,
+      "latitude": 37.62377417,
+      "longitude": -122.37664888,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 399,
+      "latitude": 37.62542912,
+      "longitude": -122.38062326,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 400,
+      "latitude": 37.62557075,
+      "longitude": -122.3809024,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 401,
+      "latitude": 37.62594989,
+      "longitude": -122.38179959,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 402,
+      "latitude": 37.62574939,
+      "longitude": -122.38132974,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 403,
+      "latitude": 37.6262538,
+      "longitude": -122.38252016,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 404,
+      "latitude": 37.62666598,
+      "longitude": -122.38350516,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 405,
+      "latitude": 37.62846101,
+      "longitude": -122.38785429,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 406,
+      "latitude": 37.62733157,
+      "longitude": -122.38516814,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 407,
+      "latitude": 37.62676879,
+      "longitude": -122.383809,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 408,
+      "latitude": 37.62858799,
+      "longitude": -122.38809389,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 409,
+      "latitude": 37.62983823,
+      "longitude": -122.39112223,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 410,
+      "latitude": 37.62887545,
+      "longitude": -122.38879803,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 411,
+      "latitude": 37.62993411,
+      "longitude": -122.39131031,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 412,
+      "latitude": 37.63005396,
+      "longitude": -122.39143569,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 413,
+      "latitude": 37.6301584,
+      "longitude": -122.39150055,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 414,
+      "latitude": 37.63192188,
+      "longitude": -122.39245392,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 415,
+      "latitude": 37.63156914,
+      "longitude": -122.39226314,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 416,
+      "latitude": 37.63103952,
+      "longitude": -122.39563093,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 417,
+      "latitude": 37.63167474,
+      "longitude": -122.39376436,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 418,
+      "latitude": 37.63190094,
+      "longitude": -122.39309312,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 419,
+      "latitude": 37.63097888,
+      "longitude": -122.39586513,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 420,
+      "latitude": 37.63092181,
+      "longitude": -122.39604378,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 421,
+      "latitude": 37.63084572,
+      "longitude": -122.39623595,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 422,
+      "latitude": 37.63076725,
+      "longitude": -122.39639358,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 423,
+      "latitude": 37.63068402,
+      "longitude": -122.3965287,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 424,
+      "latitude": 37.63057225,
+      "longitude": -122.39666982,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 425,
+      "latitude": 37.63043077,
+      "longitude": -122.39681845,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 426,
+      "latitude": 37.63027858,
+      "longitude": -122.39694455,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 427,
+      "latitude": 37.63012877,
+      "longitude": -122.39703763,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 428,
+      "latitude": 37.62994329,
+      "longitude": -122.3971202,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 429,
+      "latitude": 37.62976257,
+      "longitude": -122.39717124,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 430,
+      "latitude": 37.62956757,
+      "longitude": -122.39719376,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 431,
+      "latitude": 37.62779244,
+      "longitude": -122.39726432,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 432,
+      "latitude": 37.62722173,
+      "longitude": -122.3969956,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 433,
+      "latitude": 37.62641799,
+      "longitude": -122.39619695,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 434,
+      "latitude": 37.62545082,
+      "longitude": -122.39551311,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 435,
+      "latitude": 37.62445859,
+      "longitude": -122.39770781,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 436,
+      "latitude": 37.62488084,
+      "longitude": -122.39602727,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 437,
+      "latitude": 37.6252041,
+      "longitude": -122.39490962,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 438,
+      "latitude": 37.62508903,
+      "longitude": -122.3953082,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 439,
+      "latitude": 37.62523495,
+      "longitude": -122.39467406,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 440,
+      "latitude": 37.62519724,
+      "longitude": -122.39436071,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 441,
+      "latitude": 37.62505976,
+      "longitude": -122.39399366,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 442,
+      "latitude": 37.62451069,
+      "longitude": -122.39302248,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 443,
+      "latitude": 37.6240324,
+      "longitude": -122.39218123,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 444,
+      "latitude": 37.62412653,
+      "longitude": -122.39231884,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 445,
+      "latitude": 37.62425632,
+      "longitude": -122.39248146,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 446,
+      "latitude": 37.62418003,
+      "longitude": -122.39229006,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 447,
+      "latitude": 37.62410077,
+      "longitude": -122.39212869,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 448,
+      "latitude": 37.62395942,
+      "longitude": -122.39198628,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 449,
+      "latitude": 37.6237579,
+      "longitude": -122.39165632,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 450,
+      "latitude": 37.62333761,
+      "longitude": -122.39169238,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 451,
+      "latitude": 37.62320982,
+      "longitude": -122.39192896,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 452,
+      "latitude": 37.62271816,
+      "longitude": -122.39241142,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 453,
+      "latitude": 37.62056484,
+      "longitude": -122.3938434,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 454,
+      "latitude": 37.62034226,
+      "longitude": -122.39388446,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 455,
+      "latitude": 37.62035051,
+      "longitude": -122.38478707,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 456,
+      "latitude": 37.61970417,
+      "longitude": -122.38520882,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 457,
+      "latitude": 37.62096815,
+      "longitude": -122.38720088,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 458,
+      "latitude": 37.61865664,
+      "longitude": -122.39573488,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 459,
+      "latitude": 37.61861954,
+      "longitude": -122.39553134,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 460,
+      "latitude": 37.61861723,
+      "longitude": -122.39524484,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 461,
+      "latitude": 37.61680089,
+      "longitude": -122.39147216,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 462,
+      "latitude": 37.6169846,
+      "longitude": -122.39182136,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 463,
+      "latitude": 37.61812217,
+      "longitude": -122.39452055,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 464,
+      "latitude": 37.61863199,
+      "longitude": -122.39473159,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 465,
+      "latitude": 37.61888379,
+      "longitude": -122.39466703,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 466,
+      "latitude": 37.6190563,
+      "longitude": -122.39458102,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 467,
+      "latitude": 37.61918015,
+      "longitude": -122.39448257,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 468,
+      "latitude": 37.61939176,
+      "longitude": -122.39414969,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 469,
+      "latitude": 37.61954457,
+      "longitude": -122.39356495,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 470,
+      "latitude": 37.61996474,
+      "longitude": -122.39373435,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 471,
+      "latitude": 37.61962105,
+      "longitude": -122.39323715,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 472,
+      "latitude": 37.61846846,
+      "longitude": -122.39045779,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 473,
+      "latitude": 37.61924023,
+      "longitude": -122.38815345,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 474,
+      "latitude": 37.61976733,
+      "longitude": -122.38943696,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 475,
+      "latitude": 37.61936311,
+      "longitude": -122.38971633,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 476,
+      "latitude": 37.61926204,
+      "longitude": -122.39237144,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 477,
+      "latitude": 37.62060677,
+      "longitude": -122.39148282,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 478,
+      "latitude": 37.62014791,
+      "longitude": -122.39178116,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 479,
+      "latitude": 37.62166507,
+      "longitude": -122.39081337,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 480,
+      "latitude": 37.62177406,
+      "longitude": -122.39066701,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 481,
+      "latitude": 37.62188794,
+      "longitude": -122.3902372,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 482,
+      "latitude": 37.62209144,
+      "longitude": -122.38934652,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 483,
+      "latitude": 37.62210698,
+      "longitude": -122.3891693,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 484,
+      "latitude": 37.62208363,
+      "longitude": -122.38897997,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 485,
+      "latitude": 37.62203398,
+      "longitude": -122.38880275,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 486,
+      "latitude": 37.62127926,
+      "longitude": -122.3869992,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 487,
+      "latitude": 37.62082393,
+      "longitude": -122.38590324,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 488,
+      "latitude": 37.61985467,
+      "longitude": -122.38655841,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 489,
+      "latitude": 37.61523231,
+      "longitude": -122.38412722,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 490,
+      "latitude": 37.61592317,
+      "longitude": -122.38283893,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 491,
+      "latitude": 37.61522899,
+      "longitude": -122.38120846,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 492,
+      "latitude": 37.6156157,
+      "longitude": -122.38095306,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 493,
+      "latitude": 37.61654691,
+      "longitude": -122.38298561,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 494,
+      "latitude": 37.61650814,
+      "longitude": -122.38185929,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 495,
+      "latitude": 37.61602256,
+      "longitude": -122.38068436,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 496,
+      "latitude": 37.61389527,
+      "longitude": -122.38997148,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 497,
+      "latitude": 37.612143,
+      "longitude": -122.39114566,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 498,
+      "latitude": 37.61192902,
+      "longitude": -122.39122345,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 499,
+      "latitude": 37.61172973,
+      "longitude": -122.39122085,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 500,
+      "latitude": 37.61159824,
+      "longitude": -122.39118714,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 501,
+      "latitude": 37.61145853,
+      "longitude": -122.39112489,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 502,
+      "latitude": 37.61127567,
+      "longitude": -122.39096669,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 503,
+      "latitude": 37.61120171,
+      "longitude": -122.39086035,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 504,
+      "latitude": 37.61059357,
+      "longitude": -122.38992668,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 505,
+      "latitude": 37.61069941,
+      "longitude": -122.39009009,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 506,
+      "latitude": 37.61103629,
+      "longitude": -122.3906079,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 507,
+      "latitude": 37.61067164,
+      "longitude": -122.38940019,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 508,
+      "latitude": 37.61111131,
+      "longitude": -122.38908638,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 509,
+      "latitude": 37.61102906,
+      "longitude": -122.38851885,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 510,
+      "latitude": 37.61161056,
+      "longitude": -122.38876997,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 511,
+      "latitude": 37.61138621,
+      "longitude": -122.38891646,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 512,
+      "latitude": 37.6118494,
+      "longitude": -122.38847994,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 513,
+      "latitude": 37.61329934,
+      "longitude": -122.3875214,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 514,
+      "latitude": 37.61351192,
+      "longitude": -122.38234213,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 515,
+      "latitude": 37.61377056,
+      "longitude": -122.38217101,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 516,
+      "latitude": 37.61400122,
+      "longitude": -122.38271435,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 517,
+      "latitude": 37.61466237,
+      "longitude": -122.38424803,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 518,
+      "latitude": 37.61700863,
+      "longitude": -122.38003313,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 519,
+      "latitude": 37.61717292,
+      "longitude": -122.37998631,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 520,
+      "latitude": 37.61732537,
+      "longitude": -122.37997009,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 521,
+      "latitude": 37.61749801,
+      "longitude": -122.37996829,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 522,
+      "latitude": 37.61786469,
+      "longitude": -122.38005474,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 523,
+      "latitude": 37.61812008,
+      "longitude": -122.38018984,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 524,
+      "latitude": 37.61823279,
+      "longitude": -122.38027269,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 525,
+      "latitude": 37.61855239,
+      "longitude": -122.38060952,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 526,
+      "latitude": 37.61864228,
+      "longitude": -122.38075182,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 527,
+      "latitude": 37.61873502,
+      "longitude": -122.38092834,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 528,
+      "latitude": 37.61955816,
+      "longitude": -122.3828928,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 529,
+      "latitude": 37.61992024,
+      "longitude": -122.38375461,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 530,
+      "latitude": 37.61819512,
+      "longitude": -122.38379163,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 531,
+      "latitude": 37.61913863,
+      "longitude": -122.38189592,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 532,
+      "latitude": 37.61754426,
+      "longitude": -122.38408223,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 533,
+      "latitude": 37.61825154,
+      "longitude": -122.3825036,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    }
+  ],
+  "taxi_edges": [
+    {
+      "node_begin": 6,
+      "node_end": 68,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 7,
+      "node_end": 6,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 8,
+      "node_end": 7,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 9,
+      "node_end": 8,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 67,
+      "node_end": 68,
+      "name": "Q",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 68,
+      "node_end": 256,
+      "name": "Q",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 9,
+      "node_end": 256,
+      "name": "L",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 257,
+      "node_end": 9,
+      "name": "L",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 294,
+      "node_end": 163,
+      "name": "Q",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 335,
+      "node_end": 336,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 336,
+      "node_end": 161,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 38,
+      "node_end": 268,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 39,
+      "node_end": 38,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 40,
+      "node_end": 39,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 267,
+      "node_end": 40,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 41,
+      "node_end": 351,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 42,
+      "node_end": 41,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 352,
+      "node_end": 42,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 355,
+      "node_end": 356,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 361,
+      "node_end": 362,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 157,
+      "node_end": 160,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 358,
+      "node_end": 357,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 43,
+      "node_end": 358,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 359,
+      "node_end": 43,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 44,
+      "node_end": 155,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 191,
+      "node_end": 44,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 323,
+      "node_end": 324,
+      "name": "S",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 345,
+      "node_end": 323,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 49,
+      "node_end": 52,
+      "name": "A2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 52,
+      "node_end": 47,
+      "name": "A2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 47,
+      "node_end": 46,
+      "name": "A2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 46,
+      "node_end": 181,
+      "name": "A2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 47,
+      "node_end": 48,
+      "name": "A2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 48,
+      "node_end": 51,
+      "name": "A2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 49,
+      "node_end": 54,
+      "name": "A2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 52,
+      "node_end": 53,
+      "name": "A2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 53,
+      "node_end": 183,
+      "name": "A2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 54,
+      "node_end": 183,
+      "name": "A2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 55,
+      "node_end": 56,
+      "name": "L2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 178,
+      "node_end": 57,
+      "name": "A1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 56,
+      "node_end": 58,
+      "name": "L2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 58,
+      "node_end": 57,
+      "name": "L2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 57,
+      "node_end": 45,
+      "name": "L",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 59,
+      "node_end": 284,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 99,
+      "node_end": 100,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 100,
+      "node_end": 59,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 62,
+      "node_end": 98,
+      "name": "V",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 98,
+      "node_end": 63,
+      "name": "V",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 60,
+      "node_end": 107,
+      "name": "V",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 107,
+      "node_end": 61,
+      "name": "V",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 60,
+      "node_end": 237,
+      "name": "V",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 62,
+      "node_end": 61,
+      "name": "V",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 285,
+      "node_end": 63,
+      "name": "V",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 64,
+      "node_end": 212,
+      "name": "P",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 65,
+      "node_end": 288,
+      "name": "P",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 288,
+      "node_end": 64,
+      "name": "P",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 66,
+      "node_end": 65,
+      "name": "P",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 69,
+      "node_end": 71,
+      "name": "P",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 71,
+      "node_end": 66,
+      "name": "P",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 69,
+      "node_end": 70,
+      "name": "P",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 70,
+      "node_end": 67,
+      "name": "P",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 72,
+      "node_end": 124,
+      "name": "Z1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 72,
+      "node_end": 347,
+      "name": "Z1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 73,
+      "node_end": 218,
+      "name": "R",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 73,
+      "node_end": 113,
+      "name": "R",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 74,
+      "node_end": 111,
+      "name": "R",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 111,
+      "node_end": 112,
+      "name": "R",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 75,
+      "node_end": 320,
+      "name": "R",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 75,
+      "node_end": 74,
+      "name": "R",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 76,
+      "node_end": 338,
+      "name": "H",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 77,
+      "node_end": 76,
+      "name": "H",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 196,
+      "node_end": 77,
+      "name": "H",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 78,
+      "node_end": 86,
+      "name": "H",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 292,
+      "node_end": 78,
+      "name": "H",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 79,
+      "node_end": 84,
+      "name": "L",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 81,
+      "node_end": 82,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 83,
+      "node_end": 434,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 434,
+      "node_end": 81,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 82,
+      "node_end": 80,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 184,
+      "node_end": 85,
+      "name": "01R/19L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 85,
+      "node_end": 86,
+      "name": "01R/19L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 86,
+      "node_end": 88,
+      "name": "01R/19L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 88,
+      "node_end": 89,
+      "name": "01R/19L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 89,
+      "node_end": 90,
+      "name": "01R/19L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 90,
+      "node_end": 96,
+      "name": "01R/19L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 96,
+      "node_end": 97,
+      "name": "01R/19L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 97,
+      "node_end": 98,
+      "name": "01R/19L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 98,
+      "node_end": 99,
+      "name": "01R/19L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 99,
+      "node_end": 84,
+      "name": "01R/19L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 102,
+      "node_end": 76,
+      "name": "01L/19R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 76,
+      "node_end": 103,
+      "name": "01L/19R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 103,
+      "node_end": 251,
+      "name": "01L/19R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 251,
+      "node_end": 250,
+      "name": "01L/19R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 250,
+      "node_end": 104,
+      "name": "01L/19R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 104,
+      "node_end": 105,
+      "name": "01L/19R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 105,
+      "node_end": 106,
+      "name": "01L/19R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 106,
+      "node_end": 107,
+      "name": "01L/19R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 107,
+      "node_end": 101,
+      "name": "01L/19R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 109,
+      "node_end": 114,
+      "name": "10L/28R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 114,
+      "node_end": 110,
+      "name": "10L/28R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 110,
+      "node_end": 112,
+      "name": "10L/28R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 112,
+      "node_end": 113,
+      "name": "10L/28R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 113,
+      "node_end": 115,
+      "name": "10L/28R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 115,
+      "node_end": 119,
+      "name": "10L/28R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 119,
+      "node_end": 120,
+      "name": "10L/28R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 120,
+      "node_end": 105,
+      "name": "10L/28R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 105,
+      "node_end": 96,
+      "name": "10L/28R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 96,
+      "node_end": 287,
+      "name": "10L/28R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 287,
+      "node_end": 288,
+      "name": "10L/28R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 288,
+      "node_end": 286,
+      "name": "10L/28R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 286,
+      "node_end": 108,
+      "name": "10L/28R",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 123,
+      "node_end": 124,
+      "name": "10R/28L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 124,
+      "node_end": 319,
+      "name": "10R/28L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 319,
+      "node_end": 320,
+      "name": "10R/28L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 320,
+      "node_end": 322,
+      "name": "10R/28L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 322,
+      "node_end": 303,
+      "name": "10R/28L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 303,
+      "node_end": 304,
+      "name": "10R/28L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 304,
+      "node_end": 307,
+      "name": "10R/28L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 307,
+      "node_end": 309,
+      "name": "10R/28L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 309,
+      "node_end": 310,
+      "name": "10R/28L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 310,
+      "node_end": 125,
+      "name": "10R/28L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 125,
+      "node_end": 104,
+      "name": "10R/28L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 104,
+      "node_end": 90,
+      "name": "10R/28L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 90,
+      "node_end": 94,
+      "name": "10R/28L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 94,
+      "node_end": 71,
+      "name": "10R/28L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 71,
+      "node_end": 92,
+      "name": "10R/28L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 92,
+      "node_end": 121,
+      "name": "10R/28L",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 219,
+      "node_end": 126,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 220,
+      "node_end": 406,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 128,
+      "node_end": 129,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 129,
+      "node_end": 127,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 130,
+      "node_end": 128,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 131,
+      "node_end": 130,
+      "name": "M2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 150,
+      "node_end": 131,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 224,
+      "node_end": 402,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 402,
+      "node_end": 367,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 358,
+      "node_end": 390,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 390,
+      "node_end": 365,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 353,
+      "node_end": 417,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 417,
+      "node_end": 132,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 134,
+      "node_end": 133,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 460,
+      "node_end": 134,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 135,
+      "node_end": 460,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 136,
+      "node_end": 135,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 138,
+      "node_end": 470,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 470,
+      "node_end": 136,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 138,
+      "node_end": 478,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 478,
+      "node_end": 475,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 475,
+      "node_end": 137,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 139,
+      "node_end": 138,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 163,
+      "node_end": 373,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 373,
+      "node_end": 139,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 164,
+      "node_end": 165,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "D"
+    },
+    {
+      "node_begin": 165,
+      "node_end": 140,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "D"
+    },
+    {
+      "node_begin": 166,
+      "node_end": 167,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "D"
+    },
+    {
+      "node_begin": 167,
+      "node_end": 141,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "D"
+    },
+    {
+      "node_begin": 174,
+      "node_end": 492,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 492,
+      "node_end": 142,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 175,
+      "node_end": 514,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "D"
+    },
+    {
+      "node_begin": 514,
+      "node_end": 143,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "D"
+    },
+    {
+      "node_begin": 150,
+      "node_end": 509,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 509,
+      "node_end": 144,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 145,
+      "node_end": 146,
+      "name": "M2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 155,
+      "node_end": 146,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 146,
+      "node_end": 157,
+      "name": "M2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 157,
+      "node_end": 147,
+      "name": "M2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 147,
+      "node_end": 131,
+      "name": "M2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 148,
+      "node_end": 149,
+      "name": "M1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 149,
+      "node_end": 150,
+      "name": "M1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 188,
+      "node_end": 151,
+      "name": "M",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 153,
+      "node_end": 152,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 154,
+      "node_end": 153,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 222,
+      "node_end": 154,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 223,
+      "node_end": 154,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 158,
+      "node_end": 155,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 155,
+      "node_end": 145,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 145,
+      "node_end": 156,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 159,
+      "node_end": 157,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 160,
+      "node_end": 158,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 151,
+      "node_end": 161,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 161,
+      "node_end": 162,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 162,
+      "node_end": 160,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 163,
+      "node_end": 199,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 199,
+      "node_end": 164,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 164,
+      "node_end": 198,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 198,
+      "node_end": 166,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 166,
+      "node_end": 168,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 169,
+      "node_end": 170,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 170,
+      "node_end": 171,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 171,
+      "node_end": 172,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 172,
+      "node_end": 173,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 173,
+      "node_end": 174,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 174,
+      "node_end": 197,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 197,
+      "node_end": 175,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 175,
+      "node_end": 187,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 187,
+      "node_end": 151,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 156,
+      "node_end": 179,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 179,
+      "node_end": 180,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 180,
+      "node_end": 51,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 51,
+      "node_end": 181,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 181,
+      "node_end": 182,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 182,
+      "node_end": 185,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 183,
+      "node_end": 184,
+      "name": "A1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 184,
+      "node_end": 178,
+      "name": "A1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 185,
+      "node_end": 55,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 189,
+      "node_end": 190,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 190,
+      "node_end": 338,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 188,
+      "node_end": 186,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 186,
+      "node_end": 191,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 191,
+      "node_end": 156,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 338,
+      "node_end": 188,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 192,
+      "node_end": 189,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 193,
+      "node_end": 192,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 194,
+      "node_end": 193,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 195,
+      "node_end": 194,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 294,
+      "node_end": 293,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 293,
+      "node_end": 200,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 200,
+      "node_end": 245,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 245,
+      "node_end": 195,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 344,
+      "node_end": 294,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 202,
+      "node_end": 344,
+      "name": "B1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 163,
+      "node_end": 202,
+      "name": "B1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 206,
+      "node_end": 205,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 203,
+      "node_end": 108,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 204,
+      "node_end": 203,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 205,
+      "node_end": 204,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 242,
+      "node_end": 205,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 206,
+      "node_end": 207,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 207,
+      "node_end": 108,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 208,
+      "node_end": 209,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 209,
+      "node_end": 206,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 210,
+      "node_end": 211,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 211,
+      "node_end": 212,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 212,
+      "node_end": 258,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 258,
+      "node_end": 261,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 261,
+      "node_end": 208,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 214,
+      "node_end": 97,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 97,
+      "node_end": 210,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 215,
+      "node_end": 214,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 216,
+      "node_end": 106,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 106,
+      "node_end": 215,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 217,
+      "node_end": 218,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 218,
+      "node_end": 219,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 219,
+      "node_end": 220,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 220,
+      "node_end": 223,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 223,
+      "node_end": 222,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 222,
+      "node_end": 224,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 224,
+      "node_end": 221,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 221,
+      "node_end": 225,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 225,
+      "node_end": 216,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 230,
+      "node_end": 217,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 231,
+      "node_end": 230,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 232,
+      "node_end": 233,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 233,
+      "node_end": 231,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 234,
+      "node_end": 99,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 238,
+      "node_end": 234,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 225,
+      "node_end": 226,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 226,
+      "node_end": 120,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 120,
+      "node_end": 227,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 227,
+      "node_end": 228,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 228,
+      "node_end": 125,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 125,
+      "node_end": 229,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 229,
+      "node_end": 245,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 235,
+      "node_end": 225,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 236,
+      "node_end": 237,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 237,
+      "node_end": 235,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 238,
+      "node_end": 101,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 101,
+      "node_end": 239,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 239,
+      "node_end": 240,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 240,
+      "node_end": 241,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 241,
+      "node_end": 236,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 268,
+      "node_end": 242,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 243,
+      "node_end": 242,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 244,
+      "node_end": 243,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 121,
+      "node_end": 244,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 256,
+      "node_end": 87,
+      "name": "F1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 246,
+      "node_end": 249,
+      "name": "F1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 247,
+      "node_end": 248,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 248,
+      "node_end": 250,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 249,
+      "node_end": 251,
+      "name": "F1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 251,
+      "node_end": 252,
+      "name": "F1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 250,
+      "node_end": 253,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 252,
+      "node_end": 192,
+      "name": "F1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 195,
+      "node_end": 169,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 169,
+      "node_end": 168,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 253,
+      "node_end": 195,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 254,
+      "node_end": 89,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 87,
+      "node_end": 88,
+      "name": "F1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 88,
+      "node_end": 246,
+      "name": "F1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 89,
+      "node_end": 247,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 255,
+      "node_end": 67,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 256,
+      "node_end": 254,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 258,
+      "node_end": 259,
+      "name": "N",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 259,
+      "node_end": 260,
+      "name": "N",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 261,
+      "node_end": 262,
+      "name": "N",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 262,
+      "node_end": 260,
+      "name": "N",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 263,
+      "node_end": 91,
+      "name": "N",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 264,
+      "node_end": 265,
+      "name": "N",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 265,
+      "node_end": 266,
+      "name": "N",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 266,
+      "node_end": 67,
+      "name": "N",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 267,
+      "node_end": 255,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 121,
+      "node_end": 122,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 122,
+      "node_end": 268,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 269,
+      "node_end": 257,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 270,
+      "node_end": 269,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 271,
+      "node_end": 270,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 272,
+      "node_end": 271,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 272,
+      "node_end": 273,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 273,
+      "node_end": 86,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 277,
+      "node_end": 274,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 274,
+      "node_end": 86,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 276,
+      "node_end": 86,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 277,
+      "node_end": 278,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 278,
+      "node_end": 279,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 279,
+      "node_end": 275,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 280,
+      "node_end": 276,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 190,
+      "node_end": 281,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 103,
+      "node_end": 280,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 281,
+      "node_end": 103,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 283,
+      "node_end": 284,
+      "name": "L",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 284,
+      "node_end": 285,
+      "name": "L",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 285,
+      "node_end": 211,
+      "name": "L",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 211,
+      "node_end": 213,
+      "name": "L",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 213,
+      "node_end": 287,
+      "name": "L",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 260,
+      "node_end": 286,
+      "name": "N",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 286,
+      "node_end": 263,
+      "name": "N",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 287,
+      "node_end": 289,
+      "name": "L",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 289,
+      "node_end": 290,
+      "name": "L",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 290,
+      "node_end": 94,
+      "name": "L",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 91,
+      "node_end": 92,
+      "name": "N",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 92,
+      "node_end": 93,
+      "name": "N",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 93,
+      "node_end": 264,
+      "name": "N",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 94,
+      "node_end": 95,
+      "name": "L",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 95,
+      "node_end": 256,
+      "name": "L",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 257,
+      "node_end": 275,
+      "name": "L",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 275,
+      "node_end": 45,
+      "name": "L",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 45,
+      "node_end": 282,
+      "name": "M",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 79,
+      "node_end": 291,
+      "name": "L",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 291,
+      "node_end": 283,
+      "name": "L",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 292,
+      "node_end": 196,
+      "name": "H",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 190,
+      "node_end": 197,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 192,
+      "node_end": 173,
+      "name": "F1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 245,
+      "node_end": 169,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 201,
+      "node_end": 200,
+      "name": "D",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 200,
+      "node_end": 198,
+      "name": "D",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 293,
+      "node_end": 199,
+      "name": "K",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 295,
+      "node_end": 293,
+      "name": "K",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 296,
+      "node_end": 297,
+      "name": "T",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 297,
+      "node_end": 299,
+      "name": "T",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 298,
+      "node_end": 300,
+      "name": "Q",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 301,
+      "node_end": 309,
+      "name": "D",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 299,
+      "node_end": 309,
+      "name": "T",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 300,
+      "node_end": 303,
+      "name": "Q",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 302,
+      "node_end": 307,
+      "name": "K",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 310,
+      "node_end": 308,
+      "name": "D",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 308,
+      "node_end": 201,
+      "name": "D",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 309,
+      "node_end": 201,
+      "name": "D",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 304,
+      "node_end": 305,
+      "name": "Q",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 305,
+      "node_end": 306,
+      "name": "Q",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 303,
+      "node_end": 306,
+      "name": "Q",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 306,
+      "node_end": 294,
+      "name": "Q",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 307,
+      "node_end": 295,
+      "name": "K",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 312,
+      "node_end": 296,
+      "name": "T",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 311,
+      "node_end": 298,
+      "name": "Q",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 313,
+      "node_end": 301,
+      "name": "D",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 314,
+      "node_end": 302,
+      "name": "K",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 315,
+      "node_end": 115,
+      "name": "K",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 115,
+      "node_end": 117,
+      "name": "Q",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 120,
+      "node_end": 116,
+      "name": "T",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 116,
+      "node_end": 312,
+      "name": "T",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 117,
+      "node_end": 311,
+      "name": "Q",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 118,
+      "node_end": 119,
+      "name": "D",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 119,
+      "node_end": 313,
+      "name": "D",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 115,
+      "node_end": 314,
+      "name": "K",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 221,
+      "node_end": 118,
+      "name": "D",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 223,
+      "node_end": 315,
+      "name": "K",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 110,
+      "node_end": 111,
+      "name": "U",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 111,
+      "node_end": 318,
+      "name": "U",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 317,
+      "node_end": 319,
+      "name": "S",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 320,
+      "node_end": 321,
+      "name": "S",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 319,
+      "node_end": 321,
+      "name": "S",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 331,
+      "node_end": 322,
+      "name": "U",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 321,
+      "node_end": 323,
+      "name": "S",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 325,
+      "node_end": 328,
+      "name": "S4",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 326,
+      "node_end": 327,
+      "name": "S2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 327,
+      "node_end": 316,
+      "name": "S3",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 327,
+      "node_end": 317,
+      "name": "S2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 328,
+      "node_end": 317,
+      "name": "S",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 109,
+      "node_end": 316,
+      "name": "S3",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 329,
+      "node_end": 325,
+      "name": "S4",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 330,
+      "node_end": 329,
+      "name": "S4",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 114,
+      "node_end": 330,
+      "name": "S4",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 332,
+      "node_end": 110,
+      "name": "U",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 333,
+      "node_end": 114,
+      "name": "S",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 318,
+      "node_end": 331,
+      "name": "U",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 354,
+      "node_end": 230,
+      "name": "U",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 230,
+      "node_end": 332,
+      "name": "U",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 233,
+      "node_end": 333,
+      "name": "S",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 186,
+      "node_end": 335,
+      "name": "M1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 334,
+      "node_end": 161,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 335,
+      "node_end": 162,
+      "name": "M1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 162,
+      "node_end": 337,
+      "name": "M1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 337,
+      "node_end": 148,
+      "name": "M1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 176,
+      "node_end": 186,
+      "name": "M1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 338,
+      "node_end": 187,
+      "name": "H",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 339,
+      "node_end": 188,
+      "name": "M",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 177,
+      "node_end": 102,
+      "name": "M1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 177,
+      "node_end": 176,
+      "name": "M1",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 342,
+      "node_end": 177,
+      "name": "A2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 340,
+      "node_end": 341,
+      "name": "M",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 341,
+      "node_end": 102,
+      "name": "M",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 102,
+      "node_end": 339,
+      "name": "M",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 49,
+      "node_end": 50,
+      "name": "A2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 50,
+      "node_end": 342,
+      "name": "A2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 343,
+      "node_end": 340,
+      "name": "M",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 282,
+      "node_end": 85,
+      "name": "M",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 85,
+      "node_end": 343,
+      "name": "M",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 346,
+      "node_end": 83,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 83,
+      "node_end": 347,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 347,
+      "node_end": 345,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 348,
+      "node_end": 346,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 349,
+      "node_end": 348,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 350,
+      "node_end": 349,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 351,
+      "node_end": 326,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 326,
+      "node_end": 350,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 232,
+      "node_end": 352,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 353,
+      "node_end": 232,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 354,
+      "node_end": 353,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 355,
+      "node_end": 415,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 415,
+      "node_end": 354,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 357,
+      "node_end": 356,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 360,
+      "node_end": 359,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 361,
+      "node_end": 360,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 363,
+      "node_end": 362,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 364,
+      "node_end": 363,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 345,
+      "node_end": 324,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 324,
+      "node_end": 344,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    }
+  ],
+  "parking_positions": [
+    {
+      "id": "North",
+      "latitude": 37.63526006,
+      "longitude": -122.3920571,
+      "heading": 154.6,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "North",
+      "latitude": 37.63561617,
+      "longitude": -122.39153361,
+      "heading": -90.4,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "North",
+      "latitude": 37.63505809,
+      "longitude": -122.38995644,
+      "heading": 24.3,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "North",
+      "latitude": 37.63635397,
+      "longitude": -122.39487637,
+      "heading": 101.7,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "North",
+      "latitude": 37.63428553,
+      "longitude": -122.39423319,
+      "heading": 11.4,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "North",
+      "latitude": 37.63229681,
+      "longitude": -122.39346699,
+      "heading": -47.4,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "North",
+      "latitude": 37.63249225,
+      "longitude": -122.39291821,
+      "heading": -56.1,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "West",
+      "latitude": 37.61818876,
+      "longitude": -122.39590368,
+      "heading": 143.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "turboprops"
+      ]
+    },
+    {
+      "id": "West",
+      "latitude": 37.61810062,
+      "longitude": -122.39626392,
+      "heading": -200.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.6135984,
+      "longitude": -122.38839448,
+      "heading": -60.7,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61385712,
+      "longitude": -122.38772919,
+      "heading": -38.2,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61472038,
+      "longitude": -122.3830757,
+      "heading": 25.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61449215,
+      "longitude": -122.38264452,
+      "heading": 25.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.6144036,
+      "longitude": -122.38231967,
+      "heading": -8.9,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61487382,
+      "longitude": -122.38192267,
+      "heading": -59.0,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61463457,
+      "longitude": -122.38197588,
+      "heading": -22.4,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61508778,
+      "longitude": -122.38207799,
+      "heading": -96.1,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61518769,
+      "longitude": -122.38238149,
+      "heading": -135.2,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61763402,
+      "longitude": -122.38276883,
+      "heading": -225.1,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61791297,
+      "longitude": -122.3820981,
+      "heading": -241.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61844735,
+      "longitude": -122.38752756,
+      "heading": 161.1,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61853867,
+      "longitude": -122.38800839,
+      "heading": 158.2,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61813493,
+      "longitude": -122.38799061,
+      "heading": 130.7,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61785434,
+      "longitude": -122.38836728,
+      "heading": 138.9,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61757394,
+      "longitude": -122.38876059,
+      "heading": -199.1,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61878053,
+      "longitude": -122.38578128,
+      "heading": 187.7,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61870283,
+      "longitude": -122.38511914,
+      "heading": 157.8,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61882447,
+      "longitude": -122.38644964,
+      "heading": 170.1,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61921134,
+      "longitude": -122.38475728,
+      "heading": 120.4,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61953918,
+      "longitude": -122.38467913,
+      "heading": 140.7,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61976569,
+      "longitude": -122.38444592,
+      "heading": 175.3,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61963683,
+      "longitude": -122.38395356,
+      "heading": -151.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61940025,
+      "longitude": -122.38370997,
+      "heading": -87.7,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61904476,
+      "longitude": -122.38386444,
+      "heading": -61.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61866656,
+      "longitude": -122.38412787,
+      "heading": -61.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61827759,
+      "longitude": -122.38441255,
+      "heading": -104.3,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61822175,
+      "longitude": -122.38190163,
+      "heading": -220.2,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61845203,
+      "longitude": -122.38162651,
+      "heading": -192.3,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61838544,
+      "longitude": -122.38125315,
+      "heading": -158.6,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.6182318,
+      "longitude": -122.38098946,
+      "heading": -121.6,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61784832,
+      "longitude": -122.38079797,
+      "heading": -105.4,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61759086,
+      "longitude": -122.38050449,
+      "heading": -77.8,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61714705,
+      "longitude": -122.3805471,
+      "heading": -86.8,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61683257,
+      "longitude": -122.38066935,
+      "heading": -61.8,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61662322,
+      "longitude": -122.38083754,
+      "heading": -16.9,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61666265,
+      "longitude": -122.38119624,
+      "heading": 16.3,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61689516,
+      "longitude": -122.38163088,
+      "heading": 16.3,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61697564,
+      "longitude": -122.38218407,
+      "heading": 16.3,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.62006988,
+      "longitude": -122.38694714,
+      "heading": -50.0,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.62030582,
+      "longitude": -122.3868746,
+      "heading": -62.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.62063107,
+      "longitude": -122.38657266,
+      "heading": 297.4,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.62087991,
+      "longitude": -122.38656189,
+      "heading": 255.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.62100238,
+      "longitude": -122.3870233,
+      "heading": 243.9,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.62108677,
+      "longitude": -122.38935658,
+      "heading": 205.4,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.62134459,
+      "longitude": -122.39042937,
+      "heading": 164.0,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.62102255,
+      "longitude": -122.39053314,
+      "heading": 119.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.62072287,
+      "longitude": -122.39044402,
+      "heading": 70.9,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.62054635,
+      "longitude": -122.38990881,
+      "heading": 27.1,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.62030663,
+      "longitude": -122.389324,
+      "heading": 27.1,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.62008512,
+      "longitude": -122.38877266,
+      "heading": 27.1,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61985882,
+      "longitude": -122.38819062,
+      "heading": 27.1,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61542467,
+      "longitude": -122.38281895,
+      "heading": -135.2,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.62141183,
+      "longitude": -122.39006373,
+      "heading": 208.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.62061458,
+      "longitude": -122.38782216,
+      "heading": 208.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.62089993,
+      "longitude": -122.38855208,
+      "heading": 208.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61372885,
+      "longitude": -122.38935446,
+      "heading": 118.8,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61394826,
+      "longitude": -122.38432349,
+      "heading": -105.0,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61365615,
+      "longitude": -122.38403125,
+      "heading": -105.0,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61327394,
+      "longitude": -122.38388401,
+      "heading": -105.0,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61264295,
+      "longitude": -122.38403367,
+      "heading": -60.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61232347,
+      "longitude": -122.38424085,
+      "heading": -60.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61199866,
+      "longitude": -122.38445709,
+      "heading": -60.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61161888,
+      "longitude": -122.38470182,
+      "heading": -60.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.6112872,
+      "longitude": -122.38489667,
+      "heading": -60.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61095821,
+      "longitude": -122.3851158,
+      "heading": -60.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61062166,
+      "longitude": -122.38533882,
+      "heading": -60.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61033133,
+      "longitude": -122.38562914,
+      "heading": -60.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61012265,
+      "longitude": -122.38608878,
+      "heading": 4.8,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61025046,
+      "longitude": -122.38658566,
+      "heading": 33.5,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61057676,
+      "longitude": -122.38694981,
+      "heading": 77.0,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61108213,
+      "longitude": -122.38649247,
+      "heading": 120.4,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61146666,
+      "longitude": -122.38623994,
+      "heading": 120.4,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61194349,
+      "longitude": -122.38593385,
+      "heading": 96.4,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61269284,
+      "longitude": -122.38544352,
+      "heading": 96.4,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61493501,
+      "longitude": -122.38362344,
+      "heading": 28.8,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61319349,
+      "longitude": -122.38963824,
+      "heading": -242.4,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Ramp",
+      "latitude": 37.61654694,
+      "longitude": -122.39303276,
+      "heading": -333.4,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Ramp",
+      "latitude": 37.61684204,
+      "longitude": -122.39375823,
+      "heading": -333.4,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Ramp",
+      "latitude": 37.61713605,
+      "longitude": -122.39448472,
+      "heading": -333.4,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61714505,
+      "longitude": -122.39078616,
+      "heading": -318.2,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61754568,
+      "longitude": -122.39161152,
+      "heading": -333.3,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61783656,
+      "longitude": -122.39233147,
+      "heading": -333.3,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61815742,
+      "longitude": -122.39312432,
+      "heading": -333.3,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61842011,
+      "longitude": -122.39369238,
+      "heading": -285.3,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61909083,
+      "longitude": -122.39344304,
+      "heading": -152.3,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61880708,
+      "longitude": -122.39268158,
+      "heading": -152.3,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61847955,
+      "longitude": -122.39190378,
+      "heading": -152.3,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.6181637,
+      "longitude": -122.39114667,
+      "heading": -152.3,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61785688,
+      "longitude": -122.39041013,
+      "heading": -152.3,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.617544,
+      "longitude": -122.38967919,
+      "heading": -152.3,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61259935,
+      "longitude": -122.39003695,
+      "heading": -242.4,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.6112328,
+      "longitude": -122.38965386,
+      "heading": -20.2,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61106797,
+      "longitude": -122.38991138,
+      "heading": 19.3,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61167425,
+      "longitude": -122.38959531,
+      "heading": -61.2,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61157702,
+      "longitude": -122.39070004,
+      "heading": 89.8,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61136001,
+      "longitude": -122.39022969,
+      "heading": 45.2,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61202363,
+      "longitude": -122.39042209,
+      "heading": -242.4,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61231478,
+      "longitude": -122.38918806,
+      "heading": -63.8,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61875568,
+      "longitude": -122.39386879,
+      "heading": -197.6,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Gate",
+      "latitude": 37.61290058,
+      "longitude": -122.38881429,
+      "heading": -63.5,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "Corporate",
+      "latitude": 37.62901277,
+      "longitude": -122.38871796,
+      "heading": -152.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.6284164,
+      "longitude": -122.38281896,
+      "heading": -241.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62853286,
+      "longitude": -122.38273551,
+      "heading": -241.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62772803,
+      "longitude": -122.38499172,
+      "heading": -168.1,
+      "type": "tie_down",
+      "aircraft_types": [
+        "jets",
+        "turboprops"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62812277,
+      "longitude": -122.38415351,
+      "heading": -63.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "jets",
+        "turboprops"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62796128,
+      "longitude": -122.38425707,
+      "heading": -63.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "jets",
+        "turboprops"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62774085,
+      "longitude": -122.38438652,
+      "heading": -63.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "jets",
+        "turboprops"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62727947,
+      "longitude": -122.38390755,
+      "heading": -63.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "jets",
+        "turboprops"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62760432,
+      "longitude": -122.38367531,
+      "heading": -63.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "jets",
+        "turboprops"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62796181,
+      "longitude": -122.38340562,
+      "heading": -63.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "jets",
+        "turboprops"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62813832,
+      "longitude": -122.38333445,
+      "heading": -63.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "jets",
+        "turboprops"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62843233,
+      "longitude": -122.38309457,
+      "heading": -63.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "jets",
+        "turboprops"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62913267,
+      "longitude": -122.38172937,
+      "heading": -214.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "jets",
+        "turboprops"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.6285245,
+      "longitude": -122.38214141,
+      "heading": -214.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "jets",
+        "turboprops"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62818333,
+      "longitude": -122.38236429,
+      "heading": -214.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "jets",
+        "turboprops"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62705055,
+      "longitude": -122.38311144,
+      "heading": -214.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "jets",
+        "turboprops"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62685524,
+      "longitude": -122.38326439,
+      "heading": -214.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "jets",
+        "turboprops"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62810056,
+      "longitude": -122.38034853,
+      "heading": -243.3,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62735068,
+      "longitude": -122.38081553,
+      "heading": -202.3,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62865059,
+      "longitude": -122.38092874,
+      "heading": -62.7,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62805968,
+      "longitude": -122.38132447,
+      "heading": -62.7,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62745816,
+      "longitude": -122.38172189,
+      "heading": -62.7,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "GA",
+      "latitude": 37.62686725,
+      "longitude": -122.38211762,
+      "heading": -62.7,
+      "type": "gate",
+      "aircraft_types": [
+        "jets"
+      ]
+    },
+    {
+      "id": "East",
+      "latitude": 37.62780897,
+      "longitude": -122.37860274,
+      "heading": -424.0,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "East",
+      "latitude": 37.628749,
+      "longitude": -122.3779307,
+      "heading": -242.8,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    },
+    {
+      "id": "East",
+      "latitude": 37.62647987,
+      "longitude": -122.37945242,
+      "heading": -242.8,
+      "type": "gate",
+      "aircraft_types": [
+        "heavy"
+      ]
+    }
+  ],
+  "frequencies": [
+    {
+      "type": "ATIS",
+      "frequency_mhz": 127.275,
+      "name": "AWOS 1"
+    },
+    {
+      "type": "UNICOM",
+      "frequency_mhz": 122.95,
+      "name": "UNICOM"
+    },
+    {
+      "type": "CLEARANCE",
+      "frequency_mhz": 118.2,
+      "name": "CLNC DEL"
+    },
+    {
+      "type": "GROUND",
+      "frequency_mhz": 121.8,
+      "name": "GND"
+    },
+    {
+      "type": "GROUND",
+      "frequency_mhz": 128.65,
+      "name": "GND"
+    },
+    {
+      "type": "TOWER",
+      "frequency_mhz": 120.5,
+      "name": "TWR"
+    },
+    {
+      "type": "APPROACH",
+      "frequency_mhz": 128.325,
+      "name": "NORCAL APP"
+    },
+    {
+      "type": "APPROACH",
+      "frequency_mhz": 134.5,
+      "name": "NORCAL APP"
+    },
+    {
+      "type": "APPROACH",
+      "frequency_mhz": 135.65,
+      "name": "NORCAL APP"
+    },
+    {
+      "type": "APPROACH",
+      "frequency_mhz": 133.95,
+      "name": "NORCAL APP"
+    },
+    {
+      "type": "DEPARTURE",
+      "frequency_mhz": 120.9,
+      "name": "NORCAL DEP"
+    },
+    {
+      "type": "DEPARTURE",
+      "frequency_mhz": 135.1,
+      "name": "NORCAL DEP"
+    },
+    {
+      "type": "ATIS",
+      "frequency_mhz": 113.7,
+      "name": "ATIS"
+    },
+    {
+      "type": "ATIS",
+      "frequency_mhz": 115.8,
+      "name": "ATIS"
+    },
+    {
+      "type": "ATIS",
+      "frequency_mhz": 118.85,
+      "name": "ATIS"
+    }
+  ],
+  "runways": [
+    {
+      "id1": "10L",
+      "id2": "28R",
+      "width_m": 61.0,
+      "lat1": 37.62875966,
+      "lon1": -122.39343892,
+      "lat2": 37.61353405,
+      "lon2": -122.35715508,
+      "heading1": 112.76414404728757,
+      "heading2": 292.7641440472876,
+      "surface": 33
+    },
+    {
+      "id1": "10R",
+      "id2": "28L",
+      "width_m": 61.0,
+      "lat1": 37.62629353,
+      "lon1": -122.39312082,
+      "lat2": 37.61173625,
+      "lon2": -122.35835546,
+      "heading1": 112.72049627825268,
+      "heading2": 292.72049627825265,
+      "surface": 33
+    },
+    {
+      "id1": "01R",
+      "id2": "19L",
+      "width_m": 61.0,
+      "lat1": 37.60638437,
+      "lon1": -122.38104438,
+      "lat2": 37.62741669,
+      "lon2": -122.36706987,
+      "heading1": 33.601266230513254,
+      "heading2": 213.60126623051326,
+      "surface": 33
+    },
+    {
+      "id1": "01L",
+      "id2": "19R",
+      "width_m": 61.0,
+      "lat1": 37.60794181,
+      "lon1": -122.38291286,
+      "lat2": 37.62655917,
+      "lon2": -122.37056258,
+      "heading1": 33.55927690712442,
+      "heading2": 213.55927690712443,
+      "surface": 33
+    }
+  ]
+}

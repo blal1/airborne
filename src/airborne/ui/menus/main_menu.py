@@ -397,14 +397,16 @@ class MainMenu(AudioMenu):
         ]
 
     def _start_flight(self) -> None:
-        """Start the flight."""
+        """Start the flight.
+
+        Note: Does not close menu - the menu runner handles closing after
+        the music fadeout completes.
+        """
         self._result = self.RESULT_FLY
         self._speak(t("menu.main.starting_flight"))
 
         if self._on_fly:
             self._on_fly()
-
-        self.close()
 
     def _exit_game(self) -> None:
         """Exit the game."""

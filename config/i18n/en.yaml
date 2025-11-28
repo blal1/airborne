@@ -1,0 +1,101 @@
+# English translations for AirBorne
+# This is the default/fallback language
+
+# Common UI elements
+common:
+  back: "Back"
+  go_back: "Go back"
+  save: "Save"
+  cancel: "Cancel"
+  confirm: "Confirm"
+  disabled: "Disabled"
+  not_set: "Not set"
+  saved: "Saved"
+  cancelled: "Cancelled"
+  selected: "Selected"
+  items: "items"
+  none_available: "None available"
+
+# Main menu
+menu:
+  main:
+    welcome: "AirBorne"
+    title: "Main Menu"
+    fly: "Fly!"
+    fly_settings: "Fly Settings"
+    settings: "Settings"
+    exit: "Exit"
+    starting_flight: "Starting flight"
+    goodbye: "Goodbye"
+
+  fly_settings:
+    title: "Fly Settings"
+    flight_plan: "Flight Plan"
+    aircraft_selection: "Aircraft Selection"
+
+  settings:
+    title: "Settings"
+    voice_settings: "Voice Settings"
+    language: "Language"
+    language_current: "Language: {language}"
+
+# Flight plan menu
+flight_plan:
+  title: "Flight Plan"
+  departure: "Departure"
+  departure_airport: "Departure Airport"
+  arrival: "Arrival"
+  arrival_airport: "Arrival Airport"
+  clear: "Clear flight plan"
+  confirm_and_back: "Confirm and go back"
+  plan_set: "Flight plan set: {departure} to {arrival}"
+  plan_cleared: "Flight plan cleared"
+  no_plan: "No flight plan set"
+  type_icao: "Type ICAO code or city name."
+
+# Aircraft selection menu
+aircraft:
+  title: "Aircraft Selection"
+  no_aircraft: "No aircraft available"
+
+# Voice settings menu
+voice:
+  title: "Voice Settings"
+  tts_mode: "TTS Mode"
+  tts_mode_label: "TTS Mode: {mode}"
+  system_tts: "System TTS"
+  self_voiced: "Self-Voiced"
+  preview: "Preview voice"
+  save_and_back: "Save and go back"
+  no_voice_selected: "No voice selected"
+  rate_label: "Rate: {rate} WPM"
+  voice_label: "Voice: {voice}"
+
+  # Voice categories
+  categories:
+    ui: "UI Voice"
+    cockpit: "Cockpit Voice"
+    atc: "ATC Voice (Generic)"
+    atis: "ATIS Voice"
+    ground: "Ground Control Voice"
+    tower: "Tower Voice"
+    approach: "Approach Voice"
+    departure: "Departure Voice"
+    center: "Center Voice"
+
+  # Sample texts for voice preview
+  samples:
+    ui: "Welcome to AirBorne flight simulator."
+    cockpit: "Altitude 3,500 feet. Airspeed 120 knots."
+    atc: "November 123 Alpha Bravo, radar contact."
+    atis: "Information Alpha. Wind 270 at 10. Visibility 10 miles."
+    ground: "November 123 Alpha Bravo, taxi to runway 27 via Alpha."
+    tower: "November 123 Alpha Bravo, cleared for takeoff runway 27."
+    approach: "November 123 Alpha Bravo, turn left heading 180."
+    departure: "November 123 Alpha Bravo, climb and maintain 6,000."
+    center: "November 123 Alpha Bravo, cleared direct destination."
+
+# Language names (in the target language)
+languages:
+  en: "English"
+  fr: "French"

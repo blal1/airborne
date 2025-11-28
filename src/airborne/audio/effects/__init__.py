@@ -4,6 +4,7 @@ This module provides audio effects and DSP filters for enhancing
 audio playback, including radio effects for ATC communications.
 """
 
+from airborne.audio.effects.base import EffectManager, IAudioEffect
 from airborne.audio.effects.radio_filter import RadioEffectFilter
 
-__all__ = ["RadioEffectFilter"]
+__all__ = ["EffectManager", "IAudioEffect", "RadioEffectFilter"]

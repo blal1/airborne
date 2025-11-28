@@ -1,0 +1,101 @@
+# French translations for AirBorne
+# Traductions françaises pour AirBorne
+
+# Common UI elements
+common:
+  back: "Retour"
+  go_back: "Retour"
+  save: "Enregistrer"
+  cancel: "Annuler"
+  confirm: "Confirmer"
+  disabled: "Désactivé"
+  not_set: "Non défini"
+  saved: "Enregistré"
+  cancelled: "Annulé"
+  selected: "Sélectionné"
+  items: "éléments"
+  none_available: "Aucun disponible"
+
+# Main menu
+menu:
+  main:
+    welcome: "AirBorne"
+    title: "Menu Principal"
+    fly: "Voler!"
+    fly_settings: "Paramètres de vol"
+    settings: "Paramètres"
+    exit: "Quitter"
+    starting_flight: "Démarrage du vol"
+    goodbye: "Au revoir"
+
+  fly_settings:
+    title: "Paramètres de vol"
+    flight_plan: "Plan de vol"
+    aircraft_selection: "Sélection de l'avion"
+
+  settings:
+    title: "Paramètres"
+    voice_settings: "Paramètres vocaux"
+    language: "Langue"
+    language_current: "Langue: {language}"
+
+# Flight plan menu
+flight_plan:
+  title: "Plan de vol"
+  departure: "Départ"
+  departure_airport: "Aéroport de départ"
+  arrival: "Arrivée"
+  arrival_airport: "Aéroport d'arrivée"
+  clear: "Effacer le plan de vol"
+  confirm_and_back: "Confirmer et retour"
+  plan_set: "Plan de vol défini: {departure} vers {arrival}"
+  plan_cleared: "Plan de vol effacé"
+  no_plan: "Aucun plan de vol défini"
+  type_icao: "Entrez le code OACI ou le nom de la ville."
+
+# Aircraft selection menu
+aircraft:
+  title: "Sélection de l'avion"
+  no_aircraft: "Aucun avion disponible"
+
+# Voice settings menu
+voice:
+  title: "Paramètres vocaux"
+  tts_mode: "Mode TTS"
+  tts_mode_label: "Mode TTS: {mode}"
+  system_tts: "TTS système"
+  self_voiced: "Voix pré-enregistrées"
+  preview: "Aperçu de la voix"
+  save_and_back: "Enregistrer et retour"
+  no_voice_selected: "Aucune voix sélectionnée"
+  rate_label: "Vitesse: {rate} MPM"
+  voice_label: "Voix: {voice}"
+
+  # Voice categories
+  categories:
+    ui: "Voix interface"
+    cockpit: "Voix cockpit"
+    atc: "Voix ATC (générique)"
+    atis: "Voix ATIS"
+    ground: "Voix contrôle sol"
+    tower: "Voix tour"
+    approach: "Voix approche"
+    departure: "Voix départ"
+    center: "Voix centre"
+
+  # Sample texts for voice preview
+  samples:
+    ui: "Bienvenue dans le simulateur de vol AirBorne."
+    cockpit: "Altitude 1000 mètres. Vitesse 220 kilomètres par heure."
+    atc: "Fox-Bravo-Alpha-Charlie-Delta, contact radar."
+    atis: "Information Alpha. Vent 270 degrés 10 noeuds. Visibilité 16 kilomètres."
+    ground: "Fox-Bravo-Alpha-Charlie-Delta, roulez vers piste 27 via Alpha."
+    tower: "Fox-Bravo-Alpha-Charlie-Delta, autorisé décollage piste 27."
+    approach: "Fox-Bravo-Alpha-Charlie-Delta, virez à gauche cap 180."
+    departure: "Fox-Bravo-Alpha-Charlie-Delta, montez et maintenez 2000 mètres."
+    center: "Fox-Bravo-Alpha-Charlie-Delta, autorisé direct destination."
+
+# Language names (displayed in target language)
+languages:
+  en: "Anglais"
+  fr: "Français"

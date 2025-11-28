@@ -39,6 +39,7 @@ try:
 except ImportError:
     pygame = None  # type: ignore[assignment]
 
+from airborne.audio.audio_facade import AudioFacade
 from airborne.core.resource_path import get_resource_path
 from airborne.settings import get_tts_settings
 from airborne.ui.menus.main_menu import MainMenu
@@ -129,10 +130,11 @@ class MenuRunner:
         self._flight_config: dict[str, Any] = {}
 
         # Audio
-        self._fmod_system: Any = None
-        self._click_sounds: dict[str, Any] = {}
+        self._audio: AudioFacade | None = None
+        self._fmod_engine: Any = None  # Will be imported and initialized
         self._tts_client: Any = None
         self._current_channel: Any = None
+        self._menu_music_source_id: int | None = None  # Track music source ID
 
         # Current UI voice settings (for real-time preview)
         self._ui_voice_name: str = "Samantha"
@@ -151,14 +153,6 @@ class MenuRunner:
         self._screen: Any = None
         self._clock: Any = None
         self._font: Any = None
-
-        # Menu music
-        self._menu_music_sound: Any = None
-        self._menu_music_channel: Any = None
-        self._menu_music_volume: float = 0.5
-        self._menu_music_fading: bool = False
-        self._menu_music_fade_start: float = 0.0
-        self._menu_music_fade_duration: float = 1.0  # 1 second fade
 
     @property
     def result(self) -> str | None:
@@ -230,41 +224,32 @@ class MenuRunner:
         logger.info("Menu runner initialized")
 
     def _initialize_audio(self) -> None:
-        """Initialize FMOD audio for click sounds."""
-        if not FMOD_AVAILABLE or pyfmodex is None:
-            logger.warning("FMOD not available, running without click sounds")
+        """Initialize FMOD audio engine and AudioFacade."""
+        if not FMOD_AVAILABLE:
+            logger.warning("FMOD not available, running without audio")
             return
 
         try:
-            self._fmod_system = pyfmodex.System()
-            self._fmod_system.init()
-            logger.info("FMOD initialized for menu sounds")
+            from airborne.audio.engine.fmod_engine import FMODEngine
 
-            # Load click sounds
-            sounds_dir = get_resource_path("assets/sounds/aircraft")
-            click_files = {
-                "knob": sounds_dir / "click_knob.mp3",
-                "switch": sounds_dir / "click_switch.mp3",
-                "button": sounds_dir / "click_button.mp3",
-            }
+            # Initialize FMOD engine
+            self._fmod_engine = FMODEngine()
+            self._fmod_engine.initialize({"max_channels": 32})
+            logger.info("FMOD engine initialized for menu")
 
-            for name, path in click_files.items():
-                if path.exists():
-                    try:
-                        sound = self._fmod_system.create_sound(str(path), mode=MODE.DEFAULT)
-                        self._click_sounds[name] = sound
-                        logger.debug("Loaded click sound: %s", name)
-                    except Exception as e:
-                        logger.warning("Failed to load %s: %s", name, e)
+            # Initialize AudioFacade
+            self._audio = AudioFacade(self._fmod_engine)
+            logger.info("AudioFacade initialized")
 
         except Exception as e:
-            logger.error("Failed to initialize FMOD: %s", e)
-            self._fmod_system = None
+            logger.error("Failed to initialize audio: %s", e)
+            self._fmod_engine = None
+            self._audio = None
 
     def _start_menu_music(self) -> None:
-        """Start playing random menu music at 0.7 volume."""
-        if not self._fmod_system or not FMOD_AVAILABLE:
-            logger.debug("FMOD not available, skipping menu music")
+        """Start playing random menu music at 0.7 volume with fade-in."""
+        if not self._audio:
+            logger.debug("Audio not available, skipping menu music")
             return
 
         try:
@@ -280,68 +265,44 @@ class MenuRunner:
             music_path = random.choice(music_files)
             logger.info("Starting menu music: %s", music_path.name)
 
-            # Load as streaming sound for efficiency
-            self._menu_music_sound = self._fmod_system.create_sound(
+            # Play with loop and fade-in using AudioFacade
+            self._audio.music.play(
                 str(music_path),
-                mode=MODE.LOOP_NORMAL | MODE.CREATESTREAM,
+                loop=True,
+                fade_in=0.0,  # No fade-in for now
+                volume=0.7,  # 0.7 volume for menu music
             )
-
-            # Play at 0.7 volume
-            self._menu_music_channel = self._fmod_system.play_sound(self._menu_music_sound)
-            self._menu_music_channel.volume = self._menu_music_volume
 
         except Exception as e:
             logger.error("Failed to start menu music: %s", e)
-            self._menu_music_sound = None
-            self._menu_music_channel = None
 
     def _start_menu_music_fadeout(self) -> None:
         """Start fading out the menu music over 1 second."""
-        if self._menu_music_channel is None:
+        if not self._audio:
+            logger.debug("Fadeout called but no audio available")
             return
 
-        self._menu_music_fading = True
-        self._menu_music_fade_start = time.time()
-        logger.debug("Starting menu music fadeout")
+        logger.info("FADEOUT: Starting menu music fadeout")
+        self._audio.music.fade_out(1.0)  # 1 second fadeout
+        logger.info("FADEOUT: fade_out() called")
 
-    def _update_menu_music_fade(self) -> bool:
-        """Update menu music fade progress.
+    def _is_music_fading(self) -> bool:
+        """Check if music is currently fading.
 
         Returns:
-            True if fade is complete and music has stopped.
+            True if music is fading.
         """
-        if not self._menu_music_fading or self._menu_music_channel is None:
+        if not self._audio:
             return False
 
-        elapsed = time.time() - self._menu_music_fade_start
-        progress = min(1.0, elapsed / self._menu_music_fade_duration)
-
-        # Calculate current volume (linear fade)
-        current_volume = self._menu_music_volume * (1.0 - progress)
-
-        self._menu_music_channel.volume = current_volume
-
-        if progress >= 1.0:
-            # Fade complete - stop music
-            self._stop_menu_music()
-            return True
-
-        return False
+        # Check if music is still playing (it will stop after fade completes)
+        return self._audio.music.is_playing()
 
     def _stop_menu_music(self) -> None:
         """Stop menu music immediately."""
-        if self._menu_music_channel is not None:
-            with contextlib.suppress(Exception):
-                self._menu_music_channel.stop()
-            self._menu_music_channel = None
-
-        if self._menu_music_sound is not None:
-            with contextlib.suppress(Exception):
-                self._menu_music_sound.release()
-            self._menu_music_sound = None
-
-        self._menu_music_fading = False
-        logger.debug("Menu music stopped")
+        if self._audio:
+            self._audio.music.stop()
+            logger.debug("Menu music stopped")
 
     def _initialize_tts(self) -> None:
         """Initialize TTS client and background thread."""
@@ -469,21 +430,27 @@ class MenuRunner:
 
     def _run_loop(self) -> None:
         """Run the main menu event loop."""
+        last_frame_time = time.time()
+
         while self._running:
+            # Calculate delta time
+            current_time = time.time()
+            delta_time = current_time - last_frame_time
+            last_frame_time = current_time
+
             # Process events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self._result = "exit"
                     self._running = False
                 elif event.type == pygame.KEYDOWN:
-                    # Ignore input during music fadeout
-                    if not self._menu_music_fading:
-                        self._handle_keydown(event)
+                    # Process keyboard input (don't block during fadeout)
+                    self._handle_keydown(event)
                 elif event.type == pygame.VIDEORESIZE:
                     self._screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
 
-            # Update music fade - exit when fade completes
-            if self._update_menu_music_fade():
+            # Check if music fadeout completed - exit when fade completes
+            if self._result == "fly" and not self._is_music_fading():
                 # Fadeout complete, now we can exit
                 self._running = False
                 break
@@ -491,9 +458,13 @@ class MenuRunner:
             # Process completed TTS audio from background thread
             self._process_tts_audio()
 
-            # Update FMOD
-            if self._fmod_system:
-                self._fmod_system.update()
+            # Update audio (handles fading, etc.)
+            if self._audio:
+                self._audio.update(delta_time)
+
+            # Update FMOD engine
+            if self._fmod_engine:
+                self._fmod_engine.update()
 
             # Render
             self._render()
@@ -508,7 +479,7 @@ class MenuRunner:
         Called from the main loop to play audio that was generated
         in the background thread.
         """
-        if not self._fmod_system:
+        if not self._audio:
             return
 
         # Play any pending audio (just the most recent one - interrupt semantics)
@@ -532,11 +503,15 @@ class MenuRunner:
         # Get unicode character for text input
         unicode = event.unicode if hasattr(event, "unicode") else ""
 
+        # Ignore input during fadeout (waiting for fade to complete)
+        if self._result == "fly":
+            return
+
         # Pass to menu
         self._main_menu.handle_key(event.key, unicode)
 
-        # Check if menu closed
-        if not self._main_menu.is_open:
+        # Check if menu closed (but not for "fly" - handled by fadeout logic)
+        if not self._main_menu.is_open and self._result != "fly":
             self._running = False
 
     def _render(self) -> None:
@@ -626,21 +601,25 @@ class MenuRunner:
         Args:
             audio_data: WAV audio bytes.
         """
-        if not self._fmod_system:
+        if not self._fmod_engine:
             return
 
         try:
             # Stop any currently playing TTS (interrupt previous message)
             self._stop_current_tts()
 
-            # Write to temp file and play via FMOD
+            # Write to temp file and play via FMODEngine
             with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
                 f.write(audio_data)
                 temp_path = f.name
 
-            # Create and play sound
-            sound = self._fmod_system.create_sound(temp_path, mode=MODE.DEFAULT)
-            self._current_channel = self._fmod_system.play_sound(sound)
+            # Load sound and play (TTS is 2D, UI category)
+            sound = self._fmod_engine.load_sound(temp_path, preload=True, loop_mode=False)
+            source_id = self._fmod_engine.play_2d(sound, loop=False, volume=1.0)
+
+            # Store channel reference for interrupt support
+            if source_id is not None:
+                self._current_channel = self._fmod_engine.get_channel(source_id)
 
             # Clean up temp file (FMOD has loaded it by now)
             Path(temp_path).unlink(missing_ok=True)
@@ -662,23 +641,28 @@ class MenuRunner:
             path: Path to sound file (or sound name like "knob").
             volume: Volume level (0.0 to 1.0).
         """
-        if not self._fmod_system:
+        if not self._audio:
             return
 
         try:
-            # Check if it's a named click sound
-            if path in self._click_sounds:
-                sound = self._click_sounds[path]
-            else:
-                # Try to load from path
-                if not Path(path).exists():
-                    logger.warning("Sound file not found: %s", path)
-                    return
-                sound = self._fmod_system.create_sound(path, mode=MODE.DEFAULT)
+            # Map named sounds to actual file paths
+            sounds_dir = get_resource_path("assets/sounds/aircraft")
+            sound_map = {
+                "knob": str(sounds_dir / "click_knob.mp3"),
+                "switch": str(sounds_dir / "click_switch.mp3"),
+                "button": str(sounds_dir / "click_button.mp3"),
+            }
 
-            # Play the sound
-            channel = self._fmod_system.play_sound(sound)
-            channel.volume = volume
+            # Resolve sound path
+            sound_path = sound_map.get(path, path)
+
+            # Check if file exists
+            if not Path(sound_path).exists():
+                logger.warning("Sound file not found: %s", sound_path)
+                return
+
+            # Play via AudioFacade (UI category for menu sounds)
+            self._audio.sfx.play(sound_path, category="ui", volume=volume, loop=False)
 
         except Exception as e:
             logger.error("Sound playback error: %s", e)
@@ -874,21 +858,16 @@ class MenuRunner:
                 logger.warning("TTS thread did not stop cleanly")
         self._tts_thread = None
 
-        # Stop menu music
-        self._stop_menu_music()
+        # Shutdown AudioFacade (stops music, clears effects)
+        if self._audio:
+            self._audio.shutdown()
 
-        # Release FMOD sounds
-        for sound in self._click_sounds.values():
-            with contextlib.suppress(Exception):
-                sound.release()
-        self._click_sounds.clear()
-
-        # Shutdown FMOD
-        if self._fmod_system:
+        # Shutdown FMOD engine
+        if self._fmod_engine:
             try:
-                self._fmod_system.close()
+                self._fmod_engine.shutdown()
             except Exception as e:
-                logger.error("FMOD shutdown error: %s", e)
+                logger.error("FMOD engine shutdown error: %s", e)
 
         # Shutdown Pygame
         if pygame:

@@ -1,0 +1,46 @@
+# TTS Cache Service Configuration
+# ================================
+# This file configures the TTS cache service subprocess.
+
+# WebSocket server settings
+server:
+  host: "127.0.0.1"
+  port: 51127
+
+# TTS engine settings (defaults, can be changed via invalidate command)
+tts:
+  rate: 180
+  voice_name: null  # null = system default
+
+# Cache settings
+cache:
+  # Base directory for cache (null = ~/.cache/airborne/tts)
+  base_dir: null
+
+  # Cleanup settings
+  cleanup:
+    enabled: true
+    # Run cleanup every N minutes
+    interval_minutes: 60
+    # Grace period in days - don't delete items accessed within this period
+    grace_period_days: 2
+
+# Background generation settings
+generation:
+  # Delay between background generations (seconds)
+  # Helps avoid overwhelming pyttsx3/system TTS
+  delay_between_items: 0.1
+
+  # Maximum queue size
+  max_queue_size: 50000
+
+# Logging
+logging:
+  # Log file path (relative to working directory)
+  file: "tts_cache_service.log"
+  # Log level: DEBUG, INFO, WARNING, ERROR
+  level: "INFO"
+  # Max log file size in MB before rotation
+  max_size_mb: 10
+  # Number of backup files to keep
+  backup_count: 3

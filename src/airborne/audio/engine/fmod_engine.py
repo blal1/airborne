@@ -739,3 +739,26 @@ class FMODEngine(IAudioEngine):
 
             for source_id in stopped_ids:
                 del self._channels[source_id]
+
+    def get_channel(self, source_id: int) -> Any | None:
+        """Get the FMOD channel for a source ID.
+
+        Used by effect managers to apply DSP effects to channels.
+
+        Args:
+            source_id: Source ID from play_2d/play_3d.
+
+        Returns:
+            FMOD channel object or None if not found/stopped.
+        """
+        return self._channels.get(source_id)
+
+    def get_system(self) -> Any | None:
+        """Get the FMOD system instance.
+
+        Used by effect managers to create DSP effects.
+
+        Returns:
+            FMOD System object or None if not initialized.
+        """
+        return self._system if self._initialized else None

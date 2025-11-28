@@ -1,0 +1,4626 @@
+{
+  "icao": "KPAO",
+  "name": "Palo Alto",
+  "latitude": 37.461117185,
+  "longitude": -122.115048625,
+  "elevation_ft": 0.0,
+  "transition_altitude": 18000,
+  "has_atc": false,
+  "taxi_nodes": [
+    {
+      "id": 0,
+      "latitude": 37.45477463,
+      "longitude": -122.11313016,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 1,
+      "latitude": 37.45456085,
+      "longitude": -122.11091805,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 2,
+      "latitude": 37.45456242,
+      "longitude": -122.11313022,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 3,
+      "latitude": 37.45426766,
+      "longitude": -122.11312626,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 4,
+      "latitude": 37.45425956,
+      "longitude": -122.11091659,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 5,
+      "latitude": 37.45814545,
+      "longitude": -122.11271372,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 6,
+      "latitude": 37.4548903,
+      "longitude": -122.11144605,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 7,
+      "latitude": 37.45489004,
+      "longitude": -122.1133796,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 8,
+      "latitude": 37.45650443,
+      "longitude": -122.11285918,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 9,
+      "latitude": 37.45650434,
+      "longitude": -122.11247824,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 10,
+      "latitude": 37.45802528,
+      "longitude": -122.11291635,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 11,
+      "latitude": 37.46042878,
+      "longitude": -122.11462476,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 12,
+      "latitude": 37.46035185,
+      "longitude": -122.11475434,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 13,
+      "latitude": 37.46149502,
+      "longitude": -122.11562457,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 14,
+      "latitude": 37.46141474,
+      "longitude": -122.1157611,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 15,
+      "latitude": 37.45524674,
+      "longitude": -122.11114359,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 16,
+      "latitude": 37.45526312,
+      "longitude": -122.11383489,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 17,
+      "latitude": 37.45558663,
+      "longitude": -122.11089506,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 18,
+      "latitude": 37.45557997,
+      "longitude": -122.1113126,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 19,
+      "latitude": 37.45558174,
+      "longitude": -122.11353796,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 20,
+      "latitude": 37.45589147,
+      "longitude": -122.11128046,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 21,
+      "latitude": 37.4558837,
+      "longitude": -122.11383883,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 22,
+      "latitude": 37.4561855,
+      "longitude": -122.1115125,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 23,
+      "latitude": 37.45619389,
+      "longitude": -122.11383874,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 24,
+      "latitude": 37.45653986,
+      "longitude": -122.11179783,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 25,
+      "latitude": 37.45650421,
+      "longitude": -122.11188984,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 26,
+      "latitude": 37.45650334,
+      "longitude": -122.11382582,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 27,
+      "latitude": 37.45679226,
+      "longitude": -122.11213015,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 28,
+      "latitude": 37.4571801,
+      "longitude": -122.11235634,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 29,
+      "latitude": 37.45689116,
+      "longitude": -122.11206486,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 30,
+      "latitude": 37.4564614,
+      "longitude": -122.11163033,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 31,
+      "latitude": 37.45659792,
+      "longitude": -122.1117626,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 32,
+      "latitude": 37.4563252,
+      "longitude": -122.11146863,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 33,
+      "latitude": 37.45598932,
+      "longitude": -122.11114755,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 34,
+      "latitude": 37.45568653,
+      "longitude": -122.110861,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 35,
+      "latitude": 37.45558232,
+      "longitude": -122.11082626,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 36,
+      "latitude": 37.45534931,
+      "longitude": -122.11088867,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 37,
+      "latitude": 37.45513325,
+      "longitude": -122.11367828,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 38,
+      "latitude": 37.45558089,
+      "longitude": -122.11384107,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 39,
+      "latitude": 37.45544171,
+      "longitude": -122.11383043,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 40,
+      "latitude": 37.45725501,
+      "longitude": -122.11243367,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 41,
+      "latitude": 37.45760332,
+      "longitude": -122.11283483,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 42,
+      "latitude": 37.46337329,
+      "longitude": -122.11790557,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 43,
+      "latitude": 37.45786397,
+      "longitude": -122.11243313,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 44,
+      "latitude": 37.46021576,
+      "longitude": -122.11476569,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 45,
+      "latitude": 37.45967929,
+      "longitude": -122.11423872,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 46,
+      "latitude": 37.45887123,
+      "longitude": -122.11343719,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 47,
+      "latitude": 37.46127927,
+      "longitude": -122.11581926,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 48,
+      "latitude": 37.45799959,
+      "longitude": -122.11214636,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 49,
+      "latitude": 37.45789678,
+      "longitude": -122.11230688,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 50,
+      "latitude": 37.45808649,
+      "longitude": -122.11211047,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 51,
+      "latitude": 37.45818989,
+      "longitude": -122.11214297,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 52,
+      "latitude": 37.46346682,
+      "longitude": -122.11794977,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 53,
+      "latitude": 37.46355215,
+      "longitude": -122.11787527,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 54,
+      "latitude": 37.46363789,
+      "longitude": -122.11770796,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 55,
+      "latitude": 37.46362878,
+      "longitude": -122.11753757,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 56,
+      "latitude": 37.45851374,
+      "longitude": -122.11247311,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 57,
+      "latitude": 37.46041039,
+      "longitude": -122.11435085,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 58,
+      "latitude": 37.46064395,
+      "longitude": -122.11458327,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 59,
+      "latitude": 37.46147796,
+      "longitude": -122.11540712,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 60,
+      "latitude": 37.45650452,
+      "longitude": -122.1132535,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 61,
+      "latitude": 37.45725034,
+      "longitude": -122.11324897,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 62,
+      "latitude": 37.45834531,
+      "longitude": -122.11324723,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 63,
+      "latitude": 37.45869549,
+      "longitude": -122.1135882,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 64,
+      "latitude": 37.45869397,
+      "longitude": -122.11366828,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 65,
+      "latitude": 37.45878915,
+      "longitude": -122.11358127,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 66,
+      "latitude": 37.45880295,
+      "longitude": -122.11369695,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 67,
+      "latitude": 37.45906004,
+      "longitude": -122.11395061,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 68,
+      "latitude": 37.45921453,
+      "longitude": -122.11410392,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 69,
+      "latitude": 37.45948348,
+      "longitude": -122.11436831,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 70,
+      "latitude": 37.45914655,
+      "longitude": -122.11408221,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 71,
+      "latitude": 37.4569237,
+      "longitude": -122.11432813,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 72,
+      "latitude": 37.45692254,
+      "longitude": -122.11408317,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 73,
+      "latitude": 37.45693115,
+      "longitude": -122.11366153,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 74,
+      "latitude": 37.45904053,
+      "longitude": -122.11408179,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 75,
+      "latitude": 37.45693709,
+      "longitude": -122.11442262,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 76,
+      "latitude": 37.4570121,
+      "longitude": -122.11447324,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 77,
+      "latitude": 37.45813195,
+      "longitude": -122.11447324,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 78,
+      "latitude": 37.45948167,
+      "longitude": -122.11449559,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 79,
+      "latitude": 37.4586291,
+      "longitude": -122.11449859,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 80,
+      "latitude": 37.45960999,
+      "longitude": -122.11435949,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 81,
+      "latitude": 37.4595634,
+      "longitude": -122.11444769,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 82,
+      "latitude": 37.45989203,
+      "longitude": -122.11478371,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 83,
+      "latitude": 37.4598963,
+      "longitude": -122.11493058,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 84,
+      "latitude": 37.45992193,
+      "longitude": -122.11485454,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    },
+    {
+      "id": 85,
+      "latitude": 37.45872019,
+      "longitude": -122.11494071,
+      "name": "",
+      "is_hold_short": false,
+      "on_runway": ""
+    }
+  ],
+  "taxi_edges": [
+    {
+      "node_begin": 26,
+      "node_end": 73,
+      "name": "J",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 23,
+      "node_end": 26,
+      "name": "J",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 21,
+      "node_end": 23,
+      "name": "J",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 38,
+      "node_end": 21,
+      "name": "J",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 37,
+      "node_end": 7,
+      "name": "J",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 7,
+      "node_end": 0,
+      "name": "J",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 2,
+      "node_end": 0,
+      "name": "J",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 3,
+      "node_end": 2,
+      "name": "J",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 1,
+      "node_end": 2,
+      "name": "V",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 4,
+      "node_end": 3,
+      "name": "W",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 10,
+      "node_end": 5,
+      "name": "Y1",
+      "is_runway": false,
+      "one_way": true,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 6,
+      "node_end": 36,
+      "name": "U",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 7,
+      "node_end": 6,
+      "name": "U",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 9,
+      "node_end": 40,
+      "name": "M",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 41,
+      "node_end": 8,
+      "name": "L",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 10,
+      "node_end": 41,
+      "name": "Y",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 44,
+      "node_end": 45,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 45,
+      "node_end": 46,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 46,
+      "node_end": 5,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 5,
+      "node_end": 43,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 11,
+      "node_end": 58,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 11,
+      "node_end": 57,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 12,
+      "node_end": 11,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 44,
+      "node_end": 12,
+      "name": "B",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 13,
+      "node_end": 59,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 14,
+      "node_end": 13,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 47,
+      "node_end": 14,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 54,
+      "node_end": 55,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 15,
+      "node_end": 36,
+      "name": "T",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 17,
+      "node_end": 34,
+      "name": "S",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 18,
+      "node_end": 17,
+      "name": "S",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 38,
+      "node_end": 19,
+      "name": "S",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 20,
+      "node_end": 33,
+      "name": "R",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 22,
+      "node_end": 32,
+      "name": "Q",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 24,
+      "node_end": 31,
+      "name": "P",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 25,
+      "node_end": 24,
+      "name": "P",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 27,
+      "node_end": 29,
+      "name": "O",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 28,
+      "node_end": 40,
+      "name": "Y",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 29,
+      "node_end": 28,
+      "name": "Y",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 30,
+      "node_end": 31,
+      "name": "Y",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 32,
+      "node_end": 30,
+      "name": "Y",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 33,
+      "node_end": 32,
+      "name": "Y",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 34,
+      "node_end": 33,
+      "name": "Y",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 35,
+      "node_end": 34,
+      "name": "Y",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 36,
+      "node_end": 35,
+      "name": "Y",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 16,
+      "node_end": 37,
+      "name": "J",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 38,
+      "node_end": 39,
+      "name": "J",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 39,
+      "node_end": 16,
+      "name": "J",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 40,
+      "node_end": 41,
+      "name": "Y",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 42,
+      "node_end": 52,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 44,
+      "node_end": 47,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 47,
+      "node_end": 42,
+      "name": "Z",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 48,
+      "node_end": 49,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 49,
+      "node_end": 43,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 50,
+      "node_end": 48,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 51,
+      "node_end": 50,
+      "name": "A",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 56,
+      "node_end": 51,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 53,
+      "node_end": 52,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 54,
+      "node_end": 53,
+      "name": "E",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 29,
+      "node_end": 31,
+      "name": "Y",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "B"
+    },
+    {
+      "node_begin": 60,
+      "node_end": 61,
+      "name": "K",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 62,
+      "node_end": 61,
+      "name": "K",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 63,
+      "node_end": 62,
+      "name": "Y",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 65,
+      "node_end": 63,
+      "name": "Y2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 64,
+      "node_end": 65,
+      "name": "J",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 73,
+      "node_end": 64,
+      "name": "J",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 68,
+      "node_end": 69,
+      "name": "Y",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 69,
+      "node_end": 81,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 70,
+      "node_end": 68,
+      "name": "H",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 46,
+      "node_end": 65,
+      "name": "Y2",
+      "is_runway": false,
+      "one_way": true,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 66,
+      "node_end": 65,
+      "name": "Y2",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 67,
+      "node_end": 66,
+      "name": "Y",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 72,
+      "node_end": 74,
+      "name": "H",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 74,
+      "node_end": 70,
+      "name": "H",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 71,
+      "node_end": 72,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 72,
+      "node_end": 73,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 75,
+      "node_end": 71,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 76,
+      "node_end": 75,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 77,
+      "node_end": 76,
+      "name": "",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 78,
+      "node_end": 81,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 79,
+      "node_end": 78,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 80,
+      "node_end": 45,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 81,
+      "node_end": 80,
+      "name": "C",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 82,
+      "node_end": 81,
+      "name": "Y",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 83,
+      "node_end": 84,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 84,
+      "node_end": 82,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 85,
+      "node_end": 83,
+      "name": "F",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 26,
+      "node_end": 60,
+      "name": "P",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 60,
+      "node_end": 8,
+      "name": "P",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 8,
+      "node_end": 9,
+      "name": "P",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 9,
+      "node_end": 25,
+      "name": "P",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 23,
+      "node_end": 22,
+      "name": "Q",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 21,
+      "node_end": 20,
+      "name": "R",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 19,
+      "node_end": 18,
+      "name": "S",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 16,
+      "node_end": 15,
+      "name": "T",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 62,
+      "node_end": 10,
+      "name": "Y",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 68,
+      "node_end": 67,
+      "name": "Y",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    },
+    {
+      "node_begin": 56,
+      "node_end": 57,
+      "name": "13/31",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 57,
+      "node_end": 58,
+      "name": "13/31",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 58,
+      "node_end": 59,
+      "name": "13/31",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 59,
+      "node_end": 55,
+      "name": "13/31",
+      "is_runway": true,
+      "one_way": false,
+      "width_code": "E"
+    },
+    {
+      "node_begin": 78,
+      "node_end": 69,
+      "name": "G",
+      "is_runway": false,
+      "one_way": false,
+      "width_code": "A"
+    }
+  ],
+  "parking_positions": [
+    {
+      "id": "N17",
+      "latitude": 37.45709214,
+      "longitude": -122.11434614,
+      "heading": 273.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "heavy",
+        "turboprops",
+        "props"
+      ]
+    },
+    {
+      "id": "N15",
+      "latitude": 37.4572408,
+      "longitude": -122.11435518,
+      "heading": 270.7,
+      "type": "tie_down",
+      "aircraft_types": [
+        "heavy",
+        "turboprops",
+        "props"
+      ]
+    },
+    {
+      "id": "N13",
+      "latitude": 37.45739445,
+      "longitude": -122.11435657,
+      "heading": 272.7,
+      "type": "tie_down",
+      "aircraft_types": [
+        "heavy",
+        "turboprops",
+        "props"
+      ]
+    },
+    {
+      "id": "N11",
+      "latitude": 37.45753202,
+      "longitude": -122.11434683,
+      "heading": 270.4,
+      "type": "tie_down",
+      "aircraft_types": [
+        "heavy",
+        "turboprops",
+        "props"
+      ]
+    },
+    {
+      "id": "N9",
+      "latitude": 37.4576657,
+      "longitude": -122.11434683,
+      "heading": 269.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "heavy",
+        "turboprops",
+        "props"
+      ]
+    },
+    {
+      "id": "N7",
+      "latitude": 37.45780438,
+      "longitude": -122.11434753,
+      "heading": 269.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "heavy",
+        "turboprops",
+        "props"
+      ]
+    },
+    {
+      "id": "N5",
+      "latitude": 37.4579364,
+      "longitude": -122.11434613,
+      "heading": 265.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "heavy",
+        "turboprops",
+        "props"
+      ]
+    },
+    {
+      "id": "N3",
+      "latitude": 37.45809449,
+      "longitude": -122.11434405,
+      "heading": 268.7,
+      "type": "tie_down",
+      "aircraft_types": [
+        "heavy",
+        "turboprops",
+        "props"
+      ]
+    },
+    {
+      "id": "N1",
+      "latitude": 37.45822929,
+      "longitude": -122.11434126,
+      "heading": 269.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "heavy",
+        "turboprops",
+        "props"
+      ]
+    },
+    {
+      "id": "N6",
+      "latitude": 37.45790746,
+      "longitude": -122.11464358,
+      "heading": 90.7,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "N4",
+      "latitude": 37.45804066,
+      "longitude": -122.11465889,
+      "heading": 93.1,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "N2",
+      "latitude": 37.45816928,
+      "longitude": -122.11465658,
+      "heading": 88.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "F16",
+      "latitude": 37.4587848,
+      "longitude": -122.11508477,
+      "heading": 94.8,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "F14",
+      "latitude": 37.45891829,
+      "longitude": -122.11507716,
+      "heading": 85.1,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "F12",
+      "latitude": 37.45904886,
+      "longitude": -122.11507918,
+      "heading": 94.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "F10",
+      "latitude": 37.45919944,
+      "longitude": -122.11508754,
+      "heading": 91.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "F8",
+      "latitude": 37.45933979,
+      "longitude": -122.11508815,
+      "heading": 88.4,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "F6",
+      "latitude": 37.45948646,
+      "longitude": -122.11508847,
+      "heading": 92.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "F4",
+      "latitude": 37.45963651,
+      "longitude": -122.11508919,
+      "heading": 92.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "F2",
+      "latitude": 37.45978186,
+      "longitude": -122.11508315,
+      "heading": 92.1,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "F15",
+      "latitude": 37.45865382,
+      "longitude": -122.1147939,
+      "heading": 271.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "F13",
+      "latitude": 37.45878659,
+      "longitude": -122.1147899,
+      "heading": 269.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "F11",
+      "latitude": 37.45891936,
+      "longitude": -122.11478991,
+      "heading": 270.1,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "F9",
+      "latitude": 37.45905348,
+      "longitude": -122.11479026,
+      "heading": -89.7,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "F7",
+      "latitude": 37.45919554,
+      "longitude": -122.1147876,
+      "heading": 269.7,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "F5",
+      "latitude": 37.45932751,
+      "longitude": -122.11478759,
+      "heading": -89.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "F3",
+      "latitude": 37.45946056,
+      "longitude": -122.11478723,
+      "heading": 269.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "F1",
+      "latitude": 37.45959546,
+      "longitude": -122.1147896,
+      "heading": 268.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "G14",
+      "latitude": 37.45872107,
+      "longitude": -122.11464451,
+      "heading": 91.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "G12",
+      "latitude": 37.45886043,
+      "longitude": -122.11465169,
+      "heading": 90.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "G10",
+      "latitude": 37.45899121,
+      "longitude": -122.1146493,
+      "heading": 93.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "G8",
+      "latitude": 37.45912581,
+      "longitude": -122.11464451,
+      "heading": 90.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "G6",
+      "latitude": 37.45926327,
+      "longitude": -122.11464451,
+      "heading": 92.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "G4",
+      "latitude": 37.45939595,
+      "longitude": -122.11464451,
+      "heading": 92.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "G2",
+      "latitude": 37.45953055,
+      "longitude": -122.1146481,
+      "heading": 91.4,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "G7",
+      "latitude": 37.45875914,
+      "longitude": -122.11434543,
+      "heading": 268.4,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "G5",
+      "latitude": 37.45889317,
+      "longitude": -122.11434419,
+      "heading": 272.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "G3",
+      "latitude": 37.45902983,
+      "longitude": -122.11434487,
+      "heading": 272.1,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "G1",
+      "latitude": 37.45916079,
+      "longitude": -122.1143454,
+      "heading": 270.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H26",
+      "latitude": 37.45717082,
+      "longitude": -122.1142016,
+      "heading": 94.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H24",
+      "latitude": 37.45732503,
+      "longitude": -122.11420733,
+      "heading": 94.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H22",
+      "latitude": 37.45746095,
+      "longitude": -122.1142016,
+      "heading": 92.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H20",
+      "latitude": 37.45759688,
+      "longitude": -122.11420447,
+      "heading": 90.8,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H18",
+      "latitude": 37.45773394,
+      "longitude": -122.11420017,
+      "heading": 85.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H16",
+      "latitude": 37.45787215,
+      "longitude": -122.11420304,
+      "heading": 91.4,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H14",
+      "latitude": 37.4580195,
+      "longitude": -122.11420304,
+      "heading": 96.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H12",
+      "latitude": 37.45816113,
+      "longitude": -122.11420304,
+      "heading": 84.4,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H10",
+      "latitude": 37.45829592,
+      "longitude": -122.1142059,
+      "heading": 95.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H8",
+      "latitude": 37.4586877,
+      "longitude": -122.11420161,
+      "heading": 90.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H6",
+      "latitude": 37.45882933,
+      "longitude": -122.11420591,
+      "heading": 90.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H4",
+      "latitude": 37.45896183,
+      "longitude": -122.11420161,
+      "heading": 90.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H2",
+      "latitude": 37.45909319,
+      "longitude": -122.11420734,
+      "heading": 91.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H23",
+      "latitude": 37.45717759,
+      "longitude": -122.11396158,
+      "heading": 272.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H21",
+      "latitude": 37.45731341,
+      "longitude": -122.11396554,
+      "heading": 268.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H19",
+      "latitude": 37.45744212,
+      "longitude": -122.11396455,
+      "heading": 273.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H17",
+      "latitude": 37.45758031,
+      "longitude": -122.11396455,
+      "heading": 270.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H15",
+      "latitude": 37.45771691,
+      "longitude": -122.11396158,
+      "heading": 273.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H13",
+      "latitude": 37.45785036,
+      "longitude": -122.11396356,
+      "heading": 270.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H11",
+      "latitude": 37.45798302,
+      "longitude": -122.11396554,
+      "heading": 274.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H9",
+      "latitude": 37.45812121,
+      "longitude": -122.11395762,
+      "heading": 274.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H7",
+      "latitude": 37.45826019,
+      "longitude": -122.11396158,
+      "heading": 274.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H5",
+      "latitude": 37.45838732,
+      "longitude": -122.1139596,
+      "heading": 270.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H3",
+      "latitude": 37.45852156,
+      "longitude": -122.11395762,
+      "heading": 270.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "H1",
+      "latitude": 37.45870476,
+      "longitude": -122.11395069,
+      "heading": 270.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J23",
+      "latitude": 37.45675521,
+      "longitude": -122.11351834,
+      "heading": 271.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J21",
+      "latitude": 37.4568936,
+      "longitude": -122.11352691,
+      "heading": 272.8,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J19",
+      "latitude": 37.45702666,
+      "longitude": -122.11351683,
+      "heading": 269.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J17",
+      "latitude": 37.4571619,
+      "longitude": -122.11352494,
+      "heading": 270.1,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J15",
+      "latitude": 37.45728891,
+      "longitude": -122.11352182,
+      "heading": 268.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J13",
+      "latitude": 37.45745281,
+      "longitude": -122.11352442,
+      "heading": 269.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J11",
+      "latitude": 37.45758507,
+      "longitude": -122.11352333,
+      "heading": 270.8,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J9",
+      "latitude": 37.45771862,
+      "longitude": -122.11352437,
+      "heading": 269.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J7",
+      "latitude": 37.45785167,
+      "longitude": -122.11352312,
+      "heading": 267.7,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J5",
+      "latitude": 37.45799118,
+      "longitude": -122.11352,
+      "heading": 270.8,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J3",
+      "latitude": 37.45815831,
+      "longitude": -122.11352374,
+      "heading": 268.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J24",
+      "latitude": 37.45710986,
+      "longitude": -122.1138241,
+      "heading": 91.1,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J22",
+      "latitude": 37.45724587,
+      "longitude": -122.11382173,
+      "heading": 88.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J20",
+      "latitude": 37.45737999,
+      "longitude": -122.11381462,
+      "heading": 88.4,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J18",
+      "latitude": 37.45751412,
+      "longitude": -122.11381225,
+      "heading": 89.1,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J16",
+      "latitude": 37.45764729,
+      "longitude": -122.11381462,
+      "heading": 92.7,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J14",
+      "latitude": 37.45778803,
+      "longitude": -122.11381344,
+      "heading": 91.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J12",
+      "latitude": 37.45791742,
+      "longitude": -122.11382055,
+      "heading": 84.1,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J10",
+      "latitude": 37.45805249,
+      "longitude": -122.11381699,
+      "heading": 92.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J8",
+      "latitude": 37.45818945,
+      "longitude": -122.11381818,
+      "heading": 87.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J6",
+      "latitude": 37.45832262,
+      "longitude": -122.11381936,
+      "heading": 90.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J4",
+      "latitude": 37.45845863,
+      "longitude": -122.11381581,
+      "heading": 85.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J2",
+      "latitude": 37.4586362,
+      "longitude": -122.11383121,
+      "heading": 88.1,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "J1",
+      "latitude": 37.45828944,
+      "longitude": -122.11351974,
+      "heading": 269.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K22",
+      "latitude": 37.45682381,
+      "longitude": -122.11337598,
+      "heading": 91.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K20",
+      "latitude": 37.45695869,
+      "longitude": -122.11337762,
+      "heading": 92.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K18",
+      "latitude": 37.45709553,
+      "longitude": -122.11337434,
+      "heading": 86.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K16",
+      "latitude": 37.45722975,
+      "longitude": -122.11337515,
+      "heading": 90.7,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K14",
+      "latitude": 37.45735481,
+      "longitude": -122.11337351,
+      "heading": 92.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K12",
+      "latitude": 37.45751522,
+      "longitude": -122.11337188,
+      "heading": 87.4,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K10",
+      "latitude": 37.4576501,
+      "longitude": -122.11337351,
+      "heading": 90.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K8",
+      "latitude": 37.45778891,
+      "longitude": -122.11337598,
+      "heading": 91.4,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K6",
+      "latitude": 37.45791998,
+      "longitude": -122.11337349,
+      "heading": 89.8,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K4",
+      "latitude": 37.45809365,
+      "longitude": -122.11337317,
+      "heading": 90.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K2",
+      "latitude": 37.45822402,
+      "longitude": -122.11337483,
+      "heading": 87.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K19",
+      "latitude": 37.45672346,
+      "longitude": -122.11312358,
+      "heading": 274.4,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K17",
+      "latitude": 37.45686224,
+      "longitude": -122.11312872,
+      "heading": 268.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K15",
+      "latitude": 37.45700376,
+      "longitude": -122.11313272,
+      "heading": 275.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K13",
+      "latitude": 37.45714026,
+      "longitude": -122.11313043,
+      "heading": 270.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K11",
+      "latitude": 37.45726904,
+      "longitude": -122.11312986,
+      "heading": 270.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K9",
+      "latitude": 37.457406,
+      "longitude": -122.11312644,
+      "heading": 272.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K7",
+      "latitude": 37.45753841,
+      "longitude": -122.11312758,
+      "heading": 267.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K5",
+      "latitude": 37.45767583,
+      "longitude": -122.1131253,
+      "heading": 264.4,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K3",
+      "latitude": 37.45781416,
+      "longitude": -122.11312473,
+      "heading": 266.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "K1",
+      "latitude": 37.45795112,
+      "longitude": -122.11310873,
+      "heading": 270.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "L18",
+      "latitude": 37.456792,
+      "longitude": -122.11298504,
+      "heading": 90.4,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "L16",
+      "latitude": 37.45693621,
+      "longitude": -122.11298877,
+      "heading": 89.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "L14",
+      "latitude": 37.45707012,
+      "longitude": -122.1129867,
+      "heading": 89.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "L12",
+      "latitude": 37.45720055,
+      "longitude": -122.11298941,
+      "heading": 90.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "L10",
+      "latitude": 37.45733669,
+      "longitude": -122.11298632,
+      "heading": 87.4,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "L8",
+      "latitude": 37.45747279,
+      "longitude": -122.11298426,
+      "heading": 90.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "L6",
+      "latitude": 37.45760698,
+      "longitude": -122.11298493,
+      "heading": 87.7,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "L4",
+      "latitude": 37.45774747,
+      "longitude": -122.11300751,
+      "heading": 90.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "L2",
+      "latitude": 37.45788168,
+      "longitude": -122.11300411,
+      "heading": 88.1,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "L7",
+      "latitude": 37.45674529,
+      "longitude": -122.11274651,
+      "heading": 262.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "L5",
+      "latitude": 37.45687215,
+      "longitude": -122.11273944,
+      "heading": 270.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "L3",
+      "latitude": 37.45700654,
+      "longitude": -122.11273709,
+      "heading": 270.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "L1",
+      "latitude": 37.4571475,
+      "longitude": -122.11274298,
+      "heading": 266.1,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "M8",
+      "latitude": 37.45680638,
+      "longitude": -122.11259483,
+      "heading": 90.1,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "M4",
+      "latitude": 37.45693743,
+      "longitude": -122.11259546,
+      "heading": 90.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "M2",
+      "latitude": 37.45707505,
+      "longitude": -122.11259412,
+      "heading": 88.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Y2",
+      "latitude": 37.45679434,
+      "longitude": -122.11225687,
+      "heading": 51.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Y4",
+      "latitude": 37.45668676,
+      "longitude": -122.11215349,
+      "heading": 51.8,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "M8",
+      "latitude": 37.45667022,
+      "longitude": -122.11232331,
+      "heading": 233.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q13",
+      "latitude": 37.45642096,
+      "longitude": -122.1128718,
+      "heading": -2.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q11",
+      "latitude": 37.45642037,
+      "longitude": -122.11270375,
+      "heading": -0.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q9",
+      "latitude": 37.45641112,
+      "longitude": -122.11253326,
+      "heading": 2.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q7",
+      "latitude": 37.45641892,
+      "longitude": -122.11236633,
+      "heading": 2.4,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q5",
+      "latitude": 37.45641974,
+      "longitude": -122.11219539,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q3",
+      "latitude": 37.45641621,
+      "longitude": -122.11199242,
+      "heading": 358.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q1",
+      "latitude": 37.45641703,
+      "longitude": -122.11182177,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q14",
+      "latitude": 37.45629994,
+      "longitude": -122.11278877,
+      "heading": 179.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q12",
+      "latitude": 37.45630782,
+      "longitude": -122.1126237,
+      "heading": 180.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q10",
+      "latitude": 37.45630648,
+      "longitude": -122.11245442,
+      "heading": 176.8,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q8",
+      "latitude": 37.45629994,
+      "longitude": -122.11228142,
+      "heading": 177.7,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q6",
+      "latitude": 37.4563003,
+      "longitude": -122.11211296,
+      "heading": 183.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q4",
+      "latitude": 37.45629737,
+      "longitude": -122.11190798,
+      "heading": 175.8,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q2",
+      "latitude": 37.45630236,
+      "longitude": -122.1117329,
+      "heading": 173.7,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q23",
+      "latitude": 37.45610868,
+      "longitude": -122.11344771,
+      "heading": 1.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q21",
+      "latitude": 37.45610715,
+      "longitude": -122.11327552,
+      "heading": 357.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q19",
+      "latitude": 37.45610101,
+      "longitude": -122.11311007,
+      "heading": 360.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q17",
+      "latitude": 37.45610331,
+      "longitude": -122.11293788,
+      "heading": 360.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q15",
+      "latitude": 37.45610485,
+      "longitude": -122.11277146,
+      "heading": 3.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q13",
+      "latitude": 37.45610485,
+      "longitude": -122.11256752,
+      "heading": 5.4,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q11",
+      "latitude": 37.45610255,
+      "longitude": -122.11239918,
+      "heading": 2.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q9",
+      "latitude": 37.45609334,
+      "longitude": -122.11223661,
+      "heading": 4.1,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q7",
+      "latitude": 37.45609181,
+      "longitude": -122.11207308,
+      "heading": 360.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q5",
+      "latitude": 37.45610178,
+      "longitude": -122.11187588,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q3",
+      "latitude": 37.45609948,
+      "longitude": -122.1117085,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Q1",
+      "latitude": 37.45608951,
+      "longitude": -122.1115036,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R26",
+      "latitude": 37.45599831,
+      "longitude": -122.11352671,
+      "heading": 183.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R24",
+      "latitude": 37.45599322,
+      "longitude": -122.11336313,
+      "heading": 182.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R22",
+      "latitude": 37.45599449,
+      "longitude": -122.11318518,
+      "heading": 177.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R20",
+      "latitude": 37.45599513,
+      "longitude": -122.113024,
+      "heading": 175.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R18",
+      "latitude": 37.45599895,
+      "longitude": -122.11284685,
+      "heading": 177.7,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R16",
+      "latitude": 37.45599767,
+      "longitude": -122.11268885,
+      "heading": 181.1,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R14",
+      "latitude": 37.45599767,
+      "longitude": -122.11248138,
+      "heading": 181.7,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R12",
+      "latitude": 37.45599577,
+      "longitude": -122.11231301,
+      "heading": 180.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R10",
+      "latitude": 37.4559894,
+      "longitude": -122.11214624,
+      "heading": 182.8,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R8",
+      "latitude": 37.45599195,
+      "longitude": -122.11198346,
+      "heading": 174.8,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R6",
+      "latitude": 37.4559964,
+      "longitude": -122.11179115,
+      "heading": 174.8,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R4",
+      "latitude": 37.45599704,
+      "longitude": -122.11162517,
+      "heading": 187.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R2",
+      "latitude": 37.45599322,
+      "longitude": -122.11144164,
+      "heading": 180.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S27",
+      "latitude": 37.45549341,
+      "longitude": -122.11346203,
+      "heading": 361.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S25",
+      "latitude": 37.45549378,
+      "longitude": -122.11328982,
+      "heading": 361.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S23",
+      "latitude": 37.45549158,
+      "longitude": -122.11311762,
+      "heading": 361.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S21",
+      "latitude": 37.45549261,
+      "longitude": -122.11295158,
+      "heading": 361.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S19",
+      "latitude": 37.45549114,
+      "longitude": -122.11278425,
+      "heading": 361.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S17",
+      "latitude": 37.45548542,
+      "longitude": -122.11257948,
+      "heading": 361.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S15",
+      "latitude": 37.4554885,
+      "longitude": -122.11241224,
+      "heading": 361.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S13",
+      "latitude": 37.45548542,
+      "longitude": -122.11224555,
+      "heading": 361.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S9",
+      "latitude": 37.45548428,
+      "longitude": -122.11190556,
+      "heading": 359.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S11",
+      "latitude": 37.45548359,
+      "longitude": -122.11207665,
+      "heading": 361.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S7",
+      "latitude": 37.45547698,
+      "longitude": -122.11173799,
+      "heading": 359.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S3",
+      "latitude": 37.45549155,
+      "longitude": -122.11136741,
+      "heading": 359.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S5",
+      "latitude": 37.45548875,
+      "longitude": -122.11153668,
+      "heading": 359.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S1",
+      "latitude": 37.45548938,
+      "longitude": -122.11119786,
+      "heading": 359.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R31",
+      "latitude": 37.45580806,
+      "longitude": -122.11358221,
+      "heading": 0.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R29",
+      "latitude": 37.4558085,
+      "longitude": -122.11341553,
+      "heading": 0.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R27",
+      "latitude": 37.45580938,
+      "longitude": -122.11324498,
+      "heading": 0.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R25",
+      "latitude": 37.45580762,
+      "longitude": -122.11307774,
+      "heading": 0.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R23",
+      "latitude": 37.45581026,
+      "longitude": -122.11290774,
+      "heading": 0.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R21",
+      "latitude": 37.45580586,
+      "longitude": -122.11273774,
+      "heading": 0.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R19",
+      "latitude": 37.45580542,
+      "longitude": -122.11257051,
+      "heading": 0.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R17",
+      "latitude": 37.45580938,
+      "longitude": -122.11240051,
+      "heading": 0.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R15",
+      "latitude": 37.45581246,
+      "longitude": -122.11222996,
+      "heading": 0.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R13",
+      "latitude": 37.45580542,
+      "longitude": -122.11206327,
+      "heading": 0.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R11",
+      "latitude": 37.4557982,
+      "longitude": -122.11189599,
+      "heading": 0.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R9",
+      "latitude": 37.45580762,
+      "longitude": -122.11172328,
+      "heading": 0.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R7",
+      "latitude": 37.45579816,
+      "longitude": -122.11155668,
+      "heading": 0.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R5",
+      "latitude": 37.45579596,
+      "longitude": -122.1113888,
+      "heading": 0.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "R3",
+      "latitude": 37.4557931,
+      "longitude": -122.11122101,
+      "heading": 0.9,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S30",
+      "latitude": 37.45568667,
+      "longitude": -122.11349861,
+      "heading": 179.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S28",
+      "latitude": 37.45568338,
+      "longitude": -122.11333381,
+      "heading": 179.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S26",
+      "latitude": 37.45568119,
+      "longitude": -122.11316076,
+      "heading": 179.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S24",
+      "latitude": 37.45568557,
+      "longitude": -122.11299183,
+      "heading": 179.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S22",
+      "latitude": 37.45568032,
+      "longitude": -122.11282043,
+      "heading": 179.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S20",
+      "latitude": 37.45568163,
+      "longitude": -122.11265067,
+      "heading": 179.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S18",
+      "latitude": 37.45568557,
+      "longitude": -122.11248422,
+      "heading": 179.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S16",
+      "latitude": 37.45568426,
+      "longitude": -122.11231446,
+      "heading": 179.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S14",
+      "latitude": 37.45568032,
+      "longitude": -122.11214636,
+      "heading": 179.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S12",
+      "latitude": 37.45568294,
+      "longitude": -122.11197661,
+      "heading": 179.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S10",
+      "latitude": 37.455679,
+      "longitude": -122.1118118,
+      "heading": 179.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S8",
+      "latitude": 37.45568032,
+      "longitude": -122.1116404,
+      "heading": 179.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S6",
+      "latitude": 37.45568031,
+      "longitude": -122.1114657,
+      "heading": 179.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S4",
+      "latitude": 37.45568294,
+      "longitude": -122.11130089,
+      "heading": 179.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "S2",
+      "latitude": 37.45568031,
+      "longitude": -122.11113279,
+      "heading": 179.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T31",
+      "latitude": 37.45542661,
+      "longitude": -122.11104819,
+      "heading": 113.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "The",
+      "latitude": 37.4541622,
+      "longitude": -122.1110644,
+      "heading": 0.7,
+      "type": "tie_down",
+      "aircraft_types": [
+        "helos"
+      ]
+    },
+    {
+      "id": "U2",
+      "latitude": 37.45505912,
+      "longitude": -122.11144004,
+      "heading": 141.8,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U6",
+      "latitude": 37.45501245,
+      "longitude": -122.11186978,
+      "heading": 180.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U10",
+      "latitude": 37.45500924,
+      "longitude": -122.11220546,
+      "heading": 180.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U14",
+      "latitude": 37.45501953,
+      "longitude": -122.11254436,
+      "heading": 180.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U4",
+      "latitude": 37.45502043,
+      "longitude": -122.11169711,
+      "heading": 180.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U8",
+      "latitude": 37.45501503,
+      "longitude": -122.11204085,
+      "heading": 180.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U12",
+      "latitude": 37.45501181,
+      "longitude": -122.11237652,
+      "heading": 180.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U16",
+      "latitude": 37.4550221,
+      "longitude": -122.11271543,
+      "heading": 180.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U18",
+      "latitude": 37.45501695,
+      "longitude": -122.11291554,
+      "heading": 180.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U20",
+      "latitude": 37.4550176,
+      "longitude": -122.11308499,
+      "heading": 180.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T3",
+      "latitude": 37.45512806,
+      "longitude": -122.11160954,
+      "heading": 1.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T7",
+      "latitude": 37.45512266,
+      "longitude": -122.11195328,
+      "heading": 1.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T11",
+      "latitude": 37.45511944,
+      "longitude": -122.11228896,
+      "heading": 1.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T15",
+      "latitude": 37.45512974,
+      "longitude": -122.11262786,
+      "heading": 1.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T5",
+      "latitude": 37.45513064,
+      "longitude": -122.1117806,
+      "heading": 1.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T9",
+      "latitude": 37.45512523,
+      "longitude": -122.11212435,
+      "heading": 1.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T13",
+      "latitude": 37.45512202,
+      "longitude": -122.11246002,
+      "heading": 1.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T17",
+      "latitude": 37.45513231,
+      "longitude": -122.11279893,
+      "heading": 1.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T19",
+      "latitude": 37.45512716,
+      "longitude": -122.11299904,
+      "heading": 1.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T21",
+      "latitude": 37.45512781,
+      "longitude": -122.11316849,
+      "heading": 1.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T6",
+      "latitude": 37.45535841,
+      "longitude": -122.11165301,
+      "heading": 183.4,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T8",
+      "latitude": 37.4553601,
+      "longitude": -122.11182168,
+      "heading": 181.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Runup",
+      "latitude": 37.46289714,
+      "longitude": -122.117659,
+      "heading": 14.3,
+      "type": "misc",
+      "aircraft_types": [
+        "turboprops",
+        "props"
+      ]
+    },
+    {
+      "id": "Runup",
+      "latitude": 37.46302634,
+      "longitude": -122.11779791,
+      "heading": 14.3,
+      "type": "misc",
+      "aircraft_types": [
+        "turboprops",
+        "props"
+      ]
+    },
+    {
+      "id": "Runup",
+      "latitude": 37.46316616,
+      "longitude": -122.11796559,
+      "heading": 14.3,
+      "type": "misc",
+      "aircraft_types": [
+        "turboprops",
+        "props"
+      ]
+    },
+    {
+      "id": "Runup",
+      "latitude": 37.45699671,
+      "longitude": -122.11197311,
+      "heading": -85.4,
+      "type": "misc",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Runup",
+      "latitude": 37.45715577,
+      "longitude": -122.11213222,
+      "heading": -85.4,
+      "type": "misc",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Runup",
+      "latitude": 37.45731684,
+      "longitude": -122.11229132,
+      "heading": -85.4,
+      "type": "misc",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "Runup",
+      "latitude": 37.45747491,
+      "longitude": -122.11244039,
+      "heading": -85.4,
+      "type": "misc",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V15",
+      "latitude": 37.45446265,
+      "longitude": -122.11211383,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V22",
+      "latitude": 37.45466699,
+      "longitude": -122.1127006,
+      "heading": 181.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V18",
+      "latitude": 37.45466583,
+      "longitude": -122.11237255,
+      "heading": 181.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V14",
+      "latitude": 37.45466436,
+      "longitude": -122.11204995,
+      "heading": 181.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V10",
+      "latitude": 37.45466317,
+      "longitude": -122.11172181,
+      "heading": 181.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V6",
+      "latitude": 37.45465971,
+      "longitude": -122.1113949,
+      "heading": 181.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V2",
+      "latitude": 37.4546591,
+      "longitude": -122.1110708,
+      "heading": 181.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V2",
+      "latitude": 37.4546591,
+      "longitude": -122.1110708,
+      "heading": 181.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "W10",
+      "latitude": 37.4546591,
+      "longitude": -122.1110708,
+      "heading": 181.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T4",
+      "latitude": 37.45535941,
+      "longitude": -122.11145011,
+      "heading": 177.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T10",
+      "latitude": 37.45535739,
+      "longitude": -122.11198974,
+      "heading": 177.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T12",
+      "latitude": 37.45535714,
+      "longitude": -122.11216222,
+      "heading": 177.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T14",
+      "latitude": 37.45536106,
+      "longitude": -122.11232304,
+      "heading": 177.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T16",
+      "latitude": 37.45536106,
+      "longitude": -122.1124904,
+      "heading": 177.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T18",
+      "latitude": 37.45535888,
+      "longitude": -122.11266324,
+      "heading": 177.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T20",
+      "latitude": 37.45535997,
+      "longitude": -122.11286626,
+      "heading": 177.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T22",
+      "latitude": 37.45536106,
+      "longitude": -122.11303499,
+      "heading": 177.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T24",
+      "latitude": 37.45536129,
+      "longitude": -122.11320684,
+      "heading": 177.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T26",
+      "latitude": 37.45536593,
+      "longitude": -122.11337563,
+      "heading": 179.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T30",
+      "latitude": 37.4554231,
+      "longitude": -122.11369426,
+      "heading": 259.4,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T28",
+      "latitude": 37.45536648,
+      "longitude": -122.11354248,
+      "heading": 180.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "T2",
+      "latitude": 37.4553573,
+      "longitude": -122.11128299,
+      "heading": 180.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "W8",
+      "latitude": 37.45435059,
+      "longitude": -122.11135493,
+      "heading": 181.6,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V24",
+      "latitude": 37.45466707,
+      "longitude": -122.11286572,
+      "heading": 182.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V20",
+      "latitude": 37.45466599,
+      "longitude": -122.11253486,
+      "heading": 182.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V16",
+      "latitude": 37.45466158,
+      "longitude": -122.112214,
+      "heading": 182.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V12",
+      "latitude": 37.45466333,
+      "longitude": -122.11188688,
+      "heading": 182.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V8",
+      "latitude": 37.45466048,
+      "longitude": -122.11155917,
+      "heading": 182.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "W9",
+      "latitude": 37.45466046,
+      "longitude": -122.11123558,
+      "heading": 182.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V4",
+      "latitude": 37.45466046,
+      "longitude": -122.11123558,
+      "heading": 182.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V4",
+      "latitude": 37.45466046,
+      "longitude": -122.11123558,
+      "heading": 182.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "W10",
+      "latitude": 37.45434766,
+      "longitude": -122.11151779,
+      "heading": 182.2,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "W12",
+      "latitude": 37.4543503,
+      "longitude": -122.11168115,
+      "heading": 181.7,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "W14",
+      "latitude": 37.45435221,
+      "longitude": -122.11183883,
+      "heading": 180.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "W16",
+      "latitude": 37.4543514,
+      "longitude": -122.11203474,
+      "heading": 174.3,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "W18",
+      "latitude": 37.45435059,
+      "longitude": -122.11219596,
+      "heading": 175.8,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "W20",
+      "latitude": 37.45435058,
+      "longitude": -122.11236229,
+      "heading": 177.5,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "W22",
+      "latitude": 37.4543514,
+      "longitude": -122.11252147,
+      "heading": 180.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "W24",
+      "latitude": 37.45435191,
+      "longitude": -122.11268522,
+      "heading": 179.4,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "W26",
+      "latitude": 37.45435619,
+      "longitude": -122.11284621,
+      "heading": 180.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U21",
+      "latitude": 37.45477088,
+      "longitude": -122.11278026,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U17",
+      "latitude": 37.45476634,
+      "longitude": -122.11245541,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U13",
+      "latitude": 37.4547666,
+      "longitude": -122.11213086,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U9",
+      "latitude": 37.45476964,
+      "longitude": -122.11180479,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U5",
+      "latitude": 37.45476543,
+      "longitude": -122.11147582,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U1",
+      "latitude": 37.45476663,
+      "longitude": -122.11115218,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U1",
+      "latitude": 37.45476663,
+      "longitude": -122.11115218,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V18",
+      "latitude": 37.45476663,
+      "longitude": -122.11115218,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V7",
+      "latitude": 37.45446517,
+      "longitude": -122.11143552,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U23",
+      "latitude": 37.45477169,
+      "longitude": -122.11294276,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U19",
+      "latitude": 37.4547671,
+      "longitude": -122.11261618,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U15",
+      "latitude": 37.4547679,
+      "longitude": -122.11229416,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U11",
+      "latitude": 37.45477189,
+      "longitude": -122.11196672,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U7",
+      "latitude": 37.45476633,
+      "longitude": -122.11163992,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "U3",
+      "latitude": 37.45476569,
+      "longitude": -122.11131637,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V9",
+      "latitude": 37.45446782,
+      "longitude": -122.11159863,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V11",
+      "latitude": 37.45446635,
+      "longitude": -122.11175948,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V13",
+      "latitude": 37.45446646,
+      "longitude": -122.11192292,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V17",
+      "latitude": 37.45446649,
+      "longitude": -122.11227862,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V19",
+      "latitude": 37.45446881,
+      "longitude": -122.11244069,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V21",
+      "latitude": 37.4544669,
+      "longitude": -122.11260448,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "V23",
+      "latitude": 37.45447106,
+      "longitude": -122.11276763,
+      "heading": 0.0,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    },
+    {
+      "id": "W1",
+      "latitude": 37.4544156,
+      "longitude": -122.11301469,
+      "heading": 268.7,
+      "type": "tie_down",
+      "aircraft_types": [
+        "props"
+      ]
+    }
+  ],
+  "frequencies": [
+    {
+      "type": "ATIS",
+      "frequency_mhz": 135.275,
+      "name": "ATIS"
+    },
+    {
+      "type": "GROUND",
+      "frequency_mhz": 125.0,
+      "name": "Ground"
+    },
+    {
+      "type": "TOWER",
+      "frequency_mhz": 118.6,
+      "name": "Tower"
+    },
+    {
+      "type": "APPROACH",
+      "frequency_mhz": 121.3,
+      "name": "NORCAL APP/DEP"
+    }
+  ],
+  "runways": [
+    {
+      "id1": "13",
+      "id2": "31",
+      "width_m": 21.0,
+      "lat1": 37.46420592,
+      "lon1": -122.11810866,
+      "lat2": 37.45802845,
+      "lon2": -122.11198859,
+      "heading1": 135.26743184897705,
+      "heading2": 315.267431848977,
+      "surface": 31
+    }
+  ]
+}

@@ -9,6 +9,9 @@ The effect consists of:
 - Optional subtle distortion
 - Optional low-level static noise
 
+This filter implements the IAudioEffect protocol and can be used with
+the EffectManager for dynamic effect application.
+
 Typical usage example:
     from airborne.audio.effects.radio_filter import RadioEffectFilter
 
