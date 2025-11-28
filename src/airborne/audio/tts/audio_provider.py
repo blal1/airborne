@@ -2,11 +2,14 @@
 
 This module provides a TTS implementation that can use either:
 1. Pre-recorded audio files (self-voiced mode, default)
-2. Real-time pyttsx3 synthesis (system mode)
+2. Real-time system TTS synthesis via TTS Cache Service (system mode)
 
 The mode can be configured via:
 - CLI argument: --tts=system or --tts=self-voiced
 - Config: tts_mode in initialization config
+
+In system mode, TTS generation is handled by the TTS Cache Service subprocess,
+which runs pyttsx3 in its main thread to avoid macOS threading issues.
 
 Messages are mapped to audio files using YAML configuration files in config/speech.yaml.
 
@@ -19,12 +22,13 @@ Typical usage example:
     tts.speak(MSG_STARTUP)
 """
 
+import asyncio
 import contextlib
 import threading
 from collections import deque
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import yaml
 
@@ -38,6 +42,9 @@ except ImportError:
 from airborne.audio.realtime_tts import RealtimeTTS
 from airborne.audio.tts.base import ITTSProvider, TTSPriority, TTSState
 from airborne.core.logging_system import get_logger
+
+if TYPE_CHECKING:
+    from airborne.tts_cache_service import TTSServiceClient
 
 logger = get_logger(__name__)
 
@@ -107,6 +114,15 @@ class AudioSpeechProvider(ITTSProvider):
         # System TTS mode (pyttsx3)
         self._tts_mode: str = "self-voiced"  # "self-voiced" or "system"
         self._realtime_tts: dict[str, RealtimeTTS] = {}  # Per-voice TTS instances
+
+        # TTS Cache Service client (for system mode)
+        self._tts_service_client: TTSServiceClient | None = None
+        self._tts_service_loop: asyncio.AbstractEventLoop | None = None
+        self._tts_service_thread: threading.Thread | None = None
+        self._tts_request_queue: deque[
+            tuple[str, str, int, str | None, Callable[[bytes | None], None] | None]
+        ] = deque()
+        self._tts_result_queue: deque[tuple[bytes | None, Any]] = deque()  # (audio, sound)
 
     def initialize(self, config: dict[str, Any]) -> None:
         """Initialize audio speech provider.
@@ -185,6 +201,10 @@ class AudioSpeechProvider(ITTSProvider):
         # Create speech directory if it doesn't exist
         self._speech_dir.mkdir(parents=True, exist_ok=True)
 
+        # Initialize TTS Cache Service client for system mode
+        if self._tts_mode == "system":
+            self._start_tts_service()
+
         self._initialized = True
         logger.info(
             "AudioSpeechProvider initialized: language=%s, dir=%s, format=%s, mode=%s",
@@ -201,6 +221,10 @@ class AudioSpeechProvider(ITTSProvider):
 
         self.stop()
         self.clear_queue()
+
+        # Stop TTS Cache Service client
+        self._stop_tts_service()
+
         self._initialized = False
         logger.info("AudioSpeechProvider shutdown")
 
@@ -349,9 +373,10 @@ class AudioSpeechProvider(ITTSProvider):
         interrupt: bool,
         callback: Callable[[], None] | None = None,
     ) -> None:
-        """Speak using system TTS (pyttsx3) instead of audio files.
+        """Speak using system TTS via TTS Cache Service.
 
-        Converts message keys to text using the config and speaks via RealtimeTTS.
+        Converts message keys to text and generates speech via the TTS Cache Service
+        subprocess, which handles pyttsx3 in its main thread to avoid macOS threading issues.
 
         Args:
             message_keys: List of message keys to speak.
@@ -404,30 +429,21 @@ class AudioSpeechProvider(ITTSProvider):
         full_text = " ".join(texts)
         logger.info(f"System TTS speaking: '{full_text}' (voice={voice_name})")
 
-        # Get or create RealtimeTTS for this voice
-        tts = self._get_realtime_tts(voice_name)
-        if not tts:
-            logger.error(f"Failed to get RealtimeTTS for voice: {voice_name}")
-            return
+        # Get voice settings from config
+        voice_config = self._voice_configs.get(voice_name, {})
+        pyttsx3_config = voice_config.get("pyttsx3", {})
+        rate = pyttsx3_config.get("rate", 180)
+        pyttsx3_voice = pyttsx3_config.get("voice_name")
 
-        # Generate audio bytes
-        result = tts.generate_audio_bytes(full_text)
-        if not result:
-            logger.error(f"System TTS failed for: {full_text[:30]}")
-            return
+        # Queue async generation (non-blocking)
+        def on_audio_ready(audio_bytes: bytes | None) -> None:
+            if not audio_bytes:
+                logger.error(f"System TTS failed for: {full_text[:30]}")
+                return
+            # Store result for processing in update()
+            self._tts_result_queue.append((audio_bytes, voice_name))
 
-        audio_bytes, _ = result
-
-        # Load and play through FMOD
-        try:
-            sound = self._audio_engine.load_sound_from_bytes(audio_bytes, f"tts_{voice_name}")
-            if sound:
-                self._playback_queue.append(sound)
-                self._state = TTSState.SPEAKING
-                if not self._playing:
-                    self._play_next_in_sequence()
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            logger.error(f"Error playing system TTS audio: {e}")
+        self._request_tts_generation(full_text, voice_name, rate, pyttsx3_voice, on_audio_ready)
 
     def _get_realtime_tts(self, voice_name: str) -> RealtimeTTS | None:
         """Get or create RealtimeTTS instance for a voice.
@@ -456,6 +472,229 @@ class AudioSpeechProvider(ITTSProvider):
                 return None
 
         return self._realtime_tts[voice_name]
+
+    def _start_tts_service(self) -> None:
+        """Start the TTS Cache Service client in a background thread.
+
+        Creates a dedicated thread with its own event loop for async operations.
+        This prevents blocking the main game loop.
+        """
+        try:
+            from airborne.tts_cache_service import TTSServiceClient
+
+            self._tts_service_client = TTSServiceClient(auto_start=True)
+            self._shutdown_requested = False
+
+            def run_service_thread():
+                """Background thread running the async event loop."""
+                self._tts_service_loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(self._tts_service_loop)
+
+                async def main():
+                    # Start the service
+                    success = await self._tts_service_client.start()  # type: ignore[union-attr]
+                    if not success:
+                        logger.error("Failed to start TTS Cache Service")
+                        return
+
+                    logger.info("TTS Cache Service client started in background thread")
+
+                    # Set initial context to "menu" to start pre-generation
+                    # Build voice configs from parent's voice_configs
+                    voices: dict[str, dict[str, Any]] = {}
+                    for vname, vconfig in self._voice_configs.items():
+                        pyttsx3_cfg = vconfig.get("pyttsx3", {})
+                        voices[vname] = {
+                            "rate": pyttsx3_cfg.get("rate", 180),
+                            "voice_name": pyttsx3_cfg.get("voice_name"),
+                        }
+                    if voices:
+                        resp = await self._tts_service_client.set_context("menu", voices)  # type: ignore
+                        if resp:
+                            logger.info(
+                                f"Initial context set to 'menu', queued {resp.queued} items"
+                            )
+
+                    # Process requests until shutdown
+                    while not self._shutdown_requested:
+                        # Process pending TTS requests
+                        while self._tts_request_queue:
+                            try:
+                                text, voice, rate, voice_name, callback = (
+                                    self._tts_request_queue.popleft()
+                                )
+                                audio = await self._tts_service_client.generate(  # type: ignore
+                                    text=text,
+                                    voice=voice,
+                                    rate=rate,
+                                    voice_name=voice_name,
+                                )
+                                # Put result in result queue for main thread
+                                self._tts_result_queue.append((audio, callback))
+                            except Exception as e:  # pylint: disable=broad-exception-caught
+                                logger.error(f"TTS generation error: {e}")
+                                self._tts_result_queue.append((None, callback))
+
+                        await asyncio.sleep(0.01)  # Small yield
+
+                    # Shutdown
+                    await self._tts_service_client.stop()  # type: ignore[union-attr]
+                    logger.info("TTS Cache Service client stopped")
+
+                self._tts_service_loop.run_until_complete(main())
+                self._tts_service_loop.close()
+
+            self._tts_service_thread = threading.Thread(
+                target=run_service_thread, daemon=True, name="TTSServiceThread"
+            )
+            self._tts_service_thread.start()
+
+            # Wait briefly for service to start
+            import time
+
+            time.sleep(2.0)
+            logger.info("TTS Cache Service background thread started")
+
+        except ImportError as e:
+            logger.error(f"Failed to import TTSServiceClient: {e}")
+            self._tts_service_client = None
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.error(f"Error starting TTS Cache Service: {e}")
+            self._tts_service_client = None
+
+    def _stop_tts_service(self) -> None:
+        """Stop the TTS Cache Service client."""
+        if self._tts_service_client is None:
+            return
+
+        self._shutdown_requested = True
+
+        if self._tts_service_thread and self._tts_service_thread.is_alive():
+            self._tts_service_thread.join(timeout=5.0)
+
+        self._tts_service_client = None
+        self._tts_service_loop = None
+        self._tts_service_thread = None
+        logger.info("TTS Cache Service client stopped")
+
+    def set_context(self, context: str) -> None:
+        """Set the flight context for TTS pre-generation prioritization.
+
+        Tells the TTS Cache Service what context the sim is in so it can
+        prioritize pre-generating the most likely needed TTS items.
+
+        Args:
+            context: Flight context ("menu", "ground", "airborne").
+        """
+        if self._tts_mode != "system":
+            return
+
+        if self._tts_service_client is None:
+            logger.warning("TTS Cache Service client not initialized")
+            return
+
+        # Build voice configs dict from our voice_configs
+        voices: dict[str, dict[str, Any]] = {}
+        for voice_name, voice_config in self._voice_configs.items():
+            pyttsx3_config = voice_config.get("pyttsx3", {})
+            voices[voice_name] = {
+                "rate": pyttsx3_config.get("rate", 180),
+                "voice_name": pyttsx3_config.get("voice_name"),
+            }
+
+        # Queue context change request
+        def do_context_change():
+            if self._tts_service_loop and self._tts_service_client:
+                asyncio.run_coroutine_threadsafe(
+                    self._tts_service_client.set_context(context, voices),
+                    self._tts_service_loop,
+                )
+
+        # Run in background thread
+        if self._tts_service_thread and self._tts_service_thread.is_alive():
+            # Schedule on the service's event loop
+            if self._tts_service_loop:
+                self._tts_service_loop.call_soon_threadsafe(
+                    lambda: asyncio.ensure_future(
+                        self._tts_service_client.set_context(context, voices)  # type: ignore
+                    )
+                )
+                logger.info(f"Sent context change to TTS service: {context}")
+            else:
+                logger.warning("TTS service loop not available")
+        else:
+            logger.warning("TTS service thread not running")
+
+    def _request_tts_generation(
+        self,
+        text: str,
+        voice: str,
+        rate: int,
+        voice_name: str | None,
+        callback: Callable[[bytes | None], None] | None = None,
+    ) -> None:
+        """Queue a TTS generation request (non-blocking).
+
+        Args:
+            text: Text to synthesize.
+            voice: Logical voice name.
+            rate: Speech rate.
+            voice_name: Platform-specific voice name.
+            callback: Called with audio bytes when ready.
+        """
+        if self._tts_service_client is None:
+            logger.error("TTS Cache Service client not initialized")
+            if callback:
+                callback(None)
+            return
+
+        self._tts_request_queue.append((text, voice, rate, voice_name, callback))
+
+    def _process_tts_results(self) -> None:
+        """Process completed TTS results from background thread.
+
+        Call this from update() to handle completed generations.
+        """
+        while self._tts_result_queue:
+            audio_bytes, callback = self._tts_result_queue.popleft()
+            if callback and callable(callback):
+                callback(audio_bytes)
+
+    def _process_tts_audio_results(self) -> None:
+        """Process completed TTS audio and queue for playback.
+
+        Called from update() to handle audio results from background thread.
+        """
+        # The result queue now contains (audio_bytes, voice_name) tuples
+        # from the callbacks in _speak_system and speak_text
+        while self._tts_result_queue:
+            try:
+                item = self._tts_result_queue.popleft()
+                # Handle both formats: (audio, callback) and (audio, voice_name)
+                audio_bytes, second = item
+                if audio_bytes is None:
+                    continue
+
+                # If second is a string, it's a voice name (from our callbacks)
+                if isinstance(second, str):
+                    voice_name = second
+                    # Load and queue for playback
+                    try:
+                        sound = self._audio_engine.load_sound_from_bytes(
+                            audio_bytes, f"tts_{voice_name}"
+                        )
+                        if sound:
+                            self._playback_queue.append(sound)
+                            self._state = TTSState.SPEAKING
+                            if not self._playing:
+                                self._play_next_in_sequence()
+                    except Exception as e:  # pylint: disable=broad-exception-caught
+                        logger.error(f"Error loading TTS audio: {e}")
+                elif callable(second):
+                    # It's a callback - call it
+                    second(audio_bytes)
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                logger.error(f"Error processing TTS result: {e}")
 
     def speak_text(
         self,
@@ -494,23 +733,34 @@ class AudioSpeechProvider(ITTSProvider):
 
         logger.info(f"System TTS speaking text: '{text[:50]}...' (voice={voice})")
 
-        # Get or create RealtimeTTS for this voice
-        tts = self._get_realtime_tts(voice)
-        if not tts:
-            logger.error(f"Failed to get RealtimeTTS for voice: {voice}")
-            return
+        # Get voice settings from config
+        voice_config = self._voice_configs.get(voice, {})
+        pyttsx3_config = voice_config.get("pyttsx3", {})
+        rate = pyttsx3_config.get("rate", 180)
+        pyttsx3_voice = pyttsx3_config.get("voice_name")
 
-        # Generate audio bytes
-        result = tts.generate_audio_bytes(text)
-        if not result:
-            logger.error(f"System TTS failed for text: {text[:30]}")
-            return
+        # Queue async generation (non-blocking)
+        def on_audio_ready(audio_bytes: bytes | None) -> None:
+            if not audio_bytes:
+                logger.error(f"System TTS failed for text: {text[:30]}")
+                return
+            # Store result for processing in update()
+            self._tts_result_queue.append((audio_bytes, voice))
 
-        audio_bytes, _ = result
+        self._request_tts_generation(text, voice, rate, pyttsx3_voice, on_audio_ready)
 
-        # Load and play through FMOD
+    def _unused_speak_text_blocking(
+        self,
+        text: str,
+        voice: str = "tower",
+    ) -> None:
+        """UNUSED - Old blocking implementation kept for reference.
+
+        Load and play through FMOD - this was the blocking code.
+        """
+        audio_bytes: bytes | None = None  # Would be from blocking call
         try:
-            sound = self._audio_engine.load_sound_from_bytes(audio_bytes, f"tts_{voice}")
+            sound = self._audio_engine.load_sound_from_bytes(audio_bytes, f"tts_{voice}")  # type: ignore
             if sound:
                 self._playback_queue.append(sound)
                 self._state = TTSState.SPEAKING
@@ -657,9 +907,14 @@ class AudioSpeechProvider(ITTSProvider):
         """Update sequential playback - call every frame.
 
         Uses polling to detect when sounds finish and trigger the next in sequence.
+        Also processes completed TTS generation results from background thread.
         """
         if not self._initialized or not self._audio_engine:
             return
+
+        # Process completed TTS results from background thread
+        if self._tts_mode == "system":
+            self._process_tts_audio_results()
 
         # Fallback polling - check if sound finished
         if self._playing and self._current_source_id is not None:
