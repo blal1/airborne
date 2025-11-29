@@ -33,9 +33,15 @@ from airborne.navigation.routes import (
     Route,
     RouteProvider,
 )
+from airborne.navigation.ground_navigation import (
+    GroundNavigationConfig,
+    GroundNavigationManager,
+)
 from airborne.navigation.waypoint import Waypoint
 
 __all__ = [
+    "GroundNavigationConfig",
+    "GroundNavigationManager",
     "AircraftPerformance",
     "AltitudeConstraint",
     "EnhancedWaypoint",
