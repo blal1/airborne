@@ -24,6 +24,8 @@ menu:
     fly: "Voler!"
     fly_settings: "Paramètres de vol"
     settings: "Paramètres"
+    about: "À propos"
+    about_text: "{name} version {version}. Par {author}. Licence {license}."
     exit: "Quitter"
     starting_flight: "Démarrage du vol"
     goodbye: "Au revoir"

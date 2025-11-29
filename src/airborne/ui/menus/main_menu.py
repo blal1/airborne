@@ -390,6 +390,11 @@ class MainMenu(AudioMenu):
                 submenu=self._settings_menu,
             ),
             MenuItem(
+                "about",
+                t("menu.main.about"),
+                action=self._show_about,
+            ),
+            MenuItem(
                 "exit",
                 t("menu.main.exit"),
                 action=self._exit_game,
@@ -407,6 +412,21 @@ class MainMenu(AudioMenu):
 
         if self._on_fly:
             self._on_fly()
+
+    def _show_about(self) -> None:
+        """Show about information via TTS."""
+        from airborne.version import get_about_info
+
+        info = get_about_info()
+        # Build about message: "AirBorne version 0.1.0. By Yannick Mauray. MIT License."
+        about_text = t(
+            "menu.main.about_text",
+            name=info["name"],
+            version=info["version"],
+            author=info["author"],
+            license=info["license"],
+        )
+        self._speak(about_text)
 
     def _exit_game(self) -> None:
         """Exit the game."""

@@ -24,6 +24,8 @@ menu:
     fly: "Fly!"
     fly_settings: "Fly Settings"
     settings: "Settings"
+    about: "About"
+    about_text: "{name} version {version}. By {author}. {license} License."
     exit: "Exit"
     starting_flight: "Starting flight"
     goodbye: "Goodbye"
