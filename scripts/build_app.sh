@@ -9,7 +9,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_ROOT"
 
-VERSION="0.1.0"
+# Read version from VERSION file
+if [ -f "VERSION" ]; then
+    VERSION=$(cat VERSION | tr -d '[:space:]')
+else
+    log_error "VERSION file not found in project root"
+    exit 1
+fi
+
 APP_NAME="AirBorne"
 BUNDLE_ID="com.airborne.simulator"
 
@@ -85,7 +92,7 @@ os.environ['SDL_VIDEO_WINDOW_POS'] = 'center'
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 RTHOOK_EOF
 
-    cat > airborne.spec << 'SPEC_EOF'
+    cat > airborne.spec << SPEC_EOF
 # -*- mode: python ; coding: utf-8 -*-
 
 import sys
@@ -246,12 +253,12 @@ app = BUNDLE(
     name='AirBorne.app',
     icon=None,
     bundle_identifier='com.airborne.simulator',
-    version='0.1.0',
+    version='${VERSION}',
     info_plist={
         'CFBundleName': 'AirBorne',
         'CFBundleDisplayName': 'AirBorne Flight Simulator',
-        'CFBundleShortVersionString': '0.1.0',
-        'CFBundleVersion': '0.1.0',
+        'CFBundleShortVersionString': '${VERSION}',
+        'CFBundleVersion': '${VERSION}',
         'CFBundleExecutable': 'airborne',
         'CFBundleIdentifier': 'com.airborne.simulator',
         'LSMinimumSystemVersion': '10.15.0',
@@ -342,15 +349,20 @@ build_windows() {
     if [ -d "dist/airborne" ]; then
         # Generate NSIS script
         log_info "Generating NSIS installer script..."
-        cat > dist/airborne-installer.nsi << 'NSIS_EOF'
+        # Parse version into components for NSIS
+        VERSION_MAJOR=$(echo "$VERSION" | cut -d. -f1)
+        VERSION_MINOR=$(echo "$VERSION" | cut -d. -f2)
+        VERSION_BUILD=$(echo "$VERSION" | cut -d. -f3)
+
+        cat > dist/airborne-installer.nsi << NSIS_EOF
 ; AirBorne NSIS Installer Script
 
 !define APPNAME "AirBorne"
 !define COMPANYNAME "AirBorne Team"
 !define DESCRIPTION "Blind-Accessible Flight Simulator"
-!define VERSIONMAJOR 0
-!define VERSIONMINOR 1
-!define VERSIONBUILD 0
+!define VERSIONMAJOR ${VERSION_MAJOR}
+!define VERSIONMINOR ${VERSION_MINOR}
+!define VERSIONBUILD ${VERSION_BUILD}
 !define HELPURL "https://github.com/yourusername/airborne"
 !define UPDATEURL "https://github.com/yourusername/airborne"
 !define ABOUTURL "https://github.com/yourusername/airborne"
@@ -436,8 +448,8 @@ NSIS_EOF
         cd ..
 
         log_success "Windows installer built successfully!"
-        log_info "Location: $PROJECT_ROOT/dist/AirBorne-Setup-0.1.0.exe"
-        log_info "Size: $(du -sh dist/AirBorne-Setup-0.1.0.exe | cut -f1)"
+        log_info "Location: $PROJECT_ROOT/dist/AirBorne-Setup-${VERSION}.exe"
+        log_info "Size: $(du -sh dist/AirBorne-Setup-${VERSION}.exe | cut -f1)"
         echo ""
     else
         log_error "Windows build failed!"
