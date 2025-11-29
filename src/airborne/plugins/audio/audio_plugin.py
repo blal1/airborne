@@ -935,6 +935,73 @@ class AudioPlugin(IPlugin):
                 self.tts_provider.speak(keys, interrupt=True)  # type: ignore[arg-type]
             return
 
+        # Handle flaps commanded (announce target position)
+        if event.action == "flaps_commanded" and event.value is not None:
+            if self.tts_provider:
+                from airborne.audio.tts.base import TTSPriority
+
+                flap_degrees = int(event.value)
+                if flap_degrees == 0:
+                    keys = ["MSG_FLAPS", "MSG_UP"]
+                else:
+                    keys = ["MSG_FLAPS", f"MSG_NUMBER_{flap_degrees}"]
+                self.tts_provider.speak(keys, priority=TTSPriority.HIGH, interrupt=True)  # type: ignore[arg-type]
+            return
+
+        # Handle flaps set (announce when flaps reach target position)
+        if event.action == "flaps_set" and event.value is not None:
+            if self.tts_provider:
+                from airborne.audio.tts.base import TTSPriority
+
+                flap_degrees = int(event.value)
+                if flap_degrees == 0:
+                    keys = ["MSG_FLAPS", "MSG_UP", "MSG_SET"]
+                else:
+                    keys = ["MSG_FLAPS", f"MSG_NUMBER_{flap_degrees}", "MSG_SET"]
+                self.tts_provider.speak(keys, priority=TTSPriority.NORMAL)  # type: ignore[arg-type]
+            return
+
+        # Handle flaps read (announce current flap position)
+        if event.action == "flaps_read" and event.value is not None:
+            if self.tts_provider:
+                from airborne.audio.tts.base import TTSPriority
+
+                flap_degrees = int(event.value)
+                if flap_degrees == 0:
+                    keys = ["MSG_FLAPS", "MSG_UP"]
+                else:
+                    keys = ["MSG_FLAPS", f"MSG_NUMBER_{flap_degrees}"]
+                self.tts_provider.speak(keys, priority=TTSPriority.HIGH, interrupt=True)  # type: ignore[arg-type]
+            return
+
+        # Handle auto-trim enabled
+        if event.action == "auto_trim_enabled":
+            if self.tts_provider:
+                from airborne.audio.tts.base import TTSPriority
+
+                keys = ["MSG_AUTO_TRIM", "MSG_ON"]
+                self.tts_provider.speak(keys, priority=TTSPriority.HIGH, interrupt=True)  # type: ignore[arg-type]
+            return
+
+        # Handle auto-trim disabled
+        if event.action == "auto_trim_disabled":
+            if self.tts_provider:
+                from airborne.audio.tts.base import TTSPriority
+
+                keys = ["MSG_AUTO_TRIM", "MSG_OFF"]
+                self.tts_provider.speak(keys, priority=TTSPriority.HIGH, interrupt=True)  # type: ignore[arg-type]
+            return
+
+        # Handle auto-trim read (announce status)
+        if event.action == "auto_trim_read":
+            if self.tts_provider:
+                from airborne.audio.tts.base import TTSPriority
+
+                enabled = event.value is not None and event.value > 0.5
+                keys = ["MSG_AUTO_TRIM", "MSG_ON" if enabled else "MSG_OFF"]
+                self.tts_provider.speak(keys, priority=TTSPriority.HIGH, interrupt=True)  # type: ignore[arg-type]
+            return
+
         if not self.tts_provider:
             logger.warning("No TTS provider available for input action feedback")
             return
