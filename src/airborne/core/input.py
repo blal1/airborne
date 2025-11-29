@@ -99,9 +99,15 @@ class InputAction(Enum):
     PARKING_BRAKE_RELEASE = "parking_brake_release"
     GEAR_TOGGLE = "gear_toggle"
 
-    # Flaps
+    # Flaps (discrete positions)
     FLAPS_UP = "flaps_up"
     FLAPS_DOWN = "flaps_down"
+    FLAPS_READ = "flaps_read"  # Announce current flap position
+
+    # Auto-trim controls
+    AUTO_TRIM_ENABLE = "auto_trim_enable"  # Enable auto-trim (Shift+T)
+    AUTO_TRIM_DISABLE = "auto_trim_disable"  # Disable auto-trim (Ctrl+T)
+    AUTO_TRIM_READ = "auto_trim_read"  # Read auto-trim status (T)
 
     # Trim controls
     TRIM_PITCH_UP = "trim_pitch_up"  # Roll trim wheel back (nose up)
@@ -424,6 +430,17 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
         # These actions are triggered by key+modifier combinations and need special tracking
         self._modifier_actions: set[InputAction] = set()
 
+        # Discrete flap positions (loaded from aircraft config)
+        self._flap_positions: list[dict] = []  # List of {name, degrees, normalized}
+        self._flap_index: int = 0  # Current discrete flap position index
+        self._flap_target: float = 0.0  # Target flap position (normalized 0-1)
+        self._flap_transitioning: bool = False  # Whether flaps are currently moving
+        self._flap_rate: float = 0.33  # Flaps movement rate per second (default: 3 sec full travel)
+        self._load_flap_config()
+
+        # Auto-trim state
+        self._auto_trim_enabled: bool = False
+
         # Keyboard control - smooth rate-based deflection
         self._pitch_input_target = 0.0  # Target input direction (-1, 0, or +1)
         self._roll_input_target = 0.0
@@ -440,6 +457,36 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
         logger.info(
             "Input manager initialized with %d key bindings", len(self.config.keyboard_bindings)
         )
+
+    def _load_flap_config(self) -> None:
+        """Load discrete flap positions from aircraft configuration."""
+        flaps_config = self.aircraft_config.get("flaps", {})
+        positions = flaps_config.get("positions", [])
+
+        if positions:
+            self._flap_positions = positions
+            default_index = flaps_config.get("default_position", 0)
+            self._flap_index = default_index
+            if 0 <= default_index < len(positions):
+                self._flap_target = positions[default_index].get("normalized", 0.0)
+                self.state.flaps = self._flap_target
+            # Calculate flap rate from transition time
+            transition_time = flaps_config.get("transition_time_sec", 3.0)
+            if transition_time > 0:
+                self._flap_rate = 1.0 / transition_time
+            logger.info(
+                f"Loaded {len(positions)} discrete flap positions, "
+                f"transition time: {transition_time}s"
+            )
+        else:
+            # Default flap positions if not configured
+            self._flap_positions = [
+                {"name": "UP", "degrees": 0, "normalized": 0.0},
+                {"name": "10", "degrees": 10, "normalized": 0.33},
+                {"name": "20", "degrees": 20, "normalized": 0.67},
+                {"name": "FULL", "degrees": 30, "normalized": 1.0},
+            ]
+            logger.debug("Using default flap positions (no aircraft config)")
 
     def _initialize_joystick(self) -> None:
         """Initialize joystick if available and enabled."""
@@ -905,11 +952,17 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
             self.state.gear = 0.0 if self.state.gear > 0.5 else 1.0
             self.event_bus.publish(InputActionEvent(action=action.value, value=self.state.gear))
         elif action == InputAction.FLAPS_UP:
-            self.state.flaps = max(0.0, self.state.flaps - 0.25)
-            self.event_bus.publish(InputActionEvent(action=action.value, value=self.state.flaps))
+            self._change_flap_position(-1)
         elif action == InputAction.FLAPS_DOWN:
-            self.state.flaps = min(1.0, self.state.flaps + 0.25)
-            self.event_bus.publish(InputActionEvent(action=action.value, value=self.state.flaps))
+            self._change_flap_position(1)
+        elif action == InputAction.FLAPS_READ:
+            self._announce_flap_position()
+        elif action == InputAction.AUTO_TRIM_ENABLE:
+            self._set_auto_trim(True)
+        elif action == InputAction.AUTO_TRIM_DISABLE:
+            self._set_auto_trim(False)
+        elif action == InputAction.AUTO_TRIM_READ:
+            self._announce_auto_trim_status()
         elif action in (InputAction.PARKING_BRAKE_SET, InputAction.PARKING_BRAKE_RELEASE):
             # Set or release parking brake via message queue to physics plugin
             if self.message_queue:
@@ -978,6 +1031,9 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
         # Update throttle rate limiting timer
         self._time_since_last_throttle_click += dt
         self._time_since_last_trim_click += dt
+
+        # Update flap transition (gradual movement to target position)
+        self._update_flap_transition(dt)
 
         # Update continuous keyboard controls
         self._update_keyboard_controls()
@@ -1464,3 +1520,110 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
             if bound_action == action and key in self._keys_just_pressed:
                 return True
         return False
+
+    def _change_flap_position(self, direction: int) -> None:
+        """Change flap position by one discrete step.
+
+        Args:
+            direction: -1 for up (retract), +1 for down (extend)
+        """
+        if not self._flap_positions:
+            return
+
+        new_index = self._flap_index + direction
+        if 0 <= new_index < len(self._flap_positions):
+            self._flap_index = new_index
+            position = self._flap_positions[new_index]
+            self._flap_target = position.get("normalized", 0.0)
+            self._flap_transitioning = True
+
+            # Publish "flaps commanded" event for TTS announcement
+            self.event_bus.publish(
+                InputActionEvent(
+                    action="flaps_commanded",
+                    value=position.get("degrees", 0),
+                )
+            )
+            logger.info(f"Flaps commanded to {position.get('name', 'UNKNOWN')} ({position.get('degrees', 0)}°)")
+
+    def _update_flap_transition(self, dt: float) -> None:
+        """Update flap position transition (gradual movement).
+
+        Args:
+            dt: Delta time in seconds.
+        """
+        if not self._flap_transitioning:
+            return
+
+        # Move flaps toward target at configured rate
+        diff = self._flap_target - self.state.flaps
+        if abs(diff) < 0.01:
+            # Reached target
+            self.state.flaps = self._flap_target
+            self._flap_transitioning = False
+
+            # Publish "flaps set" event for TTS announcement
+            if self._flap_positions and 0 <= self._flap_index < len(self._flap_positions):
+                position = self._flap_positions[self._flap_index]
+                self.event_bus.publish(
+                    InputActionEvent(
+                        action="flaps_set",
+                        value=position.get("degrees", 0),
+                    )
+                )
+                logger.info(f"Flaps set to {position.get('name', 'UNKNOWN')} ({position.get('degrees', 0)}°)")
+        else:
+            # Move toward target
+            move_amount = self._flap_rate * dt
+            if diff > 0:
+                self.state.flaps = min(self._flap_target, self.state.flaps + move_amount)
+            else:
+                self.state.flaps = max(self._flap_target, self.state.flaps - move_amount)
+
+    def _announce_flap_position(self) -> None:
+        """Announce current flap position via TTS."""
+        if self._flap_positions and 0 <= self._flap_index < len(self._flap_positions):
+            position = self._flap_positions[self._flap_index]
+            self.event_bus.publish(
+                InputActionEvent(
+                    action="flaps_read",
+                    value=position.get("degrees", 0),
+                )
+            )
+
+    def _set_auto_trim(self, enabled: bool) -> None:
+        """Enable or disable auto-trim.
+
+        Args:
+            enabled: Whether to enable auto-trim.
+        """
+        if self._auto_trim_enabled == enabled:
+            return  # No change
+
+        self._auto_trim_enabled = enabled
+
+        # Publish to message queue for physics plugin
+        if self.message_queue:
+            self.message_queue.publish(
+                Message(
+                    sender="input_manager",
+                    recipients=["physics_plugin"],
+                    topic="flight_controls.auto_trim",
+                    data={"enabled": enabled},
+                    priority=MessagePriority.HIGH,
+                )
+            )
+
+        # Publish event for TTS feedback
+        action = "auto_trim_enabled" if enabled else "auto_trim_disabled"
+        self.event_bus.publish(InputActionEvent(action=action))
+        logger.info(f"Auto-trim {'enabled' if enabled else 'disabled'}")
+
+    def _announce_auto_trim_status(self) -> None:
+        """Announce current auto-trim status via TTS."""
+        self.event_bus.publish(
+            InputActionEvent(
+                action="auto_trim_read",
+                value=1.0 if self._auto_trim_enabled else 0.0,
+            )
+        )
