@@ -574,3 +574,118 @@ class TestHoldShortAnnouncements:
 
         # Should not crash
         manager.announce_hold_short(hold_short)
+
+
+class TestDetailedPositionAnnouncements:
+    """Test 'Where am I' detailed position announcements."""
+
+    def test_announce_detailed_position_basic(
+        self, manager: OrientationAudioManager, message_queue: MessageQueue
+    ) -> None:
+        """Test basic detailed position announcement."""
+        manager.announce_detailed_position(
+            LocationType.TAXIWAY,
+            "A",
+        )
+
+        processed = message_queue.process()
+        assert processed == 1
+
+    def test_announce_detailed_position_with_runway(
+        self, manager: OrientationAudioManager, message_queue: MessageQueue
+    ) -> None:
+        """Test detailed position with nearest runway."""
+        manager.announce_detailed_position(
+            LocationType.TAXIWAY,
+            "A",
+            nearest_runway=("27L", 150.0),
+        )
+
+        processed = message_queue.process()
+        assert processed == 1
+
+    def test_announce_detailed_position_with_nearby_features(
+        self, manager: OrientationAudioManager, message_queue: MessageQueue
+    ) -> None:
+        """Test detailed position with nearby features."""
+        manager.announce_detailed_position(
+            LocationType.TAXIWAY,
+            "A",
+            nearby_features=[
+                ("taxiway", "B", 50.0),
+                ("runway", "31", 100.0),
+            ],
+        )
+
+        processed = message_queue.process()
+        assert processed == 1
+
+    def test_announce_detailed_position_full(
+        self, manager: OrientationAudioManager, message_queue: MessageQueue
+    ) -> None:
+        """Test detailed position with all information."""
+        manager.announce_detailed_position(
+            LocationType.TAXIWAY,
+            "A",
+            nearest_runway=("27L", 150.0),
+            nearby_features=[
+                ("taxiway", "B", 50.0),
+                ("taxiway", "C", 75.0),
+            ],
+        )
+
+        processed = message_queue.process()
+        assert processed == 1
+
+    def test_announce_detailed_position_max_features(
+        self, manager: OrientationAudioManager, message_queue: MessageQueue
+    ) -> None:
+        """Test that only 2 nearby features are announced."""
+        manager.announce_detailed_position(
+            LocationType.TAXIWAY,
+            "A",
+            nearby_features=[
+                ("taxiway", "B", 50.0),
+                ("taxiway", "C", 75.0),
+                ("taxiway", "D", 100.0),  # Should be ignored
+            ],
+        )
+
+        processed = message_queue.process()
+        assert processed == 1
+
+    def test_announce_detailed_position_on_runway(
+        self, manager: OrientationAudioManager, message_queue: MessageQueue
+    ) -> None:
+        """Test detailed position when on runway."""
+        manager.announce_detailed_position(
+            LocationType.RUNWAY,
+            "31",
+        )
+
+        processed = message_queue.process()
+        assert processed == 1
+
+    def test_announce_detailed_position_at_parking(
+        self, manager: OrientationAudioManager, message_queue: MessageQueue
+    ) -> None:
+        """Test detailed position at parking."""
+        manager.announce_detailed_position(
+            LocationType.PARKING,
+            "G5",
+            nearest_runway=("09", 200.0),
+        )
+
+        processed = message_queue.process()
+        assert processed == 1
+
+    def test_detailed_position_without_queue(self) -> None:
+        """Test detailed position without message queue."""
+        manager = OrientationAudioManager(None)
+
+        # Should not crash
+        manager.announce_detailed_position(
+            LocationType.TAXIWAY,
+            "A",
+            nearest_runway=("27L", 150.0),
+        )

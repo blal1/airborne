@@ -381,6 +381,58 @@ class OrientationAudioManager:
 
         self._announce(message, priority)
 
+    def announce_detailed_position(
+        self,
+        location_type: LocationType,
+        location_id: str,
+        nearby_features: list[tuple[str, str, float]] | None = None,
+        nearest_runway: tuple[str, float] | None = None,
+    ) -> None:
+        """Announce detailed current position with nearby features.
+
+        Provides a comprehensive position report including current location,
+        distance to nearest runway threshold, and nearby taxiways.
+
+        Args:
+            location_type: Current location type (taxiway, runway, etc.).
+            location_id: Current location identifier.
+            nearby_features: List of (feature_type, name, distance) tuples for nearby features.
+            nearest_runway: Tuple of (runway_id, distance_m) to nearest runway threshold.
+
+        Examples:
+            >>> manager.announce_detailed_position(
+            ...     LocationType.TAXIWAY, "A",
+            ...     nearby_features=[("taxiway", "B", 50.0)],
+            ...     nearest_runway=("27L", 150.0)
+            ... )
+            # "On taxiway Alpha, 150 meters from runway 27 Left threshold.
+            #  Taxiway Bravo nearby."
+        """
+        messages = []
+
+        # Current location
+        base_msg = self._generate_location_message(location_type, location_id)
+        messages.append(base_msg)
+
+        # Distance to nearest runway threshold
+        if nearest_runway:
+            runway_id, distance = nearest_runway
+            runway_phonetic = self._to_phonetic(runway_id)
+            messages.append(f"{int(distance)} meters from runway {runway_phonetic} threshold")
+
+        # Nearby features
+        if nearby_features:
+            for feature_type, name, distance in nearby_features[:2]:  # Max 2 nearby
+                name_phonetic = self._to_phonetic(name)
+                if feature_type == "runway":
+                    messages.append(f"Runway {name_phonetic} nearby")
+                else:
+                    messages.append(f"Taxiway {name_phonetic} nearby")
+
+        # Combine and announce
+        full_message = ". ".join(messages)
+        self._announce(full_message, priority=MessagePriority.HIGH)
+
     def _on_location_changed(self, msg: Message) -> None:
         """Handle location change message from message queue.
 
