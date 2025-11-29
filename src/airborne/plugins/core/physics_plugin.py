@@ -68,6 +68,11 @@ class PhysicsPlugin(IPlugin):
         self._pitch_trim: float = 0.0
         self._rudder_trim: float = 0.0
 
+        # Auto-trim state
+        self._auto_trim_enabled: bool = False
+        self._auto_trim_target_vspeed: float = 0.0  # Target vertical speed (ft/min)
+        self._auto_trim_rate: float = 0.02  # Trim adjustment rate per second
+
     def get_metadata(self) -> PluginMetadata:
         """Return plugin metadata.
 
@@ -179,6 +184,9 @@ class PhysicsPlugin(IPlugin):
         # Subscribe to weight & balance updates (to update aircraft mass)
         context.message_queue.subscribe("weight_balance.updated", self.handle_message)
 
+        # Subscribe to auto-trim control
+        context.message_queue.subscribe("flight_controls.auto_trim", self.handle_message)
+
         # Initialize telemetry logger
         self.telemetry = TelemetryLogger(buffer_size=60)  # Buffer ~1 second of data at 60fps
         logger.info(f"Telemetry logging to: {self.telemetry.db_path}")
@@ -221,6 +229,10 @@ class PhysicsPlugin(IPlugin):
             if collision_result.is_colliding:
                 # Prepare ground collision (apply ground forces BEFORE update)
                 self._prepare_ground_forces(state, collision_result)
+
+        # Apply auto-trim if enabled (adjusts pitch trim to maintain vertical speed)
+        if self._auto_trim_enabled and not state.on_ground:
+            self._apply_auto_trim(dt, state)
 
         # NOW update flight model with control inputs AND ground forces
         self.flight_model.update(dt, self.control_inputs)
@@ -282,6 +294,7 @@ class PhysicsPlugin(IPlugin):
             self.context.message_queue.unsubscribe("parking_brake", self.handle_message)
             self.context.message_queue.unsubscribe(MessageTopic.ENGINE_STATE, self.handle_message)
             self.context.message_queue.unsubscribe("weight_balance.updated", self.handle_message)
+            self.context.message_queue.unsubscribe("flight_controls.auto_trim", self.handle_message)
 
             # Unregister components
             if self.context.plugin_registry:
@@ -403,6 +416,21 @@ class PhysicsPlugin(IPlugin):
                     self.ground_physics.mass_kg = mass_kg
 
                 logger.debug(f"Mass updated: {total_weight_lbs:.0f} lbs ({mass_kg:.1f} kg)")
+
+        elif message.topic == "flight_controls.auto_trim":
+            # Handle auto-trim enable/disable
+            data = message.data
+            enabled = data.get("enabled", False)
+            # Also handle panel control state format
+            if "state" in data:
+                enabled = data["state"] == "ON"
+
+            self._auto_trim_enabled = enabled
+            # Capture current vertical speed as target when enabling
+            if enabled and self.flight_model:
+                state = self.flight_model.get_state()
+                self._auto_trim_target_vspeed = state.velocity.y * 196.85  # m/s to ft/min
+            logger.info(f"Auto-trim {'enabled' if enabled else 'disabled'}")
 
     def on_config_changed(self, config: dict[str, Any]) -> None:
         """Handle configuration changes.
@@ -776,3 +804,28 @@ class PhysicsPlugin(IPlugin):
             }
 
             self.telemetry.log_forces(force_data)
+
+    def _apply_auto_trim(self, dt: float, state: AircraftState) -> None:
+        """Apply automatic pitch trim to maintain vertical speed.
+
+        Args:
+            dt: Delta time in seconds.
+            state: Current aircraft state.
+        """
+        # Get current vertical speed in ft/min
+        current_vspeed_fpm = state.velocity.y * 196.85
+
+        # Calculate error from target vertical speed
+        vspeed_error = self._auto_trim_target_vspeed - current_vspeed_fpm
+
+        # Proportional trim adjustment based on error
+        # Positive error (below target) = need to pitch up = positive trim
+        # Negative error (above target) = need to pitch down = negative trim
+        trim_adjustment = vspeed_error * 0.0001 * dt  # Small proportional gain
+
+        # Clamp adjustment rate
+        max_adjustment = self._auto_trim_rate * dt
+        trim_adjustment = max(-max_adjustment, min(max_adjustment, trim_adjustment))
+
+        # Apply to pitch trim (will be used in next control input message)
+        self._pitch_trim = max(-1.0, min(1.0, self._pitch_trim + trim_adjustment))
