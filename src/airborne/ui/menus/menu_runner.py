@@ -3,16 +3,14 @@
 This module provides a standalone menu runner that handles the main menu
 before the full game is initialized. It uses minimal resources:
 - Pygame for keyboard input
-- TTS cache service for speech (threaded, non-blocking)
+- Shared TTSService for speech (passed from main)
 - FMOD for click sounds
 
-The TTS system runs in a background thread with:
-- Queue for pending speech requests
-- Interrupt support (new speech cancels previous)
-- Non-blocking generation (UI stays responsive)
+TTS operations are non-blocking: speak() queues requests, and audio is
+delivered via callbacks invoked during TTSService.update().
 
 Typical usage:
-    runner = MenuRunner()
+    runner = MenuRunner(tts_service=tts_service)
     result = runner.run()
     if result == "fly":
         config = runner.get_flight_config()
@@ -21,18 +19,17 @@ Typical usage:
         sys.exit(0)
 """
 
-import asyncio
 import contextlib
 import logging
-import queue
 import random
 import tempfile
 import threading
 import time
-from collections import deque
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from airborne.audio.tts_service import TTSService
 
 try:
     import pygame
@@ -40,6 +37,7 @@ except ImportError:
     pygame = None  # type: ignore[assignment]
 
 from airborne.audio.audio_facade import AudioFacade
+from airborne.audio.tts_service import TTSPriority
 from airborne.core.resource_path import get_resource_path
 from airborne.settings import get_tts_settings
 from airborne.ui.menus.main_menu import MainMenu
@@ -57,18 +55,6 @@ except ImportError:
     MODE = None
     FMOD_AVAILABLE = False
     logger.info("pyfmodex not available, menu sounds disabled")
-
-
-@dataclass
-class TTSRequest:
-    """Request for TTS generation."""
-
-    text: str
-    voice: str
-    rate: int
-    voice_name: str
-    language: str
-    interrupt: bool = True  # Whether to interrupt current speech
 
 
 # Global voice cache shared with voice settings menu
@@ -108,31 +94,37 @@ class MenuRunner:
     This class provides a lightweight menu system that runs before the full
     game is initialized. It handles:
     - Pygame display and event loop
-    - TTS via cache service (threaded, non-blocking)
+    - TTS via shared TTSService (passed from main)
     - Click sounds via FMOD
     - Menu navigation and result collection
 
-    The TTS system uses a background thread with its own event loop to:
-    - Generate speech without blocking the UI
-    - Support interrupt (new speech cancels previous)
-    - Queue multiple requests efficiently
+    TTS operations use the shared TTSService facade:
+    - speak() queues text for generation with priority
+    - Audio is delivered via callbacks during TTSService.update()
+    - The service handles all async/threading internally
 
     Attributes:
         result: Menu result ("fly", "exit", or None).
         flight_config: Flight configuration from menu selections.
     """
 
-    def __init__(self) -> None:
-        """Initialize the menu runner."""
+    def __init__(self, tts_service: "TTSService | None" = None) -> None:
+        """Initialize the menu runner.
+
+        Args:
+            tts_service: Shared TTSService instance for TTS operations.
+        """
         self._main_menu: MainMenu | None = None
         self._running = False
         self._result: str | None = None
         self._flight_config: dict[str, Any] = {}
 
+        # Shared TTS service (from main)
+        self._tts_service = tts_service
+
         # Audio
         self._audio: AudioFacade | None = None
         self._fmod_engine: Any = None  # Will be imported and initialized
-        self._tts_client: Any = None
         self._current_channel: Any = None
         self._menu_music_source_id: int | None = None  # Track music source ID
 
@@ -140,14 +132,6 @@ class MenuRunner:
         self._ui_voice_name: str = "Samantha"
         self._ui_rate: int = 180
         self._ui_language: str = "en"
-
-        # TTS threading - async generation with queue support
-        self._tts_thread: threading.Thread | None = None
-        self._tts_loop: asyncio.AbstractEventLoop | None = None
-        self._tts_request_queue: queue.Queue[TTSRequest | None] = queue.Queue()
-        self._tts_audio_queue: deque[bytes] = deque()  # Completed audio ready to play
-        self._tts_shutdown = threading.Event()
-        self._tts_interrupt = threading.Event()  # Signal to interrupt current generation
 
         # Pygame
         self._screen: Any = None
@@ -212,7 +196,7 @@ class MenuRunner:
         self._main_menu.set_audio_callbacks(
             speak=self._speak,
             play_sound=self._play_sound,
-            tts_client=self._tts_client,
+            tts_client=None,  # No longer used - TTSService handles TTS
             play_audio=self._play_audio,
         )
         self._main_menu.open(is_startup=True)
@@ -282,9 +266,7 @@ class MenuRunner:
             logger.debug("Fadeout called but no audio available")
             return
 
-        logger.info("FADEOUT: Starting menu music fadeout")
-        self._audio.music.fade_out(1.0)  # 1 second fadeout
-        logger.info("FADEOUT: fade_out() called")
+        self._audio.music.fade_out(2.0)  # 1 second fadeout
 
     def _is_music_fading(self) -> bool:
         """Check if music is currently fading.
@@ -305,7 +287,11 @@ class MenuRunner:
             logger.debug("Menu music stopped")
 
     def _initialize_tts(self) -> None:
-        """Initialize TTS client and background thread."""
+        """Initialize TTS settings from configuration.
+
+        The actual TTS service is passed from main.py and handles all
+        async/threading internally. This just loads voice settings.
+        """
         from airborne.core.i18n import set_language
 
         # Load current UI voice settings
@@ -328,105 +314,11 @@ class MenuRunner:
         except Exception as e:
             logger.warning("Failed to load TTS settings, using defaults: %s", e)
 
-        # Start TTS background thread with its own event loop
-        self._tts_shutdown.clear()
-        self._tts_interrupt.clear()
-        self._tts_thread = threading.Thread(
-            target=self._tts_worker_thread,
-            daemon=True,
-            name="MenuTTSWorker",
-        )
-        self._tts_thread.start()
-        logger.info("TTS background thread started")
-
-    def _tts_worker_thread(self) -> None:
-        """Background thread for TTS generation.
-
-        Runs its own asyncio event loop to handle async TTS client operations.
-        Processes requests from _tts_request_queue and puts results in _tts_audio_queue.
-        """
-        from airborne.tts_cache_service import TTSServiceClient
-
-        # Create event loop for this thread
-        self._tts_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self._tts_loop)
-
-        async def worker_main() -> None:
-            """Main async worker function."""
-            # Initialize TTS client
-            try:
-                self._tts_client = TTSServiceClient()
-                await self._tts_client.start()
-                logger.info("TTS client started in background thread")
-            except Exception as e:
-                logger.error("Failed to start TTS client: %s", e)
-                self._tts_client = None
-                return
-
-            # Pre-fetch voices for current language (before menu phrases)
-            await self._prefetch_voices(self._ui_language)
-
-            # Pre-generate menu phrases (high priority)
-            await self._pregenerate_menu_phrases()
-
-            # Process requests until shutdown
-            while not self._tts_shutdown.is_set():
-                try:
-                    # Get request with timeout (allows checking shutdown flag)
-                    try:
-                        request = self._tts_request_queue.get(timeout=0.1)
-                    except Exception:
-                        continue
-
-                    # None signals shutdown
-                    if request is None:
-                        break
-
-                    # Check for interrupt before generating
-                    if self._tts_interrupt.is_set():
-                        self._tts_interrupt.clear()
-                        # Clear any pending audio
-                        self._tts_audio_queue.clear()
-
-                    # Generate TTS
-                    try:
-                        audio_data = await self._tts_client.generate(
-                            text=request.text,
-                            voice=request.voice,
-                            rate=request.rate,
-                            voice_name=request.voice_name,
-                            language=request.language,
-                        )
-                        if audio_data:
-                            # Check if interrupted during generation
-                            if self._tts_interrupt.is_set():
-                                self._tts_interrupt.clear()
-                                self._tts_audio_queue.clear()
-                            else:
-                                self._tts_audio_queue.append(audio_data)
-                                logger.debug("TTS generated: %s", request.text[:30])
-                    except Exception as e:
-                        logger.error("TTS generation error: %s", e)
-
-                except Exception as e:
-                    logger.error("TTS worker error: %s", e)
-
-            # Cleanup
-            if self._tts_client:
-                try:
-                    await self._tts_client.stop()
-                except Exception as e:
-                    logger.error("TTS client stop error: %s", e)
-            logger.info("TTS worker thread ended")
-
-        # Run the worker
-        try:
-            self._tts_loop.run_until_complete(worker_main())
-        except Exception as e:
-            logger.error("TTS worker loop error: %s", e)
-        finally:
-            self._tts_loop.close()
-            self._tts_loop = None
+        # Log TTS service status
+        if self._tts_service and self._tts_service.is_running:
+            logger.info("Using shared TTSService for menu TTS")
+        else:
+            logger.warning("TTSService not available, TTS will be disabled")
 
     def _run_loop(self) -> None:
         """Run the main menu event loop."""
@@ -455,8 +347,9 @@ class MenuRunner:
                 self._running = False
                 break
 
-            # Process completed TTS audio from background thread
-            self._process_tts_audio()
+            # Process TTS results (invokes callbacks on main thread)
+            if self._tts_service:
+                self._tts_service.update()
 
             # Update audio (handles fading, etc.)
             if self._audio:
@@ -472,24 +365,6 @@ class MenuRunner:
 
             # Limit frame rate
             self._clock.tick(60)
-
-    def _process_tts_audio(self) -> None:
-        """Process completed TTS audio from background thread.
-
-        Called from the main loop to play audio that was generated
-        in the background thread.
-        """
-        if not self._audio:
-            return
-
-        # Play any pending audio (just the most recent one - interrupt semantics)
-        while self._tts_audio_queue:
-            audio_data = self._tts_audio_queue.popleft()
-            # If there are more items, skip to the latest (interrupt)
-            if self._tts_audio_queue:
-                continue
-            # Play the audio
-            self._play_tts_audio_sync(audio_data)
 
     def _handle_keydown(self, event: Any) -> None:
         """Handle keyboard input.
@@ -563,37 +438,35 @@ class MenuRunner:
     def _speak(self, text: str, interrupt: bool = True) -> None:
         """Speak text using TTS (non-blocking).
 
-        Queues the text for generation in the background thread.
-        The audio will be played when ready.
+        Queues the text for generation via TTSService. Audio will be
+        delivered via callback and played when update() is called.
 
         Args:
             text: Text to speak.
-            interrupt: If True, stop current speech and clear pending audio.
+            interrupt: If True, flush lower priority pending requests.
         """
         if not text:
             return
 
-        # Create request with current voice settings
-        request = TTSRequest(
-            text=text,
-            voice="ui",
-            rate=self._ui_rate,
-            voice_name=self._ui_voice_name,
-            language=self._ui_language,
-            interrupt=interrupt,
-        )
+        if not self._tts_service:
+            logger.debug("TTSService not available, skipping: %s", text[:30])
+            return
 
-        # Signal interrupt if requested
+        # Stop any currently playing TTS if interrupting
         if interrupt:
-            self._tts_interrupt.set()
             self._stop_current_tts()
 
-        # Queue the request (non-blocking)
-        try:
-            self._tts_request_queue.put_nowait(request)
-            logger.debug("TTS queued: %s", text[:30])
-        except Exception as e:
-            logger.error("Failed to queue TTS: %s", e)
+        # Queue via TTSService with callback for audio playback
+        # Use NORMAL priority for UI speech (can be flushed by CRITICAL)
+        priority = TTSPriority.HIGH if interrupt else TTSPriority.NORMAL
+        self._tts_service.speak(
+            text=text,
+            voice="ui",
+            priority=priority,
+            interrupt=interrupt,
+            on_audio=self._play_tts_audio_sync,
+        )
+        logger.debug("TTS queued via TTSService: %s", text[:30])
 
     def _play_tts_audio_sync(self, audio_data: bytes) -> None:
         """Play TTS audio data synchronously.
@@ -676,113 +549,6 @@ class MenuRunner:
         # Reuse the sync playback method
         self._play_tts_audio_sync(audio_data)
 
-    async def _prefetch_voices(self, language: str) -> None:
-        """Pre-fetch available voices for a language from the TTS service.
-
-        Stores voices in the global cache for use by voice settings menu.
-        Called during startup and when language changes.
-
-        Args:
-            language: Language code (e.g., "en", "fr").
-        """
-        if not self._tts_client:
-            return
-
-        try:
-            response = await self._tts_client.list_voices(language=language)
-            if response and response.voices:
-                # Convert to (name, display) tuples
-                voices: list[tuple[str, str]] = []
-                for voice in response.voices:
-                    name = voice.name
-                    # Create display name with language variant
-                    lang = voice.language or ""
-                    if "_" in lang:
-                        variant = lang.split("_")[1].upper()
-                        display = f"{name} ({variant})"
-                    else:
-                        display = name
-                    voices.append((name, display))
-
-                # Sort by display name
-                voices.sort(key=lambda x: x[1])
-                set_cached_voices(language, voices)
-            else:
-                logger.warning("No voices returned for language %s", language)
-        except Exception as e:
-            logger.warning("Failed to prefetch voices for %s: %s", language, e)
-
-    async def _pregenerate_menu_phrases(self) -> None:
-        """Pre-generate common menu phrases for faster TTS response.
-
-        Queues all translatable menu strings for background generation.
-        This ensures menu navigation feels responsive even on first use.
-        """
-        if not self._tts_client:
-            return
-
-        from airborne.core.i18n import t
-
-        # Priority 0: Highest priority - immediate menu items
-        # These are announced immediately on menu open
-        priority_phrases: list[str] = [
-            # Welcome and main menu items
-            t("menu.main.welcome"),
-            t("menu.main.title"),
-            t("menu.main.fly"),
-            t("menu.main.fly_settings"),
-            t("menu.main.settings"),
-            t("menu.main.exit"),
-            t("menu.main.starting_flight"),
-            t("menu.main.goodbye"),
-            # Fly settings
-            t("menu.fly_settings.title"),
-            t("menu.fly_settings.flight_plan"),
-            t("menu.fly_settings.aircraft_selection"),
-            # Settings
-            t("menu.settings.title"),
-            t("menu.settings.voice_settings"),
-            t("menu.settings.language"),
-            # Common
-            t("common.back"),
-            t("common.go_back"),
-            t("common.save"),
-            t("common.cancel"),
-            t("common.disabled"),
-            t("common.saved"),
-            t("common.selected"),
-            # Item counts for menu announcements
-            "1 items.",
-            "2 items.",
-            "3 items.",
-            "4 items.",
-            "5 items.",
-        ]
-
-        # Remove duplicates while preserving order
-        seen: set[str] = set()
-        unique_phrases: list[str] = []
-        for phrase in priority_phrases:
-            if phrase and phrase not in seen:
-                seen.add(phrase)
-                unique_phrases.append(phrase)
-
-        if not unique_phrases:
-            return
-
-        try:
-            response = await self._tts_client.queue(
-                texts=unique_phrases,
-                voice="ui",
-                rate=self._ui_rate,
-                voice_name=self._ui_voice_name,
-                priority=0,  # Highest priority
-            )
-            if response and response.queued > 0:
-                logger.info("Queued %d menu phrases for pre-generation", response.queued)
-        except Exception as e:
-            logger.warning("Failed to queue menu phrases: %s", e)
-
     def _on_ui_voice_change(self, voice_name: str, rate: int) -> None:
         """Handle UI voice settings change.
 
@@ -795,7 +561,7 @@ class MenuRunner:
         logger.debug("UI voice changed: %s at %d WPM", voice_name, rate)
 
     def _on_language_change(self, language: str) -> None:
-        """Handle language change - trigger voice cache refresh.
+        """Handle language change.
 
         Args:
             language: New language code.
@@ -804,24 +570,10 @@ class MenuRunner:
             return
 
         self._ui_language = language
-        logger.info("Language changed to %s, requesting voice cache refresh", language)
+        logger.info("Language changed to %s", language)
 
-        # Queue a voice prefetch request to the TTS thread
-        # We do this by putting a special request that the worker handles
-        self._request_voice_prefetch(language)
-
-    def _request_voice_prefetch(self, language: str) -> None:
-        """Request voice prefetch from TTS background thread.
-
-        Args:
-            language: Language code to prefetch voices for.
-        """
-        # Create a special request type for voice prefetch
-        # The worker thread will check for this and call _prefetch_voices
-        # For now, we use a simple approach: schedule it via the event loop
-        if self._tts_loop and not self._tts_loop.is_closed():
-            asyncio.run_coroutine_threadsafe(self._prefetch_voices(language), self._tts_loop)
-            logger.debug("Scheduled voice prefetch for language %s", language)
+        # Note: Voice prefetch is not implemented yet.
+        # TODO: Add list_voices to TTSService to support voice selection.
 
     def _on_fly(self) -> None:
         """Handle Fly! selection.
@@ -846,17 +598,8 @@ class MenuRunner:
         """Shutdown all systems."""
         logger.info("Shutting down menu runner...")
 
-        # Stop TTS background thread
-        self._tts_shutdown.set()
-        # Send None to wake up the thread
-        with contextlib.suppress(Exception):
-            self._tts_request_queue.put_nowait(None)
-
-        if self._tts_thread and self._tts_thread.is_alive():
-            self._tts_thread.join(timeout=5.0)
-            if self._tts_thread.is_alive():
-                logger.warning("TTS thread did not stop cleanly")
-        self._tts_thread = None
+        # Note: TTSService lifecycle is managed by main.py, not here.
+        # We don't shutdown the service since it's shared with the game.
 
         # Shutdown AudioFacade (stops music, clears effects)
         if self._audio:

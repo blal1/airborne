@@ -193,7 +193,9 @@ class MusicPlayer:
                 self._fade_target_volume,
             )
         else:
-            logger.warning("Cannot fade - channel not found for source_id=%s", self._current_source_id)
+            logger.warning(
+                "Cannot fade - channel not found for source_id=%s", self._current_source_id
+            )
 
         # Check if fade is complete
         if progress >= 1.0:

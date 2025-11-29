@@ -40,6 +40,7 @@ from airborne.core.resource_path import (
 
 if TYPE_CHECKING:
     from airborne.aircraft.aircraft import Aircraft
+    from airborne.audio.tts_service import TTSService
     from airborne.plugins.audio.audio_plugin import AudioPlugin
     from airborne.plugins.core.physics_plugin import PhysicsPlugin
 
@@ -52,16 +53,24 @@ class AirBorne:
     Manages initialization, game loop, and shutdown of all systems.
     """
 
-    def __init__(self, args: argparse.Namespace | None = None) -> None:
+    def __init__(
+        self,
+        args: argparse.Namespace | None = None,
+        tts_service: "TTSService | None" = None,
+    ) -> None:
         """Initialize the application.
 
         Args:
             args: Command line arguments (optional)
+            tts_service: Shared TTSService instance (optional)
         """
         # Store CLI arguments
         self.args = args or argparse.Namespace(
             from_airport=None, to_airport=None, callsign=None, tts=None
         )
+
+        # Store shared TTS service
+        self.tts_service = tts_service
 
         # Initialize logging first (use platform-specific directories)
         logging_config = get_config_path("logging.yaml")
@@ -85,6 +94,10 @@ class AirBorne:
         self.event_bus = EventBus()
         self.message_queue = MessageQueue()
         self.registry = ComponentRegistry()
+
+        # Register TTS service in registry if provided
+        if self.tts_service:
+            self.registry.register("tts_service", self.tts_service)
 
         # Initialize input system (will be updated with aircraft config after loading)
         self.input_manager = InputManager(self.event_bus, message_queue=self.message_queue)
@@ -755,6 +768,10 @@ class AirBorne:
         if hasattr(self, "flight_instructor_plugin") and self.flight_instructor_plugin:
             self.flight_instructor_plugin.update(dt)
 
+        # Update TTS service (process pending audio callbacks)
+        if self.tts_service:
+            self.tts_service.update()
+
         # Process message queue
         self.message_queue.process()
 
@@ -1022,15 +1039,18 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def run_main_menu() -> tuple[str | None, dict]:
+def run_main_menu(tts_service: "TTSService | None" = None) -> tuple[str | None, dict]:
     """Run the main menu before game startup.
+
+    Args:
+        tts_service: Optional TTSService instance to pass to MenuRunner.
 
     Returns:
         Tuple of (result, flight_config) where result is "fly", "exit", or None.
     """
     from airborne.ui.menus import MenuRunner
 
-    runner = MenuRunner()
+    runner = MenuRunner(tts_service=tts_service)
     result = runner.run()
     return result, runner.get_flight_config()
 
@@ -1041,15 +1061,27 @@ def main() -> int:
     Returns:
         Exit code (0 for success).
     """
+    from airborne.audio.tts_service import TTSService
+
+    tts_service: TTSService | None = None
+
     try:
         args = parse_args()
 
+        # Initialize TTSService before menu or game
+        tts_service = TTSService()
+        if not tts_service.start(timeout=10.0):
+            logger.warning("TTSService failed to start, continuing without TTS")
+            tts_service = None
+
         # Run main menu unless skipped
         if not getattr(args, "skip_menu", False):
-            result, flight_config = run_main_menu()
+            result, flight_config = run_main_menu(tts_service=tts_service)
 
             if result == "exit" or result is None:
                 logger.info("User exited from main menu")
+                if tts_service:
+                    tts_service.shutdown()
                 return 0
 
             # Apply menu selections to args
@@ -1060,12 +1092,16 @@ def main() -> int:
             # Aircraft selection would be used here once aircraft loading is refactored
             logger.info("Starting flight with config: %s", flight_config)
 
-        app = AirBorne(args)
+        app = AirBorne(args, tts_service=tts_service)
         app.run()
         return 0
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.exception("Fatal error: %s", e)
         return 1
+    finally:
+        # Always shutdown TTS service
+        if tts_service:
+            tts_service.shutdown()
 
 
 if __name__ == "__main__":

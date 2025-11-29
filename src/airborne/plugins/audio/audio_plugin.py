@@ -187,6 +187,11 @@ class AudioPlugin(IPlugin):
             tts_config["audio_engine"] = self.audio_engine
             tts_config["speech_dir"] = str(get_data_path("speech"))
             tts_config["config_dir"] = str(get_resource_path("config"))
+            # Pass shared TTSService from registry (for system TTS mode)
+            tts_service = context.plugin_registry.get("tts_service")
+            if tts_service:
+                tts_config["tts_service"] = tts_service
+                logger.info("Passing shared TTSService to AudioSpeechProvider")
             self.tts_provider.initialize(tts_config)
         else:
             logger.error("TTS provider disabled due to missing audio engine")
