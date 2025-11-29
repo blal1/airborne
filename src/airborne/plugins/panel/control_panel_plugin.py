@@ -891,9 +891,10 @@ class ControlPanelPlugin(IPlugin):
         # FLIGHT CONTROLS (Panel 4)
         elif self.current_panel_index == 4:
             control_key_map = {
-                pygame.K_f: "flaps_lever",
+                pygame.K_l: "flaps_lever",  # L key for flaps
                 pygame.K_e: "elevator_trim_wheel",
                 pygame.K_b: "parking_brake_lever",
+                pygame.K_t: "auto_trim_switch",  # T key for auto-trim
             }
 
             if key in control_key_map:

@@ -69,9 +69,15 @@ panels:
 
   # PANEL 5: Flight Controls (Ctrl+5)
   Flight Controls:
-    # Flaps lever (5 states) - Shift+F next, Ctrl+F previous
-    shift+f: flaps_lever_next
-    ctrl+f: flaps_lever_prev
+    # Flaps lever (discrete positions) - Shift+L extend, Ctrl+L retract, L read
+    l: flaps_lever_read
+    shift+l: flaps_lever_next
+    ctrl+l: flaps_lever_prev
+
+    # Auto-trim switch - Shift+T enable, Ctrl+T disable, T read status
+    t: auto_trim_switch_read
+    shift+t: auto_trim_switch_on
+    ctrl+t: auto_trim_switch_off
 
     # Elevator trim (3 states) - Shift+E next, Ctrl+E previous
     shift+e: elevator_trim_wheel_next

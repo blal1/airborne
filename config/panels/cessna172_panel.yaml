@@ -204,3 +204,12 @@ panels:
         target_plugin: flight_controls
         message_topic: flight_controls.parking_brake
         description: Parking brake lever
+
+      - id: auto_trim_switch
+        name: Auto Trim
+        type: switch
+        states: [OFF, ON]
+        default_index: 0
+        target_plugin: physics_plugin
+        message_topic: flight_controls.auto_trim
+        description: Automatic pitch trim assist
