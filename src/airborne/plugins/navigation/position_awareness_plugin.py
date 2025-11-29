@@ -119,6 +119,7 @@ class PositionAwarenessPlugin(IPlugin):
             self.context.message_queue.subscribe(
                 "input.nearby_features_query", self._on_nearby_features_query
             )
+            self.context.message_queue.subscribe("input.where_am_i", self._on_where_am_i)
 
         # Subscribe components to events
         if self.orientation_audio:
@@ -160,6 +161,7 @@ class PositionAwarenessPlugin(IPlugin):
             self.context.message_queue.unsubscribe(
                 "input.nearby_features_query", self._on_nearby_features_query
             )
+            self.context.message_queue.unsubscribe("input.where_am_i", self._on_where_am_i)
 
         # Unsubscribe components
         if self.orientation_audio:
@@ -184,6 +186,8 @@ class PositionAwarenessPlugin(IPlugin):
             self._on_detailed_position_query(message)
         elif message.topic == "input.nearby_features_query":
             self._on_nearby_features_query(message)
+        elif message.topic == "input.where_am_i":
+            self._on_where_am_i(message)
 
     def _on_position_updated(self, message: Message) -> None:
         """Handle position update message.
@@ -298,6 +302,59 @@ class PositionAwarenessPlugin(IPlugin):
         )
 
         logger.info("Nearby features query")
+
+    def _on_where_am_i(self, _message: Message) -> None:
+        """Handle 'where am I' query (Alt+0).
+
+        Provides comprehensive position announcement including:
+        - Current location (taxiway, runway, parking, etc.)
+        - Nearest runway and distance
+        - Nearby junctions/features
+
+        Args:
+            _message: Where am I query message (unused)
+        """
+        if not self.position_tracker or not self.orientation_audio or not self.context:
+            logger.warning("Where am I query failed: components not initialized")
+            return
+
+        if not self.last_position:
+            logger.warning("Where am I query failed: no position available")
+            return
+
+        # Get current location
+        location_type, location_id = self.position_tracker.get_current_location()
+
+        # Get nearest runway from incursion detector
+        nearest_runway: tuple[str, float] | None = None
+        if self.incursion_detector:
+            runway, distance = self.incursion_detector.get_nearest_runway(self.last_position)
+            if runway:
+                nearest_runway = (runway.runway_id, distance)
+
+        # Get nearby junctions/features
+        nearby_features: list[tuple[str, str, float]] = []
+        junctions = self.position_tracker.get_approaching_junctions(look_ahead_m=100.0)
+        for junction in junctions[:3]:  # Limit to 3 nearest
+            if junction.name != location_id:
+                nearby_features.append(
+                    (junction.junction_type, junction.name, junction.distance_m)
+                )
+
+        # Use orientation audio to announce detailed position
+        self.orientation_audio.announce_detailed_position(
+            location_type=location_type,
+            location_id=location_id,
+            nearest_runway=nearest_runway,
+            nearby_features=nearby_features,
+        )
+
+        logger.info(
+            "Where am I: %s %s, nearest runway: %s",
+            location_type.value,
+            location_id,
+            nearest_runway[0] if nearest_runway else "none",
+        )
 
     def get_status(self) -> dict[str, Any]:
         """Get plugin status.

@@ -408,3 +408,82 @@ class TestPositionAwarenessPlugin:
 
         # Should not crash
         plugin.update(0.016)
+
+    def test_where_am_i_query(
+        self,
+        plugin: PositionAwarenessPlugin,
+        plugin_context: PluginContext,
+        message_queue: MessageQueue,
+    ) -> None:
+        """Test 'where am I' query (Alt+0)."""
+        plugin.initialize(plugin_context)
+
+        # Set up position
+        plugin.last_position = Vector3(-122.0, 10.0, 37.5)
+        plugin.last_heading = 270.0
+
+        # Send where am I query
+        msg = Message(
+            sender="input",
+            recipients=["position_awareness"],
+            topic="input.where_am_i",
+            data={},
+        )
+
+        plugin._on_where_am_i(msg)
+
+        # Should publish TTS message via orientation audio
+        processed = message_queue.process()
+        assert processed >= 1
+
+    def test_where_am_i_without_position(
+        self, plugin: PositionAwarenessPlugin, plugin_context: PluginContext
+    ) -> None:
+        """Test 'where am I' query without position."""
+        plugin.initialize(plugin_context)
+        # Don't set position
+
+        msg = Message(
+            sender="input",
+            recipients=["position_awareness"],
+            topic="input.where_am_i",
+            data={},
+        )
+
+        # Should not crash
+        plugin._on_where_am_i(msg)
+
+    def test_where_am_i_without_components(self, plugin: PositionAwarenessPlugin) -> None:
+        """Test 'where am I' query without initialized components."""
+        # Don't initialize plugin
+        msg = Message(
+            sender="input",
+            recipients=["position_awareness"],
+            topic="input.where_am_i",
+            data={},
+        )
+
+        # Should not crash
+        plugin._on_where_am_i(msg)
+
+    def test_handle_message_where_am_i(
+        self,
+        plugin: PositionAwarenessPlugin,
+        plugin_context: PluginContext,
+        message_queue: MessageQueue,
+    ) -> None:
+        """Test handling where am I message via handle_message."""
+        plugin.initialize(plugin_context)
+        plugin.last_position = Vector3(-122.0, 10.0, 37.5)
+
+        msg = Message(
+            sender="input",
+            recipients=["position_awareness"],
+            topic="input.where_am_i",
+            data={},
+        )
+
+        plugin.handle_message(msg)
+
+        # Should process without error
+        message_queue.process()

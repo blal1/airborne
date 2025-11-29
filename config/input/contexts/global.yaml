@@ -68,6 +68,11 @@ bindings:
     action: read_active_radio
     description: "Read active radio frequency"
 
+  - key: "0"
+    modifiers: [ALT]
+    action: where_am_i
+    description: "Announce current airport position"
+
   # Context switching (global)
   - key: f1
     action: atc_menu
