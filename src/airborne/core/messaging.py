@@ -133,8 +133,10 @@ class MessageTopic:
 
     # UI/Audio
     TTS_SPEAK = "ui.tts.speak"
+    TTS_SPEAK_SPATIAL = "ui.tts.speak_spatial"  # Spatially positioned TTS
     TTS_INTERRUPT = "ui.tts.interrupt"
     AUDIO_PLAY_RAW = "ui.audio.play_raw"  # Play raw audio samples
+    PLAY_SOUND_SPATIAL = "ui.audio.play_spatial"  # Play 3D positioned sound
     PROXIMITY_BEEP = "ui.audio.proximity_beep"  # Proximity beep cue
     SYSTEM_STATE_CHANGED = "system.state_changed"
 

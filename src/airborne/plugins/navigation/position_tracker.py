@@ -289,6 +289,75 @@ class PositionTracker:  # pylint: disable=too-many-instance-attributes
             and self.current_location_id == taxiway_name
         )
 
+    def get_centerline_deviation(self) -> tuple[float, str] | None:
+        """Calculate deviation from current taxiway/runway centerline.
+
+        Determines how far the aircraft is from the centerline of the current
+        taxiway or runway, and which direction (left or right).
+
+        Returns:
+            Tuple of (deviation_meters, direction) where direction is 'left' or 'right',
+            or None if not on a taxiway/runway or cannot determine deviation.
+
+        Examples:
+            >>> deviation = tracker.get_centerline_deviation()
+            >>> if deviation:
+            ...     distance, direction = deviation
+            ...     print(f"Drifting {direction} by {distance:.1f}m")
+        """
+        if self.current_location_type not in (LocationType.TAXIWAY, LocationType.RUNWAY):
+            return None
+
+        if not self.position_history:
+            return None
+
+        current_pos, _ = self.position_history[-1]
+
+        # Find nearest edge (centerline segment)
+        edge_result = self._find_nearest_edge(current_pos)
+        if not edge_result:
+            return None
+
+        edge, distance = edge_result
+
+        # Get nodes for this edge
+        from_node = self.graph.nodes.get(edge.from_node)
+        to_node = self.graph.nodes.get(edge.to_node)
+
+        if not from_node or not to_node:
+            return None
+
+        # Determine if left or right of centerline using cross product
+        side = self._get_side_of_line(current_pos, from_node.position, to_node.position)
+
+        direction = "right" if side > 0 else "left"
+        return (distance, direction)
+
+    @staticmethod
+    def _get_side_of_line(point: Vector3, line_start: Vector3, line_end: Vector3) -> float:
+        """Determine which side of a line a point is on.
+
+        Uses cross product to determine the side. When traveling from line_start
+        to line_end, positive means point is to the right, negative means left.
+
+        Args:
+            point: Point to check
+            line_start: Start of line segment
+            line_end: End of line segment
+
+        Returns:
+            Positive if right of line, negative if left, zero if on line.
+        """
+        # Convert to meters for calculation
+        dx = (line_end.x - line_start.x) * 111000.0
+        dz = (line_end.z - line_start.z) * 111000.0
+        px = (point.x - line_start.x) * 111000.0
+        pz = (point.z - line_start.z) * 111000.0
+
+        # Cross product: (line) × (point - start)
+        # If positive, point is to the right of the line
+        return dx * pz - dz * px
+
     def _find_nearest_node(self, position: Vector3) -> tuple[str | None, float]:
         """Find nearest node to position.
 

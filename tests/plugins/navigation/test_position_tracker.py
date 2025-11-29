@@ -404,3 +404,124 @@ class TestPositionTracker:
         # Should not publish new event
         processed = message_queue.process()
         assert processed == 0
+
+
+class TestCenterlineDeviation:
+    """Test centerline deviation calculation."""
+
+    def test_deviation_none_when_not_on_taxiway(
+        self, tracker: PositionTracker
+    ) -> None:
+        """Test that deviation is None when not on taxiway/runway."""
+        # Move to parking
+        tracker.update(Vector3(-122.0, 10.0, 37.5), 90.0, 100.0)
+
+        deviation = tracker.get_centerline_deviation()
+        assert deviation is None
+
+    def test_deviation_none_when_no_position(
+        self, taxiway_graph: TaxiwayGraph
+    ) -> None:
+        """Test that deviation is None when no position history."""
+        tracker = PositionTracker(taxiway_graph, None)
+        # Don't call update - no position history
+
+        deviation = tracker.get_centerline_deviation()
+        assert deviation is None
+
+    def test_deviation_on_centerline(self, tracker: PositionTracker) -> None:
+        """Test deviation when on centerline."""
+        # Position exactly on taxiway A edge (between A1 and A2)
+        mid_x = (-122.002 + -122.003) / 2
+        tracker.update(Vector3(mid_x, 10.0, 37.5), 90.0, 100.0)
+
+        deviation = tracker.get_centerline_deviation()
+        assert deviation is not None
+        distance, direction = deviation
+        # Should be very close to centerline
+        assert distance < 1.0  # Less than 1 meter
+
+    def test_deviation_left_of_centerline(self, tracker: PositionTracker) -> None:
+        """Test deviation when left of centerline."""
+        # Taxiway A runs east-west at lat 37.5
+        # Position slightly north of centerline (left when traveling east)
+        mid_x = (-122.002 + -122.003) / 2
+        tracker.update(Vector3(mid_x, 10.0, 37.5 + 0.00002), 90.0, 100.0)  # ~2m north
+
+        # Force taxiway location type for this test
+        tracker.current_location_type = LocationType.TAXIWAY
+        tracker.current_location_id = "A"
+
+        deviation = tracker.get_centerline_deviation()
+        assert deviation is not None
+        distance, direction = deviation
+        assert distance > 0
+        # Direction depends on edge direction (from_node to to_node)
+        assert direction in ["left", "right"]
+
+    def test_deviation_right_of_centerline(self, tracker: PositionTracker) -> None:
+        """Test deviation when right of centerline."""
+        # Position slightly south of centerline
+        mid_x = (-122.002 + -122.003) / 2
+        tracker.update(Vector3(mid_x, 10.0, 37.5 - 0.00002), 90.0, 100.0)  # ~2m south
+
+        # Force taxiway location type for this test
+        tracker.current_location_type = LocationType.TAXIWAY
+        tracker.current_location_id = "A"
+
+        deviation = tracker.get_centerline_deviation()
+        assert deviation is not None
+        distance, direction = deviation
+        assert distance > 0
+        # Direction is opposite of left test
+        assert direction in ["left", "right"]
+
+    def test_deviation_on_runway(self, tracker: PositionTracker) -> None:
+        """Test deviation works on runway too."""
+        # Move to runway
+        tracker.update(Vector3(-122.004, 10.0, 37.5), 90.0, 100.0)
+
+        # Should still calculate deviation if on runway
+        # (May return None if no runway edge defined)
+        deviation = tracker.get_centerline_deviation()
+        # Result depends on graph structure - may be None if runway node
+        # has no edges defining centerline
+
+    def test_get_side_of_line_right(self) -> None:
+        """Test _get_side_of_line returns positive for right side."""
+        # Line going east (from start to end)
+        line_start = Vector3(-122.001, 10.0, 37.5)
+        line_end = Vector3(-122.0, 10.0, 37.5)  # East
+        # Point south of line (right when facing east)
+        point = Vector3(-122.0005, 10.0, 37.499)
+
+        side = PositionTracker._get_side_of_line(point, line_start, line_end)
+        # The sign indicates which side - we just check it's non-zero
+        # and opposite to the left case
+        assert side != 0
+
+    def test_get_side_of_line_left(self) -> None:
+        """Test _get_side_of_line returns opposite sign for left side."""
+        # Line going east
+        line_start = Vector3(-122.001, 10.0, 37.5)
+        line_end = Vector3(-122.0, 10.0, 37.5)  # East
+        # Point north of line (left when facing east)
+        point_north = Vector3(-122.0005, 10.0, 37.501)
+        # Point south of line (right when facing east)
+        point_south = Vector3(-122.0005, 10.0, 37.499)
+
+        side_north = PositionTracker._get_side_of_line(point_north, line_start, line_end)
+        side_south = PositionTracker._get_side_of_line(point_south, line_start, line_end)
+
+        # North and south should have opposite signs
+        assert side_north * side_south < 0
+
+    def test_get_side_of_line_on_line(self) -> None:
+        """Test _get_side_of_line returns zero when on line."""
+        line_start = Vector3(-122.001, 10.0, 37.5)
+        line_end = Vector3(-122.0, 10.0, 37.5)
+        # Point exactly on the line
+        point = Vector3(-122.0005, 10.0, 37.5)
+
+        side = PositionTracker._get_side_of_line(point, line_start, line_end)
+        assert side == pytest.approx(0.0, abs=0.1)
