@@ -13,12 +13,13 @@ Typical usage:
 """
 
 import logging
+import math
 import time
 from dataclasses import dataclass
 
 from airborne.core.messaging import Message, MessagePriority, MessageQueue, MessageTopic
 from airborne.physics.vectors import Vector3
-from airborne.plugins.navigation.position_tracker import LocationType
+from airborne.plugins.navigation.position_tracker import ApproachingJunction, LocationType
 
 logger = logging.getLogger(__name__)
 
@@ -235,6 +236,116 @@ class OrientationAudioManager:
         taxiway_phonetic = self._to_phonetic(taxiway_name)
         message = f"Taxiway {taxiway_phonetic} on your {direction}"
         self._announce(message)
+
+    def announce_junction_spatial(
+        self,
+        junction: ApproachingJunction,
+        listener_pos: Vector3,
+        listener_heading: float,
+    ) -> None:
+        """Announce junction with spatial audio (panned TTS).
+
+        The announcement will come from the direction of the junction,
+        providing an intuitive spatial cue for navigation.
+
+        Args:
+            junction: The approaching junction to announce.
+            listener_pos: Current aircraft position.
+            listener_heading: Current aircraft heading in degrees.
+
+        Examples:
+            >>> manager.announce_junction_spatial(junction, position, heading)
+            # If junction is on left, announcement comes from left speaker
+        """
+        # Calculate 3D position relative to listener
+        relative_pos = self._get_relative_position(
+            listener_pos, listener_heading, junction.position
+        )
+
+        # Generate message
+        name_phonetic = self._to_phonetic(junction.name)
+        if junction.junction_type == "runway":
+            message = f"Runway {name_phonetic}"
+        else:
+            message = f"Taxiway {name_phonetic}"
+
+        # Queue spatial TTS
+        self._announce_spatial(message, relative_pos)
+
+    def _get_relative_position(
+        self,
+        listener_pos: Vector3,
+        listener_heading: float,
+        target_pos: Vector3,
+    ) -> Vector3:
+        """Convert world position to listener-relative position.
+
+        Args:
+            listener_pos: Listener's world position.
+            listener_heading: Listener's heading in degrees.
+            target_pos: Target's world position.
+
+        Returns:
+            Position relative to listener (x=right, z=forward).
+        """
+        # Calculate offset in meters
+        # x is longitude (positive = east), z is latitude (positive = north)
+        dx = (target_pos.x - listener_pos.x) * 111000.0  # East-west offset
+        dz = (target_pos.z - listener_pos.z) * 111000.0  # North-south offset
+
+        # Convert to relative position based on heading
+        # Heading 0 = north, 90 = east
+        # We want: forward (+z_rel) = in direction of heading
+        #          right (+x_rel) = 90 degrees clockwise from heading
+        heading_rad = math.radians(listener_heading)
+
+        # For heading 0 (north): forward=north(dz), right=east(dx)
+        # For heading 90 (east): forward=east(dx), right=south(-dz)
+        # Standard rotation: rotate world coords by -heading to get relative
+        cos_h = math.cos(heading_rad)
+        sin_h = math.sin(heading_rad)
+
+        # World to relative rotation (clockwise by heading angle)
+        rel_x = dx * cos_h - dz * sin_h  # Right component
+        rel_z = dx * sin_h + dz * cos_h  # Forward component
+
+        # Normalize distance for audio (cap at reasonable distance)
+        distance = math.sqrt(rel_x * rel_x + rel_z * rel_z)
+        if distance > 0:
+            scale = min(distance, 50.0) / distance  # Cap at 50m for audio
+            rel_x *= scale
+            rel_z *= scale
+
+        return Vector3(rel_x, 0.0, rel_z)
+
+    def _announce_spatial(
+        self, message: str, position: Vector3, priority: MessagePriority = MessagePriority.HIGH
+    ) -> None:
+        """Announce message from a specific 3D position.
+
+        Args:
+            message: Text to announce.
+            position: 3D position relative to listener.
+            priority: Message priority.
+        """
+        if not self.message_queue:
+            logger.warning("Cannot announce spatial: no message queue")
+            return
+
+        tts_message = Message(
+            sender="orientation_audio",
+            recipients=["audio_plugin"],
+            topic=MessageTopic.TTS_SPEAK_SPATIAL,
+            data={
+                "text": message,
+                "voice": "cockpit",
+                "position": {"x": position.x, "y": position.y, "z": position.z},
+            },
+            priority=priority,
+        )
+
+        self.message_queue.publish(tts_message)
+        logger.info("Announced spatial: %s (pos: %.1f, %.1f)", message, position.x, position.z)
 
     def _on_location_changed(self, msg: Message) -> None:
         """Handle location change message from message queue.

@@ -25,6 +25,25 @@ from airborne.airports.taxiway import TaxiwayEdge, TaxiwayGraph, TaxiwayNode
 from airborne.core.messaging import Message, MessagePriority, MessageQueue
 from airborne.physics.vectors import Vector3
 
+
+@dataclass
+class ApproachingJunction:
+    """Information about an approaching junction.
+
+    Attributes:
+        name: Name of the junction (taxiway or runway identifier).
+        junction_type: Type of junction ("taxiway" or "runway").
+        distance_m: Distance to junction in meters.
+        direction: Relative direction ("left", "right", "ahead").
+        position: Position of the junction.
+    """
+
+    name: str
+    junction_type: str  # "taxiway" or "runway"
+    distance_m: float
+    direction: str  # "left", "right", "ahead"
+    position: Vector3
+
 logger = logging.getLogger(__name__)
 
 
@@ -357,6 +376,123 @@ class PositionTracker:  # pylint: disable=too-many-instance-attributes
         # Cross product: (line) × (point - start)
         # If positive, point is to the right of the line
         return dx * pz - dz * px
+
+    def get_approaching_junctions(self, look_ahead_m: float = 100.0) -> list[ApproachingJunction]:
+        """Get junctions ahead of current position.
+
+        Finds taxiway and runway intersections that are ahead of the aircraft
+        within the specified distance.
+
+        Args:
+            look_ahead_m: How far ahead to look for junctions (meters).
+
+        Returns:
+            List of approaching junctions sorted by distance.
+
+        Examples:
+            >>> junctions = tracker.get_approaching_junctions(100.0)
+            >>> for j in junctions:
+            ...     print(f"{j.name} {j.direction} in {j.distance_m:.0f}m")
+        """
+        if not self.position_history:
+            return []
+
+        current_pos, heading = self.position_history[-1]
+        junctions: list[ApproachingJunction] = []
+        seen_names: set[str] = set()
+
+        # Find nodes ahead of us within look_ahead_m
+        for node_id, node in self.graph.nodes.items():
+            distance = self._calculate_distance(current_pos, node.position)
+            if distance > look_ahead_m:
+                continue
+
+            # Check if node is ahead (within ±90° of heading)
+            bearing = self._calculate_bearing(current_pos, node.position)
+            heading_diff = self._normalize_heading_diff(bearing - heading)
+            if abs(heading_diff) > 90:
+                continue
+
+            # Get connected taxiways/runways at this node (excluding current location)
+            edges = self.graph.edges.get(node_id, [])
+            for edge in edges:
+                if not edge.name or edge.name == self.current_location_id:
+                    continue
+                if edge.name in seen_names:
+                    continue
+
+                # Determine junction type
+                junction_type = "runway" if edge.edge_type == "runway" else "taxiway"
+
+                # Determine relative direction
+                direction = self._get_relative_direction(heading, bearing)
+
+                junctions.append(
+                    ApproachingJunction(
+                        name=edge.name,
+                        junction_type=junction_type,
+                        distance_m=distance,
+                        direction=direction,
+                        position=node.position,
+                    )
+                )
+                seen_names.add(edge.name)
+
+        # Sort by distance
+        junctions.sort(key=lambda j: j.distance_m)
+        return junctions
+
+    @staticmethod
+    def _calculate_bearing(from_pos: Vector3, to_pos: Vector3) -> float:
+        """Calculate bearing from one position to another.
+
+        Args:
+            from_pos: Starting position
+            to_pos: Target position
+
+        Returns:
+            Bearing in degrees (0-360)
+        """
+        dx = (to_pos.x - from_pos.x) * 111000.0
+        dz = (to_pos.z - from_pos.z) * 111000.0
+        bearing = math.degrees(math.atan2(dx, dz))
+        return (bearing + 360) % 360
+
+    @staticmethod
+    def _normalize_heading_diff(diff: float) -> float:
+        """Normalize heading difference to -180 to +180 range.
+
+        Args:
+            diff: Raw heading difference
+
+        Returns:
+            Normalized difference (-180 to +180)
+        """
+        while diff > 180:
+            diff -= 360
+        while diff < -180:
+            diff += 360
+        return diff
+
+    @staticmethod
+    def _get_relative_direction(heading: float, bearing: float) -> str:
+        """Determine relative direction (left/right/ahead) based on heading and bearing.
+
+        Args:
+            heading: Aircraft heading in degrees
+            bearing: Bearing to target in degrees
+
+        Returns:
+            "left", "right", or "ahead"
+        """
+        diff = PositionTracker._normalize_heading_diff(bearing - heading)
+
+        if abs(diff) < 30:
+            return "ahead"
+        elif diff < 0:
+            return "left"
+        else:
+            return "right"
 
     def _find_nearest_node(self, position: Vector3) -> tuple[str | None, float]:
         """Find nearest node to position.

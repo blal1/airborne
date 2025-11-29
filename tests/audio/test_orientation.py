@@ -5,9 +5,9 @@ import time
 import pytest
 
 from airborne.audio.orientation import OrientationAudioManager, ProximityAlert
-from airborne.core.messaging import Message, MessageQueue
+from airborne.core.messaging import Message, MessageQueue, MessageTopic
 from airborne.physics.vectors import Vector3
-from airborne.plugins.navigation.position_tracker import LocationType
+from airborne.plugins.navigation.position_tracker import ApproachingJunction, LocationType
 
 
 @pytest.fixture
@@ -383,3 +383,124 @@ class TestOrientationAudioManager:
         # Reached 50m threshold
         manager.handle_approaching_feature("runway", "31", 50.0)
         assert message_queue.process() == 1
+
+
+class TestSpatialAnnouncements:
+    """Test spatial (panned) announcements."""
+
+    def test_announce_junction_spatial_taxiway(
+        self, manager: OrientationAudioManager, message_queue: MessageQueue
+    ) -> None:
+        """Test spatial taxiway junction announcement."""
+        junction = ApproachingJunction(
+            name="B",
+            junction_type="taxiway",
+            distance_m=50.0,
+            direction="left",
+            position=Vector3(-122.001, 10.0, 37.5),
+        )
+        listener_pos = Vector3(-122.0, 10.0, 37.5)
+        listener_heading = 0.0  # Facing north
+
+        manager.announce_junction_spatial(junction, listener_pos, listener_heading)
+
+        # Should publish spatial TTS message
+        processed = message_queue.process()
+        assert processed == 1
+
+    def test_announce_junction_spatial_runway(
+        self, manager: OrientationAudioManager, message_queue: MessageQueue
+    ) -> None:
+        """Test spatial runway junction announcement."""
+        junction = ApproachingJunction(
+            name="31",
+            junction_type="runway",
+            distance_m=75.0,
+            direction="ahead",
+            position=Vector3(-122.0, 10.0, 37.51),
+        )
+        listener_pos = Vector3(-122.0, 10.0, 37.5)
+        listener_heading = 0.0
+
+        manager.announce_junction_spatial(junction, listener_pos, listener_heading)
+
+        processed = message_queue.process()
+        assert processed == 1
+
+    def test_relative_position_ahead(self, manager: OrientationAudioManager) -> None:
+        """Test relative position calculation for ahead direction."""
+        listener_pos = Vector3(-122.0, 10.0, 37.5)
+        listener_heading = 0.0  # Facing north
+        target_pos = Vector3(-122.0, 10.0, 37.501)  # North of listener
+
+        rel_pos = manager._get_relative_position(listener_pos, listener_heading, target_pos)
+
+        # Target is ahead, so z should be positive, x should be ~0
+        assert rel_pos.z > 0
+        assert abs(rel_pos.x) < 1.0
+
+    def test_relative_position_left(self, manager: OrientationAudioManager) -> None:
+        """Test relative position calculation for left direction."""
+        listener_pos = Vector3(-122.0, 10.0, 37.5)
+        listener_heading = 0.0  # Facing north
+        target_pos = Vector3(-122.001, 10.0, 37.5)  # West of listener
+
+        rel_pos = manager._get_relative_position(listener_pos, listener_heading, target_pos)
+
+        # Target is to the left (west), so x should be negative
+        assert rel_pos.x < 0
+
+    def test_relative_position_right(self, manager: OrientationAudioManager) -> None:
+        """Test relative position calculation for right direction."""
+        listener_pos = Vector3(-122.0, 10.0, 37.5)
+        listener_heading = 0.0  # Facing north
+        target_pos = Vector3(-121.999, 10.0, 37.5)  # East of listener
+
+        rel_pos = manager._get_relative_position(listener_pos, listener_heading, target_pos)
+
+        # Target is to the right (east), so x should be positive
+        assert rel_pos.x > 0
+
+    def test_relative_position_rotated_heading(self, manager: OrientationAudioManager) -> None:
+        """Test relative position with rotated heading."""
+        listener_pos = Vector3(-122.0, 10.0, 37.5)
+        listener_heading = 90.0  # Facing east
+        target_pos = Vector3(-122.0, 10.0, 37.501)  # North of listener
+
+        rel_pos = manager._get_relative_position(listener_pos, listener_heading, target_pos)
+
+        # Listener faces east, north is now to the left
+        assert rel_pos.x < 0
+
+    def test_relative_position_capped_distance(self, manager: OrientationAudioManager) -> None:
+        """Test that relative position distance is capped at 50m."""
+        listener_pos = Vector3(-122.0, 10.0, 37.5)
+        listener_heading = 0.0
+        # Target 1km away (0.01 degrees ≈ 1110m)
+        target_pos = Vector3(-122.0, 10.0, 37.51)  # ~1110m north
+
+        rel_pos = manager._get_relative_position(listener_pos, listener_heading, target_pos)
+
+        # Distance should be capped
+        import math
+        distance = math.sqrt(rel_pos.x**2 + rel_pos.z**2)
+        assert distance <= 50.1  # Allow small floating point error
+
+    def test_announce_spatial_without_queue(self) -> None:
+        """Test spatial announcement without message queue."""
+        manager = OrientationAudioManager(None)
+
+        junction = ApproachingJunction(
+            name="A",
+            junction_type="taxiway",
+            distance_m=50.0,
+            direction="left",
+            position=Vector3(-122.0, 10.0, 37.5),
+        )
+
+        # Should not crash
+        manager.announce_junction_spatial(
+            junction,
+            Vector3(-122.0, 10.0, 37.5),
+            0.0
+        )
