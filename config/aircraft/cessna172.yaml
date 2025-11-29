@@ -14,12 +14,40 @@ aircraft:
     weight_lbs: 2450.0            # Empty weight + pilot + fuel
     max_thrust_lbs: 180.0         # Maximum thrust from engine (HP converted) - DEPRECATED, using propeller model now
     drag_coefficient: 0.035       # Cd0 - parasite drag (realistic for C172 with fixed gear)
-    lift_coefficient_slope: 0.09  # Cl_alpha - lift curve slope
+    lift_coefficient_slope: 0.09  # Cl_alpha - lift curve slope (legacy, use cl_alpha instead)
+
+    # Aerodynamic coefficients (NACA 2412 airfoil characteristics)
+    cl_0: 0.30                    # Zero-AOA lift coefficient (due to NACA 2412 camber)
+    cl_alpha: 0.105               # Lift curve slope per degree AOA (finite wing corrected)
+    cl_max: 1.6                   # Maximum CL clean configuration (at stall)
+    stall_aoa_deg: 17.0           # Stall angle of attack in degrees (clean)
+    cl_flap_delta: 0.5            # CL increase per unit flap deflection (0-1)
+    cl_max_flaps: 2.1             # Maximum CL with full flaps (40°)
 
     # Stability and damping coefficients (for improved keyboard control)
     pitch_damping_coefficient: -25.0  # Cmq - pitch rate damping (increased from -18 for better altitude hold)
     roll_damping_coefficient: -8.0    # Clp - roll rate damping
     yaw_damping_coefficient: -6.0     # Cnr - yaw rate damping
+
+  # Flap configuration (aircraft-specific discrete positions)
+  # C172 has 4 flap positions: UP (0°), 10°, 20°, 30° (some models have 40°)
+  flaps:
+    positions:
+      - name: "UP"
+        degrees: 0
+        normalized: 0.0
+      - name: "10"
+        degrees: 10
+        normalized: 0.33
+      - name: "20"
+        degrees: 20
+        normalized: 0.67
+      - name: "FULL"
+        degrees: 30
+        normalized: 1.0
+    default_position: 0
+    max_speed_kts: 110        # Vfe - max speed with flaps extended
+    transition_time_sec: 3.0  # Time to move from fully retracted to fully extended
 
   # Propeller configuration
   propeller:
