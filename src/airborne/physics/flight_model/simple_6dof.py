@@ -73,6 +73,15 @@ class Simple6DOFFlightModel(IFlightModel):
         self.lift_coefficient_slope = 0.1  # CL per degree AOA
         self.max_fuel = 100.0  # kg
 
+        # Aerodynamic coefficients (aircraft-specific, set in initialize())
+        # These values determine lift characteristics and should come from aircraft config
+        self.cl_0 = 0.30  # Zero-AOA lift coefficient (due to wing camber)
+        self.cl_alpha = 0.105  # Lift curve slope per degree AOA
+        self.cl_max = 1.6  # Maximum lift coefficient (clean configuration)
+        self.stall_aoa_deg = 17.0  # Stall angle of attack in degrees
+        self.cl_flap_delta = 0.5  # CL increase per unit flap deflection (0-1)
+        self.cl_max_flaps = 2.1  # Maximum CL with full flaps
+
         # Stability and damping coefficients (configurable)
         self.pitch_damping_coefficient = (
             -25.0
@@ -146,6 +155,15 @@ class Simple6DOFFlightModel(IFlightModel):
         self.pitch_damping_coefficient = config.get("pitch_damping_coefficient", -25.0)
         self.roll_damping_coefficient = config.get("roll_damping_coefficient", -8.0)
         self.yaw_damping_coefficient = config.get("yaw_damping_coefficient", -6.0)
+
+        # Aerodynamic coefficients (aircraft-specific)
+        # These determine lift characteristics and vary by airfoil, wing design, etc.
+        self.cl_0 = config.get("cl_0", 0.30)  # Zero-AOA lift (NACA 2412 ≈ 0.25-0.30)
+        self.cl_alpha = config.get("cl_alpha", 0.105)  # Lift slope per degree (typical 0.09-0.11)
+        self.cl_max = config.get("cl_max", 1.6)  # Max CL clean config
+        self.stall_aoa_deg = config.get("stall_aoa_deg", 17.0)  # Stall AOA in degrees
+        self.cl_flap_delta = config.get("cl_flap_delta", 0.5)  # CL increase per unit flap (0-1)
+        self.cl_max_flaps = config.get("cl_max_flaps", 2.1)  # Max CL with full flaps
 
         # Initialize state
         self.state.mass = self.empty_mass + self.max_fuel
@@ -257,48 +275,54 @@ class Simple6DOFFlightModel(IFlightModel):
 
         return angle_of_attack
 
-    def _calculate_lift_coefficient(self, angle_of_attack_rad: float) -> float:
-        """Calculate lift coefficient with realistic stall behavior.
+    def _calculate_lift_coefficient(
+        self, angle_of_attack_rad: float, flap_position: float = 0.0
+    ) -> float:
+        """Calculate lift coefficient with realistic stall behavior and flap effects.
 
-        Uses a realistic lift curve for Cessna 172:
+        Uses configurable aerodynamic parameters that vary by aircraft:
         - Linear region: CL increases with AOA up to stall angle
         - Stall region: CL drops dramatically above stall AOA
         - Post-stall: Reduced lift with exponential decay
+        - Flaps: Increase CL_0 and reduce stall AOA
 
         Args:
             angle_of_attack_rad: Angle of attack in radians
+            flap_position: Flap deflection (0.0 = retracted, 1.0 = fully extended)
 
         Returns:
             Lift coefficient (dimensionless)
 
         Note:
-            Cessna 172 stalls at approximately 16-18° AOA with max CL ≈ 1.6
+            Parameters come from aircraft config (self.cl_0, self.cl_alpha, etc.)
+            For C172: stalls at ~17° AOA clean, ~15° with full flaps, max CL ≈ 1.6-2.1
         """
         aoa_deg = angle_of_attack_rad * RADIANS_TO_DEGREES
 
-        # Cessna 172 aerodynamic parameters
-        CL_0 = 0.2  # Zero-lift coefficient (due to camber)
-        CL_alpha = 0.09  # Lift curve slope (per degree)
-        stall_aoa_deg = 17.0  # Stall angle of attack (degrees)
-        max_cl = 1.6  # Maximum CL at stall
+        # Use aircraft-specific aerodynamic parameters (set in initialize())
+        # Flaps increase CL_0 and max CL, but reduce stall AOA
+        cl_0_effective = self.cl_0 + self.cl_flap_delta * flap_position
+        max_cl_effective = self.cl_max + (self.cl_max_flaps - self.cl_max) * flap_position
+        # Flaps reduce stall AOA (about 2° reduction at full flaps)
+        stall_aoa_effective = self.stall_aoa_deg - 2.0 * flap_position
 
-        if aoa_deg < stall_aoa_deg:
+        if aoa_deg < stall_aoa_effective:
             # Pre-stall linear region
-            cl = CL_0 + CL_alpha * aoa_deg
+            cl = cl_0_effective + self.cl_alpha * aoa_deg
             # Cap at max CL to avoid overshoot
-            cl = min(cl, max_cl)
+            cl = min(cl, max_cl_effective)
         else:
             # Post-stall: CL drops with exponential decay
-            stall_excess = aoa_deg - stall_aoa_deg
+            stall_excess = aoa_deg - stall_aoa_effective
             # Exponential decay model: CL drops quickly after stall
-            cl = max_cl * math.exp(-0.05 * stall_excess)
+            cl = max_cl_effective * math.exp(-0.05 * stall_excess)
             # Floor at minimum post-stall CL
             cl = max(cl, 0.4)
 
         # Handle negative AOA (inverted flight / negative CL)
         if aoa_deg < -5.0:
             # Symmetric airfoil behavior at negative AOA
-            cl = CL_0 + CL_alpha * aoa_deg
+            cl = cl_0_effective + self.cl_alpha * aoa_deg
             cl = max(cl, -1.0)  # Floor at -1.0
 
         return cl
@@ -363,8 +387,8 @@ class Simple6DOFFlightModel(IFlightModel):
         # Lift depends on angle of attack with realistic stall behavior
         angle_of_attack = self._calculate_angle_of_attack()  # radians
 
-        # Calculate lift coefficient using realistic stall model
-        cl = self._calculate_lift_coefficient(angle_of_attack)
+        # Calculate lift coefficient using realistic stall model with flap effects
+        cl = self._calculate_lift_coefficient(angle_of_attack, inputs.flaps)
         lift_magnitude = q * self.wing_area * cl
 
         # DEBUG: Log lift calculation details every 60 frames (~1 second)
@@ -473,12 +497,20 @@ class Simple6DOFFlightModel(IFlightModel):
         - Control surface inputs (elevator, aileron, rudder)
         - Trim effects (aerodynamic moments from trim tabs)
         - Aerodynamic stability (tendency to return to trimmed condition)
+        - Ground constraints (prevents nose-over on ground)
 
         Args:
             dt: Time step.
             inputs: Control inputs.
         """
         airspeed = self.state.get_airspeed()
+
+        # Ground pitch constraints for tricycle gear aircraft
+        # On ground, pitch is constrained by landing gear geometry
+        # Cessna 172: nose gear prevents pitch below ~-5°, tail strike at ~+15°
+        GROUND_PITCH_MIN_RAD = -5.0 * DEGREES_TO_RADIANS  # Nose gear limit
+        GROUND_PITCH_MAX_RAD = 15.0 * DEGREES_TO_RADIANS  # Tail strike limit
+        GROUND_PITCH_NEUTRAL_RAD = 2.0 * DEGREES_TO_RADIANS  # Resting pitch on ground
 
         # === PITCH CONTROL (Moment-Based Physics) ===
 
@@ -603,6 +635,36 @@ class Simple6DOFFlightModel(IFlightModel):
         self.state.rotation.x = self._normalize_angle(self.state.rotation.x)
         self.state.rotation.y = self._normalize_angle(self.state.rotation.y)
         self.state.rotation.z = self._normalize_angle(self.state.rotation.z)
+
+        # === GROUND PITCH CONSTRAINTS ===
+        # When on ground, constrain pitch to prevent unrealistic nose-over
+        # The landing gear geometry limits how far the aircraft can pitch
+        if self.state.on_ground:
+            current_pitch = self.state.rotation.x
+
+            # Clamp pitch to ground limits
+            if current_pitch < GROUND_PITCH_MIN_RAD:
+                self.state.rotation.x = GROUND_PITCH_MIN_RAD
+                # Stop pitch rate if trying to pitch further down
+                if self.state.angular_velocity.x < 0:
+                    self.state.angular_velocity.x = 0.0
+            elif current_pitch > GROUND_PITCH_MAX_RAD:
+                self.state.rotation.x = GROUND_PITCH_MAX_RAD
+                # Stop pitch rate if trying to pitch further up
+                if self.state.angular_velocity.x > 0:
+                    self.state.angular_velocity.x = 0.0
+
+            # Also constrain roll on ground (wings level, max ~5° due to gear)
+            GROUND_ROLL_MAX_RAD = 5.0 * DEGREES_TO_RADIANS
+            if abs(self.state.rotation.y) > GROUND_ROLL_MAX_RAD:
+                self.state.rotation.y = (
+                    GROUND_ROLL_MAX_RAD if self.state.rotation.y > 0 else -GROUND_ROLL_MAX_RAD
+                )
+                # Stop roll rate
+                if (self.state.rotation.y > 0 and self.state.angular_velocity.y > 0) or (
+                    self.state.rotation.y < 0 and self.state.angular_velocity.y < 0
+                ):
+                    self.state.angular_velocity.y = 0.0
 
         self._trig_dirty = True
 
