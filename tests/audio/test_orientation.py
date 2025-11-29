@@ -7,7 +7,11 @@ import pytest
 from airborne.audio.orientation import OrientationAudioManager, ProximityAlert
 from airborne.core.messaging import Message, MessageQueue, MessageTopic
 from airborne.physics.vectors import Vector3
-from airborne.plugins.navigation.position_tracker import ApproachingJunction, LocationType
+from airborne.plugins.navigation.position_tracker import (
+    ApproachingJunction,
+    HoldShortPoint,
+    LocationType,
+)
 
 
 @pytest.fixture
@@ -504,3 +508,69 @@ class TestSpatialAnnouncements:
             Vector3(-122.0, 10.0, 37.5),
             0.0
         )
+
+
+class TestHoldShortAnnouncements:
+    """Test hold short warning announcements."""
+
+    def test_announce_hold_short_normal(
+        self, manager: OrientationAudioManager, message_queue: MessageQueue
+    ) -> None:
+        """Test normal hold short announcement (50m distance)."""
+        hold_short = HoldShortPoint(
+            runway_id="31",
+            position=Vector3(-122.0, 10.0, 37.5),
+            taxiway_name="A",
+            distance_m=50.0,
+        )
+
+        manager.announce_hold_short(hold_short)
+
+        processed = message_queue.process()
+        assert processed == 1
+
+    def test_announce_hold_short_high(
+        self, manager: OrientationAudioManager, message_queue: MessageQueue
+    ) -> None:
+        """Test high urgency hold short announcement (20m distance)."""
+        hold_short = HoldShortPoint(
+            runway_id="27L",
+            position=Vector3(-122.0, 10.0, 37.5),
+            taxiway_name="B",
+            distance_m=20.0,
+        )
+
+        manager.announce_hold_short(hold_short)
+
+        processed = message_queue.process()
+        assert processed == 1
+
+    def test_announce_hold_short_critical(
+        self, manager: OrientationAudioManager, message_queue: MessageQueue
+    ) -> None:
+        """Test critical hold short announcement (10m distance)."""
+        hold_short = HoldShortPoint(
+            runway_id="09",
+            position=Vector3(-122.0, 10.0, 37.5),
+            taxiway_name="C",
+            distance_m=10.0,
+        )
+
+        manager.announce_hold_short(hold_short)
+
+        processed = message_queue.process()
+        assert processed == 1
+
+    def test_hold_short_without_queue(self) -> None:
+        """Test hold short announcement without message queue."""
+        manager = OrientationAudioManager(None)
+
+        hold_short = HoldShortPoint(
+            runway_id="31",
+            position=Vector3(-122.0, 10.0, 37.5),
+            taxiway_name="A",
+            distance_m=25.0,
+        )
+
+        # Should not crash
+        manager.announce_hold_short(hold_short)

@@ -19,7 +19,11 @@ from dataclasses import dataclass
 
 from airborne.core.messaging import Message, MessagePriority, MessageQueue, MessageTopic
 from airborne.physics.vectors import Vector3
-from airborne.plugins.navigation.position_tracker import ApproachingJunction, LocationType
+from airborne.plugins.navigation.position_tracker import (
+    ApproachingJunction,
+    HoldShortPoint,
+    LocationType,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -346,6 +350,36 @@ class OrientationAudioManager:
 
         self.message_queue.publish(tts_message)
         logger.info("Announced spatial: %s (pos: %.1f, %.1f)", message, position.x, position.z)
+
+    def announce_hold_short(self, hold_short: HoldShortPoint) -> None:
+        """Announce hold short warning.
+
+        Announces at different urgency levels based on distance:
+        - 50m: Normal awareness
+        - 20m: High urgency
+        - 10m: Critical warning
+
+        Args:
+            hold_short: The hold short point information.
+
+        Examples:
+            >>> manager.announce_hold_short(hold_short_point)
+            # "Hold short runway 31" at critical priority
+        """
+        runway_phonetic = self._to_phonetic(hold_short.runway_id)
+        distance = hold_short.distance_m
+
+        if distance <= 10:
+            message = f"Hold short runway {runway_phonetic}"
+            priority = MessagePriority.CRITICAL
+        elif distance <= 20:
+            message = f"Approaching hold short, runway {runway_phonetic}"
+            priority = MessagePriority.HIGH
+        else:  # 50m
+            message = f"Hold short runway {runway_phonetic} ahead"
+            priority = MessagePriority.NORMAL
+
+        self._announce(message, priority)
 
     def _on_location_changed(self, msg: Message) -> None:
         """Handle location change message from message queue.

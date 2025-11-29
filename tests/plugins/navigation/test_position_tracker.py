@@ -7,6 +7,7 @@ from airborne.core.messaging import MessageQueue
 from airborne.physics.vectors import Vector3
 from airborne.plugins.navigation.position_tracker import (
     ApproachingJunction,
+    HoldShortPoint,
     LocationEvent,
     LocationType,
     PositionTracker,
@@ -639,3 +640,129 @@ class TestApproachingJunctions:
         # No wrap needed
         assert PositionTracker._normalize_heading_diff(45) == pytest.approx(45, abs=0.1)
         assert PositionTracker._normalize_heading_diff(-45) == pytest.approx(-45, abs=0.1)
+
+
+class TestHoldShortDetection:
+    """Test hold short point detection."""
+
+    def test_hold_short_point_dataclass(self) -> None:
+        """Test HoldShortPoint dataclass."""
+        hold_short = HoldShortPoint(
+            runway_id="31",
+            position=Vector3(-122.0, 10.0, 37.5),
+            taxiway_name="A",
+            distance_m=25.0,
+        )
+
+        assert hold_short.runway_id == "31"
+        assert hold_short.taxiway_name == "A"
+        assert hold_short.distance_m == 25.0
+
+    def test_no_hold_short_when_no_position(
+        self, taxiway_graph: TaxiwayGraph
+    ) -> None:
+        """Test no hold short returned when no position history."""
+        tracker = PositionTracker(taxiway_graph, None)
+        # Don't call update - no position history
+
+        hold_short = tracker.get_approaching_hold_short()
+        assert hold_short is None
+
+    def test_hold_short_detection_basic(self) -> None:
+        """Test basic hold short detection with mock graph."""
+        # Create a graph with a hold short node
+        graph = TaxiwayGraph()
+
+        # Add taxiway nodes
+        graph.add_node(
+            node_id="A1",
+            position=Vector3(-122.002, 10.0, 37.5),
+            node_type="intersection",
+            name="A1",
+        )
+
+        # Add hold short node (need to set attributes manually)
+        graph.add_node(
+            node_id="HS1",
+            position=Vector3(-122.003, 10.0, 37.5),
+            node_type="hold_short",
+            name="HS1",
+        )
+        # Set hold short attributes
+        hs_node = graph.nodes["HS1"]
+        hs_node.is_hold_short = True
+        hs_node.on_runway = "31"
+
+        # Add edge
+        graph.add_edge(from_node="A1", to_node="HS1", edge_type="taxiway", name="A")
+
+        tracker = PositionTracker(graph, None)
+
+        # Position heading towards hold short
+        tracker.update(Vector3(-122.002, 10.0, 37.5), 270.0, 100.0)  # Heading west
+
+        hold_short = tracker.get_approaching_hold_short(500.0)
+
+        assert hold_short is not None
+        assert hold_short.runway_id == "31"
+
+    def test_no_hold_short_behind(self) -> None:
+        """Test that hold short behind aircraft is not detected."""
+        graph = TaxiwayGraph()
+
+        graph.add_node(
+            node_id="A1",
+            position=Vector3(-122.002, 10.0, 37.5),
+            node_type="intersection",
+            name="A1",
+        )
+
+        graph.add_node(
+            node_id="HS1",
+            position=Vector3(-122.003, 10.0, 37.5),  # West of A1
+            node_type="hold_short",
+            name="HS1",
+        )
+        graph.nodes["HS1"].is_hold_short = True
+        graph.nodes["HS1"].on_runway = "31"
+
+        graph.add_edge(from_node="A1", to_node="HS1", edge_type="taxiway", name="A")
+
+        tracker = PositionTracker(graph, None)
+
+        # Position heading east (away from hold short)
+        tracker.update(Vector3(-122.002, 10.0, 37.5), 90.0, 100.0)
+
+        hold_short = tracker.get_approaching_hold_short(500.0)
+        assert hold_short is None
+
+    def test_hold_short_taxiway_lookup(self) -> None:
+        """Test that hold short correctly identifies taxiway."""
+        graph = TaxiwayGraph()
+
+        graph.add_node(
+            node_id="B1",
+            position=Vector3(-122.002, 10.0, 37.5),
+            node_type="intersection",
+            name="B1",
+        )
+
+        graph.add_node(
+            node_id="HS2",
+            position=Vector3(-122.003, 10.0, 37.5),
+            node_type="hold_short",
+            name="HS2",
+        )
+        graph.nodes["HS2"].is_hold_short = True
+        graph.nodes["HS2"].on_runway = "27L"
+
+        graph.add_edge(from_node="B1", to_node="HS2", edge_type="taxiway", name="B")
+
+        tracker = PositionTracker(graph, None)
+        tracker.update(Vector3(-122.002, 10.0, 37.5), 270.0, 100.0)
+
+        hold_short = tracker.get_approaching_hold_short(500.0)
+
+        assert hold_short is not None
+        assert hold_short.runway_id == "27L"
+        assert hold_short.taxiway_name == "B"

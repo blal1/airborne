@@ -44,6 +44,23 @@ class ApproachingJunction:
     direction: str  # "left", "right", "ahead"
     position: Vector3
 
+
+@dataclass
+class HoldShortPoint:
+    """Information about a hold short point.
+
+    Attributes:
+        runway_id: The runway being protected.
+        position: Position of the hold short line.
+        taxiway_name: The taxiway this hold short is on.
+        distance_m: Current distance to the hold short point in meters.
+    """
+
+    runway_id: str
+    position: Vector3
+    taxiway_name: str
+    distance_m: float
+
 logger = logging.getLogger(__name__)
 
 
@@ -493,6 +510,83 @@ class PositionTracker:  # pylint: disable=too-many-instance-attributes
             return "left"
         else:
             return "right"
+
+    def get_approaching_hold_short(self, look_ahead_m: float = 100.0) -> HoldShortPoint | None:
+        """Check if approaching a hold short point.
+
+        Finds hold short nodes that are marked in the taxiway graph and
+        returns the nearest one that is ahead of the aircraft.
+
+        Args:
+            look_ahead_m: How far ahead to look for hold short points (meters).
+
+        Returns:
+            HoldShortPoint if approaching one, None otherwise.
+
+        Examples:
+            >>> hold_short = tracker.get_approaching_hold_short()
+            >>> if hold_short:
+            ...     print(f"Hold short runway {hold_short.runway_id} in {hold_short.distance_m:.0f}m")
+        """
+        if not self.position_history:
+            return None
+
+        current_pos, heading = self.position_history[-1]
+
+        # Find hold short nodes ahead of us
+        for node_id, node in self.graph.nodes.items():
+            # Check if this is a hold short node
+            if not getattr(node, "is_hold_short", False):
+                continue
+
+            runway_id = getattr(node, "on_runway", "")
+            if not runway_id:
+                continue
+
+            distance = self._calculate_distance(current_pos, node.position)
+            if distance > look_ahead_m:
+                continue
+
+            # Check if node is ahead (within ±60° of heading)
+            bearing = self._calculate_bearing(current_pos, node.position)
+            heading_diff = self._normalize_heading_diff(bearing - heading)
+            if abs(heading_diff) > 60:
+                continue
+
+            # Find which taxiway this is on
+            taxiway_name = self._find_taxiway_for_hold_short(node_id)
+
+            return HoldShortPoint(
+                runway_id=runway_id,
+                position=node.position,
+                taxiway_name=taxiway_name,
+                distance_m=distance,
+            )
+
+        return None
+
+    def _find_taxiway_for_hold_short(self, node_id: str) -> str:
+        """Find which taxiway a hold short node is on.
+
+        Args:
+            node_id: Node ID of the hold short point.
+
+        Returns:
+            Taxiway name or empty string if not found.
+        """
+        # Check edges originating from this node
+        edges = self.graph.edges.get(node_id, [])
+        for edge in edges:
+            if edge.name and edge.edge_type == "taxiway":
+                return edge.name
+
+        # Also check edges that terminate at this node
+        for from_node, edge_list in self.graph.edges.items():
+            for edge in edge_list:
+                if edge.to_node == node_id and edge.name and edge.edge_type == "taxiway":
+                    return edge.name
+
+        return ""
 
     def _find_nearest_node(self, position: Vector3) -> tuple[str | None, float]:
         """Find nearest node to position.
