@@ -186,9 +186,9 @@ aircraft:
       button: "assets/sounds/aircraft/click_button.mp3"
       knob: "assets/sounds/aircraft/click_knob.mp3"
     system_sounds:
-      battery_on: "assets/sounds/aircraft/batteryon1.mp3"
-      battery_off: "assets/sounds/aircraft/batteryoff1.mp3"
-      battery_loop: "assets/sounds/aircraft/batteryloop1.mp3"
+      battery_on: "assets/sounds/aircraft/batteryon1.wav"
+      battery_off: "assets/sounds/aircraft/batteryoff1.wav"
+      battery_loop: "assets/sounds/aircraft/batteryloop1.wav"
       fuel_pump: "assets/sounds/aircraft/fuelpump1.mp3"
 
   # Weight and balance configuration
