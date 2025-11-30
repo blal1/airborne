@@ -175,11 +175,74 @@ class TTSCacheService:
         self._current_context = "menu"
         self._voice_configs: dict[str, dict[str, Any]] = {}  # voice -> {rate, voice_name}
 
+        # Load user voice settings from saved settings file
+        self._user_voice_settings: dict[str, dict[str, Any]] = {}
+        self._load_user_voice_settings()
+
         logger.info(
             "TTSCacheService initialized: %s:%d (multi-voice)",
             self.host,
             self.port,
         )
+
+    def _load_user_voice_settings(self) -> None:
+        """Load user's saved TTS voice settings from settings file.
+
+        Loads voice preferences (voice_name, rate) for each voice category
+        from the user's settings.json file. This is used to apply user
+        preferences when generating TTS without explicit voice parameters.
+        """
+        try:
+            from airborne.settings import get_tts_settings
+
+            tts_settings = get_tts_settings()
+
+            # Map voice categories to user settings categories
+            # Some voice types don't have direct user settings,
+            # so we use related categories as fallbacks
+            category_mapping = {
+                "cockpit": "cockpit",
+                "pilot": "cockpit",
+                "tower": "tower",
+                "ground": "ground",
+                "approach": "approach",
+                "atis": "atis",
+                "steward": "ui",
+                "refuel": "ground",
+                "tug": "ground",
+                "boarding": "ground",
+                "ops": "ground",
+                "instructor": "cockpit",
+                "atc": "atc",
+                "ui": "ui",
+            }
+
+            for voice_type, settings_category in category_mapping.items():
+                user_voice = tts_settings.get_voice(settings_category)
+                self._user_voice_settings[voice_type] = {
+                    "voice_name": user_voice.voice_name,
+                    "rate": user_voice.rate,
+                }
+
+            logger.info(
+                "Loaded user TTS settings for %d voice categories",
+                len(self._user_voice_settings),
+            )
+
+        except Exception as e:
+            logger.warning("Failed to load user voice settings: %s", e)
+            # Continue without user settings - will use defaults
+
+    def _get_user_voice_settings(self, voice: str) -> dict[str, Any] | None:
+        """Get user's saved voice settings for a voice category.
+
+        Args:
+            voice: Voice category name (e.g., "cockpit", "tower").
+
+        Returns:
+            Dict with "voice_name" and "rate" keys, or None if not found.
+        """
+        return self._user_voice_settings.get(voice)
 
     def _get_cache(
         self, voice: str, rate: int, voice_name: str | None, language: str | None = None
@@ -261,8 +324,23 @@ class TTSCacheService:
         """Handle generate request with voice-specific caching."""
         start_time = time.time()
 
+        # If voice_name not provided, look up user's saved settings
+        rate = request.rate
+        voice_name = request.voice_name
+        if voice_name is None:
+            user_settings = self._get_user_voice_settings(request.voice)
+            if user_settings:
+                voice_name = user_settings.get("voice_name")
+                rate = user_settings.get("rate", rate)
+                logger.debug(
+                    "Using user settings for voice '%s': %s @ %d wpm",
+                    request.voice,
+                    voice_name,
+                    rate,
+                )
+
         # Get cache for this voice configuration
-        cache = self._get_cache(request.voice, request.rate, request.voice_name, request.language)
+        cache = self._get_cache(request.voice, rate, voice_name, request.language)
 
         # Remove from background queue if present
         queue_key = f"{request.voice}:{request.text}"
@@ -289,8 +367,8 @@ class TTSCacheService:
             (
                 request.text,
                 request.voice,
-                request.rate,
-                request.voice_name,
+                rate,  # Use resolved rate (may be from user settings)
+                voice_name,  # Use resolved voice_name (may be from user settings)
                 request.language,
                 result_future,
             )
