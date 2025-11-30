@@ -51,12 +51,17 @@ class SoundManager:
         self._engine_start_source_id: int | None = None  # For engine start sound
         self._wind_source_id: int | None = None
         self._battery_loop_source_id: int | None = None
-        self._battery_on_source_id: int | None = None  # For batteryon1.mp3 one-shot
+        self._battery_on_source_id: int | None = None  # For battery on one-shot
 
         # Engine sound paths (start/idle/shutdown)
         self._engine_start_path: str | None = None
         self._engine_idle_path: str | None = None
         self._engine_shutdown_path: str | None = None
+
+        # Battery sound paths (on/off/loop)
+        self._battery_on_path: str | None = None
+        self._battery_off_path: str | None = None
+        self._battery_loop_path: str | None = None
 
         # Engine sound pitch configuration (can be overridden per aircraft)
         self._engine_pitch_idle = 0.7  # Pitch at 0% throttle
@@ -288,6 +293,26 @@ class SoundManager:
         self._engine_shutdown_path = shutdown_path
         logger.debug(
             f"Engine sound paths configured: start={start_path}, idle={idle_path}, shutdown={shutdown_path}"
+        )
+
+    def set_battery_sound_paths(
+        self,
+        on_path: str | None = None,
+        off_path: str | None = None,
+        loop_path: str | None = None,
+    ) -> None:
+        """Configure battery sound file paths.
+
+        Args:
+            on_path: Path to battery on sound (plays once at startup).
+            off_path: Path to battery off sound (plays once at shutdown).
+            loop_path: Path to battery loop sound (loops while battery is on).
+        """
+        self._battery_on_path = on_path
+        self._battery_off_path = off_path
+        self._battery_loop_path = loop_path
+        logger.debug(
+            f"Battery sound paths configured: on={on_path}, off={off_path}, loop={loop_path}"
         )
 
     def start_engine_sound(self, path: str | None = None) -> None:
@@ -569,13 +594,15 @@ class SoundManager:
         """Play battery activation/deactivation sound sequence.
 
         For battery ON:
-        1. Plays batteryon1.wav (one-shot startup sound)
-        2. When it finishes, starts batteryloop1.wav (looping hum)
+        1. Plays battery_on sound (one-shot startup sound)
+        2. When it finishes, starts battery_loop sound (looping hum)
         3. Calls on_complete_callback when loop starts (battery truly ON)
 
         For battery OFF:
         1. Stops battery loop if playing
-        2. Plays batteryoff1.wav (shutdown sound)
+        2. Plays battery_off sound (shutdown sound)
+
+        Sound paths must be configured via set_battery_sound_paths() first.
 
         Args:
             battery_on: True for battery on, False for battery off.
@@ -594,16 +621,21 @@ class SoundManager:
                 self._audio_engine.stop_source(self._battery_on_source_id)
                 self._battery_on_source_id = None
 
-            # Play batteryon1.wav (one-shot)
-            try:
-                path = str(get_resource_path("assets/sounds/aircraft/batteryon1.wav"))
-                self._battery_on_source_id = self.play_sound_2d(path, volume=0.6)
-                self._battery_sequence_active = True
-                self._battery_sequence_callback = on_complete_callback
-                logger.info("Battery startup sound started (batteryon1.wav)")
-            except FileNotFoundError:
-                logger.warning("Battery startup sound not found: batteryon1.wav")
-                # Call callback immediately if sound not found
+            # Play battery on sound (one-shot)
+            if self._battery_on_path:
+                try:
+                    path = str(get_resource_path(self._battery_on_path))
+                    self._battery_on_source_id = self.play_sound_2d(path, volume=0.6)
+                    self._battery_sequence_active = True
+                    self._battery_sequence_callback = on_complete_callback
+                    logger.info(f"Battery startup sound started ({self._battery_on_path})")
+                except FileNotFoundError:
+                    logger.warning(f"Battery startup sound not found: {self._battery_on_path}")
+                    # Call callback immediately if sound not found
+                    if on_complete_callback:
+                        on_complete_callback()
+            else:
+                # No sound configured, call callback immediately
                 if on_complete_callback:
                     on_complete_callback()
         else:
@@ -622,13 +654,14 @@ class SoundManager:
             self._battery_sequence_active = False
             self._battery_sequence_callback = None
 
-            # Play batteryoff1.wav
-            try:
-                path = str(get_resource_path("assets/sounds/aircraft/batteryoff1.wav"))
-                self.play_sound_2d(path, volume=0.6)
-                logger.info("Battery shutdown sound played (batteryoff1.wav)")
-            except FileNotFoundError:
-                logger.warning("Battery shutdown sound not found: batteryoff1.wav")
+            # Play battery off sound
+            if self._battery_off_path:
+                try:
+                    path = str(get_resource_path(self._battery_off_path))
+                    self.play_sound_2d(path, volume=0.6)
+                    logger.info(f"Battery shutdown sound played ({self._battery_off_path})")
+                except FileNotFoundError:
+                    logger.warning(f"Battery shutdown sound not found: {self._battery_off_path}")
 
     def start_rolling_sound(self, path: str | None = None) -> None:
         """Start looping rolling/tire sound.
@@ -714,37 +747,43 @@ class SoundManager:
 
         # Check battery sound sequence
         if self._battery_sequence_active and self._battery_on_source_id is not None:
-            # Check if batteryon1.wav has finished
+            # Check if battery on sound has finished
             from airborne.audio.engine.base import SourceState
 
             state = self._audio_engine.get_source_state(self._battery_on_source_id)
             if state == SourceState.STOPPED:
-                # batteryon1.wav finished, start the loop
+                # Battery on sound finished, start the loop
                 logger.info("Battery startup sound finished, starting loop")
                 self._battery_on_source_id = None
 
-                # Start batteryloop1.wav
-                try:
-                    # Load with loop mode enabled
-                    loop_sound = self._audio_engine.load_sound(
-                        str(get_resource_path("assets/sounds/aircraft/batteryloop1.wav")),
-                        preload=True,
-                        loop_mode=True,
-                    )
-                    self._battery_loop_source_id = self._audio_engine.play_2d(
-                        loop_sound, volume=0.5, pitch=1.0, loop=True
-                    )
-                    logger.info("Battery loop started (batteryloop1.wav)")
+                # Start battery loop sound
+                if self._battery_loop_path:
+                    try:
+                        # Load with loop mode enabled
+                        loop_sound = self._audio_engine.load_sound(
+                            str(get_resource_path(self._battery_loop_path)),
+                            preload=True,
+                            loop_mode=True,
+                        )
+                        self._battery_loop_source_id = self._audio_engine.play_2d(
+                            loop_sound, volume=0.5, pitch=1.0, loop=True
+                        )
+                        logger.info(f"Battery loop started ({self._battery_loop_path})")
 
-                    # Battery is now truly ON - call callback
-                    if self._battery_sequence_callback:
-                        logger.info("Battery sequence complete - calling callback")
-                        self._battery_sequence_callback()
-                        self._battery_sequence_callback = None
+                        # Battery is now truly ON - call callback
+                        if self._battery_sequence_callback:
+                            logger.info("Battery sequence complete - calling callback")
+                            self._battery_sequence_callback()
+                            self._battery_sequence_callback = None
 
-                except FileNotFoundError:
-                    logger.warning("Battery loop sound not found: batteryloop1.wav")
-                    # Still call callback even if sound not found
+                    except FileNotFoundError:
+                        logger.warning(f"Battery loop sound not found: {self._battery_loop_path}")
+                        # Still call callback even if sound not found
+                        if self._battery_sequence_callback:
+                            self._battery_sequence_callback()
+                            self._battery_sequence_callback = None
+                else:
+                    # No loop sound configured, just call callback
                     if self._battery_sequence_callback:
                         self._battery_sequence_callback()
                         self._battery_sequence_callback = None

@@ -296,6 +296,17 @@ class AudioPlugin(IPlugin):
                     get_resource_path("assets/sounds/aircraft/engine.wav")
                 )
 
+            # Configure battery sounds from aircraft config
+            system_sounds = aircraft_audio.get("system_sounds", {})
+            if system_sounds:
+                battery_on = system_sounds.get("battery_on")
+                battery_off = system_sounds.get("battery_off")
+                battery_loop = system_sounds.get("battery_loop")
+                self.sound_manager.set_battery_sound_paths(battery_on, battery_off, battery_loop)
+                logger.info(
+                    f"Battery sounds configured: on={battery_on}, off={battery_off}, loop={battery_loop}"
+                )
+
             self.sound_manager.start_wind_sound()
             self._engine_sound_active = False  # Engine sound starts off
             self._last_engine_rpm = 0.0
