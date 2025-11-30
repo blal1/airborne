@@ -179,6 +179,9 @@ class TTSCacheService:
         self._user_voice_settings: dict[str, dict[str, Any]] = {}
         self._load_user_voice_settings()
 
+        # Pre-load caches for all configured voices so existing cached items are available
+        self._preload_caches()
+
         logger.info(
             "TTSCacheService initialized: %s:%d (multi-voice)",
             self.host,
@@ -243,6 +246,39 @@ class TTSCacheService:
             Dict with "voice_name" and "rate" keys, or None if not found.
         """
         return self._user_voice_settings.get(voice)
+
+    def _preload_caches(self) -> None:
+        """Pre-load caches for all user-configured voices.
+
+        This ensures that existing cached TTS files are available immediately
+        on startup, rather than waiting for the first request for each voice.
+        """
+        total_items = 0
+
+        for voice_type, settings in self._user_voice_settings.items():
+            voice_name = settings.get("voice_name")
+            rate = settings.get("rate", 180)
+
+            # Create cache for this voice (this will load manifest from disk)
+            cache = self._get_cache(voice_type, rate, voice_name)
+            stats = cache.get_stats()
+            cached_items = stats.get("cached_items", 0)
+            total_items += cached_items
+
+            if cached_items > 0:
+                logger.info(
+                    "Pre-loaded cache for '%s' (%s @ %d wpm): %d items",
+                    voice_type,
+                    voice_name,
+                    rate,
+                    cached_items,
+                )
+
+        logger.info(
+            "Pre-loaded %d caches with %d total cached items",
+            len(self._caches),
+            total_items,
+        )
 
     def _get_cache(
         self, voice: str, rate: int, voice_name: str | None, language: str | None = None
