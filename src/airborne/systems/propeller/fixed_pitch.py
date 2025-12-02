@@ -236,18 +236,31 @@ class FixedPitchPropeller(IPropeller):
 
             # Dynamic thrust with induced velocity correction
             # The simple formula T = (η × P) / v is incorrect because it doesn't account for
-            # induced velocity in the propeller slipstream. This causes thrust to collapse
-            # as airspeed increases, which is unrealistic for fixed-pitch propellers.
+            # induced velocity in the propeller slipstream.
             #
             # Corrected formula: T = (η × P) / (v + v_induced)
-            # Where v_induced ≈ sqrt(T / (2 × ρ × A))
+            # Where v_induced is estimated from momentum theory.
             #
-            # Since we don't know T yet, we use an iterative approximation or estimate v_induced
-            # from momentum theory. For a typical C172 propeller at cruise, v_induced ≈ 5-8 m/s.
+            # From momentum theory: P = 2 × ρ × A × v_induced³
+            # Therefore: v_induced = (P / (2 × ρ × A))^(1/3) at static
             #
-            # Simplified approach: Add a constant induced velocity term based on power
-            # v_induced ≈ sqrt(P / (2 × ρ × A))
-            v_induced = math.sqrt(power_watts / (2.0 * air_density_kgm3 * self.disc_area))
+            # However, v_induced decreases significantly with airspeed because the propeller
+            # doesn't need to accelerate the air as much when there's incoming flow.
+            # At static: v_induced ≈ 25-30 m/s for a 160 HP prop
+            # At cruise: v_induced ≈ 5-8 m/s (much smaller due to incoming airflow)
+            #
+            # We scale v_induced down with advance ratio to model this physical effect.
+            v_induced_static = (power_watts / (2.0 * air_density_kgm3 * self.disc_area)) ** (
+                1.0 / 3.0
+            )
+
+            # Scale v_induced down with advance ratio - physically, induced velocity decreases
+            # as the propeller has more incoming airflow to work with
+            # At J=0: full v_induced (static)
+            # At J=cruise: v_induced drops to ~20% of static value
+            v_induced_scale = max(0.2, 1.0 - advance_ratio / self.cruise_advance_ratio * 0.8)
+            v_induced = v_induced_static * v_induced_scale
+
             thrust_dynamic = (efficiency * power_watts) / (airspeed_mps + v_induced)
 
             # Blend the two methods

@@ -221,9 +221,7 @@ class InputConfig:
     keyboard_mode: str = (
         "incremental"  # 'incremental' (FlightGear-style) or 'smooth' (joystick-style)
     )
-    keyboard_increment: float = (
-        0.05  # 5% per keypress (20 taps for full deflection, like FlightGear)
-    )
+    keyboard_increment: float = 0.02  # 2% per keypress (50 taps for full deflection, finer control)
 
     def __post_init__(self) -> None:
         """Initialize default key bindings if not provided."""
@@ -615,6 +613,21 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
             if scancode in alt_scancode_actions:
                 if not is_repeat:
                     self._handle_action_pressed(alt_scancode_actions[scancode])
+                return
+
+            # Alt+0: where_am_i (handled via message queue, not InputAction enum)
+            if scancode == pygame.KSCAN_0 and not is_repeat:
+                if self.message_queue:
+                    logger.info("Alt+0 detected - where am I query")
+                    self.message_queue.publish(
+                        Message(
+                            sender="input_manager",
+                            recipients=["*"],
+                            topic="input.where_am_i",
+                            data={"key": key, "mods": mods},
+                            priority=MessagePriority.NORMAL,
+                        )
+                    )
                 return
 
         # Try context-aware input system (YAML-based)
@@ -1544,7 +1557,9 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
                     value=position.get("degrees", 0),
                 )
             )
-            logger.info(f"Flaps commanded to {position.get('name', 'UNKNOWN')} ({position.get('degrees', 0)}°)")
+            logger.info(
+                f"Flaps commanded to {position.get('name', 'UNKNOWN')} ({position.get('degrees', 0)}°)"
+            )
 
     def _update_flap_transition(self, dt: float) -> None:
         """Update flap position transition (gradual movement).
@@ -1571,7 +1586,9 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
                         value=position.get("degrees", 0),
                     )
                 )
-                logger.info(f"Flaps set to {position.get('name', 'UNKNOWN')} ({position.get('degrees', 0)}°)")
+                logger.info(
+                    f"Flaps set to {position.get('name', 'UNKNOWN')} ({position.get('degrees', 0)}°)"
+                )
         else:
             # Move toward target
             move_amount = self._flap_rate * dt
