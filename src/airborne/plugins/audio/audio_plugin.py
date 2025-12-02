@@ -16,7 +16,6 @@ if TYPE_CHECKING:
 from airborne.audio.engine.base import IAudioEngine, Vector3
 from airborne.audio.sound_manager import SoundManager
 from airborne.audio.tts.base import ITTSProvider
-from airborne.audio.tts.speech_messages import SpeechMessages
 from airborne.core.i18n import t
 from airborne.core.logging_system import get_logger
 from airborne.core.messaging import Message, MessagePriority, MessageTopic
@@ -397,7 +396,7 @@ class AudioPlugin(IPlugin):
             # Play "Stall!" message with high priority, interrupting other speech
             from airborne.audio.tts.base import TTSPriority
 
-            stall_message = ["MSG_WORD_STALL", "MSG_WORD_STALL"]  # "Stall! Stall!"
+            stall_message = f"{t('actions.stall')}! {t('actions.stall')}!"
             self.tts_provider.speak(stall_message, priority=TTSPriority.CRITICAL, interrupt=True)
             self._stall_announced = True
 
@@ -933,10 +932,10 @@ class AudioPlugin(IPlugin):
             # Announce trim position (HIGH priority + interrupt to stop previous announcements)
             if self.tts_provider and event.value is not None:
                 trim_percent = int(event.value)
-                message_keys = SpeechMessages.trim_position(trim_percent)
                 from airborne.audio.tts.base import TTSPriority
 
-                self.tts_provider.speak(message_keys, priority=TTSPriority.HIGH, interrupt=True)  # type: ignore[arg-type]
+                message = t("cockpit.pitch_trim", value=trim_percent)
+                self.tts_provider.speak(message, priority=TTSPriority.HIGH, interrupt=True)
             return
 
         # Handle rudder trim adjustment sound and TTS
@@ -953,10 +952,17 @@ class AudioPlugin(IPlugin):
             # Announce rudder trim position (HIGH priority + interrupt to stop previous announcements)
             if self.tts_provider and event.value is not None:
                 trim_percent = int(event.value)
-                message_keys = SpeechMessages.rudder_trim_position(trim_percent)
                 from airborne.audio.tts.base import TTSPriority
 
-                self.tts_provider.speak(message_keys, priority=TTSPriority.HIGH, interrupt=True)  # type: ignore[arg-type]
+                # Convert to left/right/neutral
+                if trim_percent < 45:
+                    trim_text = t("cockpit.trim_left")
+                elif trim_percent > 55:
+                    trim_text = t("cockpit.trim_right")
+                else:
+                    trim_text = t("cockpit.trim_neutral")
+                message = t("cockpit.rudder_trim", value=trim_text)
+                self.tts_provider.speak(message, priority=TTSPriority.HIGH, interrupt=True)
             return
 
         # Handle parking brake click sound (then continue to TTS)
@@ -968,9 +974,9 @@ class AudioPlugin(IPlugin):
         if event.action == "throttle_released" and event.value is not None:
             if self.tts_provider:
                 throttle_percent = int(event.value)
-                keys = SpeechMessages.throttle_percent(throttle_percent)
+                message = t("actions.throttle_percent", value=throttle_percent)
                 # Interrupt any current speech to announce throttle immediately
-                self.tts_provider.speak(keys, interrupt=True)  # type: ignore[arg-type]
+                self.tts_provider.speak(message, interrupt=True)
             return
 
         # Handle flaps commanded (announce target position)
@@ -980,10 +986,10 @@ class AudioPlugin(IPlugin):
 
                 flap_degrees = int(event.value)
                 if flap_degrees == 0:
-                    keys = ["MSG_FLAPS", "MSG_UP"]
+                    message = t("actions.flaps_up")
                 else:
-                    keys = ["MSG_FLAPS", f"MSG_NUMBER_{flap_degrees}"]
-                self.tts_provider.speak(keys, priority=TTSPriority.HIGH, interrupt=True)  # type: ignore[arg-type]
+                    message = t("actions.flaps_degrees", value=flap_degrees)
+                self.tts_provider.speak(message, priority=TTSPriority.HIGH, interrupt=True)
             return
 
         # Handle flaps set (announce when flaps reach target position)
@@ -993,10 +999,10 @@ class AudioPlugin(IPlugin):
 
                 flap_degrees = int(event.value)
                 if flap_degrees == 0:
-                    keys = ["MSG_FLAPS", "MSG_UP", "MSG_SET"]
+                    message = t("actions.flaps_up_set")
                 else:
-                    keys = ["MSG_FLAPS", f"MSG_NUMBER_{flap_degrees}", "MSG_SET"]
-                self.tts_provider.speak(keys, priority=TTSPriority.NORMAL)  # type: ignore[arg-type]
+                    message = t("actions.flaps_degrees_set", value=flap_degrees)
+                self.tts_provider.speak(message, priority=TTSPriority.NORMAL)
             return
 
         # Handle flaps read (announce current flap position)
@@ -1006,10 +1012,10 @@ class AudioPlugin(IPlugin):
 
                 flap_degrees = int(event.value)
                 if flap_degrees == 0:
-                    keys = ["MSG_FLAPS", "MSG_UP"]
+                    message = t("actions.flaps_up")
                 else:
-                    keys = ["MSG_FLAPS", f"MSG_NUMBER_{flap_degrees}"]
-                self.tts_provider.speak(keys, priority=TTSPriority.HIGH, interrupt=True)  # type: ignore[arg-type]
+                    message = t("actions.flaps_degrees", value=flap_degrees)
+                self.tts_provider.speak(message, priority=TTSPriority.HIGH, interrupt=True)
             return
 
         # Handle auto-trim enabled
@@ -1017,8 +1023,8 @@ class AudioPlugin(IPlugin):
             if self.tts_provider:
                 from airborne.audio.tts.base import TTSPriority
 
-                keys = ["MSG_AUTO_TRIM", "MSG_ON"]
-                self.tts_provider.speak(keys, priority=TTSPriority.HIGH, interrupt=True)  # type: ignore[arg-type]
+                message = t("actions.auto_trim_on")
+                self.tts_provider.speak(message, priority=TTSPriority.HIGH, interrupt=True)
             return
 
         # Handle auto-trim disabled
@@ -1026,8 +1032,8 @@ class AudioPlugin(IPlugin):
             if self.tts_provider:
                 from airborne.audio.tts.base import TTSPriority
 
-                keys = ["MSG_AUTO_TRIM", "MSG_OFF"]
-                self.tts_provider.speak(keys, priority=TTSPriority.HIGH, interrupt=True)  # type: ignore[arg-type]
+                message = t("actions.auto_trim_off")
+                self.tts_provider.speak(message, priority=TTSPriority.HIGH, interrupt=True)
             return
 
         # Handle auto-trim read (announce status)
@@ -1036,8 +1042,8 @@ class AudioPlugin(IPlugin):
                 from airborne.audio.tts.base import TTSPriority
 
                 enabled = event.value is not None and event.value > 0.5
-                keys = ["MSG_AUTO_TRIM", "MSG_ON" if enabled else "MSG_OFF"]
-                self.tts_provider.speak(keys, priority=TTSPriority.HIGH, interrupt=True)  # type: ignore[arg-type]
+                message = t("actions.auto_trim_on") if enabled else t("actions.auto_trim_off")
+                self.tts_provider.speak(message, priority=TTSPriority.HIGH, interrupt=True)
             return
 
         if not self.tts_provider:
@@ -1230,140 +1236,3 @@ class AudioPlugin(IPlugin):
         # Speak translated text directly (all messages now use t() function)
         logger.info(f"Speaking translated: {message}")
         self.tts_provider.speak(message, priority=priority, interrupt=interrupt)
-
-    def _get_message_key(self, message: str, action: str) -> str | list[str]:
-        """Convert human-readable message to message key.
-
-        Args:
-            message: Human-readable message.
-            action: Input action that triggered the message.
-
-        Returns:
-            Message key or list of message keys for YAML lookup.
-        """
-        from airborne.audio.tts.speech_messages import SpeechMessages
-
-        # Map instrument reading actions to helper methods
-        # Include instrument names for clarity
-        if action == "read_airspeed":
-            exact_knots = int(round(self._airspeed))
-            exact_knots = max(0, min(300, exact_knots))
-            return [
-                SpeechMessages.MSG_WORD_AIRSPEED,
-                f"cockpit/number_{exact_knots}_autogen",
-                SpeechMessages.MSG_WORD_KNOTS,
-            ]
-        elif action == "read_altitude":
-            feet = int(self._altitude)
-            return (
-                [SpeechMessages.MSG_WORD_ALTITUDE]
-                + SpeechMessages._digits_to_keys(feet)
-                + [SpeechMessages.MSG_WORD_FEET]
-            )
-        elif action == "read_heading":
-            return SpeechMessages.heading(int(self._heading))
-        elif action == "read_vspeed":
-            fpm = int(self._vspeed)
-            if abs(fpm) < 50:
-                return [SpeechMessages.MSG_LEVEL_FLIGHT]
-            direction_word = (
-                SpeechMessages.MSG_WORD_CLIMBING if fpm > 0 else SpeechMessages.MSG_WORD_DESCENDING
-            )
-            return [direction_word] + SpeechMessages._digits_to_keys(abs(fpm))
-        elif action == "read_attitude":
-            # For attitude, we read pitch first, then bank
-            # Always include instrument names
-            bank_int = int(self._bank)
-            pitch_int = int(self._pitch)
-
-            result = [SpeechMessages.MSG_WORD_PITCH]
-            if abs(pitch_int) < 3:
-                result.append(SpeechMessages.MSG_LEVEL_ATTITUDE)
-            else:
-                result.append(SpeechMessages.pitch(pitch_int))
-
-            result.append(SpeechMessages.MSG_WORD_BANK)
-            if abs(bank_int) < 3:
-                result.append(SpeechMessages.MSG_LEVEL_ATTITUDE)
-            else:
-                result.append(SpeechMessages.bank(bank_int))
-
-            return result
-
-        # Engine instrument readouts
-        elif action == "read_rpm":
-            return SpeechMessages.engine_rpm(int(self._engine_rpm), self._engine_running)
-        elif action == "read_manifold_pressure":
-            return SpeechMessages.manifold_pressure(self._manifold_pressure)
-        elif action == "read_oil_pressure":
-            return SpeechMessages.oil_pressure(int(self._oil_pressure))
-        elif action == "read_oil_temp":
-            # Convert Celsius to Fahrenheit
-            oil_temp_f = self._oil_temp * 9 / 5 + 32
-            return SpeechMessages.oil_temperature(int(oil_temp_f))
-        elif action == "read_fuel_flow":
-            return SpeechMessages.fuel_flow(self._fuel_flow)
-
-        # Electrical instrument readouts
-        elif action == "read_battery_voltage":
-            return SpeechMessages.battery_voltage(self._battery_voltage)
-        elif action == "read_battery_percent":
-            return SpeechMessages.battery_percent(int(self._battery_percent))
-        elif action == "read_battery_status":
-            return SpeechMessages.battery_status(self._battery_current)
-        elif action == "read_alternator":
-            return SpeechMessages.alternator_output(self._alternator_output)
-
-        # Fuel instrument readouts
-        elif action == "read_fuel_quantity":
-            return SpeechMessages.fuel_quantity(self._fuel_quantity)
-        elif action == "read_fuel_remaining":
-            return SpeechMessages.fuel_remaining(self._fuel_remaining_minutes or 0.0)
-
-        # Comprehensive status readouts - return first message, queue rest
-        elif action == "read_engine":
-            # Comprehensive engine status (RPM)
-            return SpeechMessages.engine_status(int(self._engine_rpm), self._engine_running)
-
-        elif action == "read_electrical":
-            # Comprehensive electrical status (voltage, percent, charging/discharging)
-            return SpeechMessages.electrical_status(
-                self._battery_voltage, int(self._battery_percent), self._battery_current
-            )
-
-        elif action == "read_fuel":
-            # Comprehensive fuel status (quantity, remaining time)
-            return SpeechMessages.fuel_status(
-                self._fuel_quantity, self._fuel_remaining_minutes or 0.0
-            )
-
-        # Trim readouts
-        elif action == "read_pitch_trim":
-            # Convert trim value (-1.0 to 1.0) to percentage (0-100)
-            trim_percent = int((self._pitch_trim + 1.0) * 50)
-            return SpeechMessages.trim_position(trim_percent)
-        elif action == "read_rudder_trim":
-            # Convert trim value (-1.0 to 1.0) to percentage (0-100)
-            trim_percent = int((self._rudder_trim + 1.0) * 50)
-            return SpeechMessages.rudder_trim_position(trim_percent)
-
-        # Map action messages to constants
-        action_to_key = {
-            "Gear down": SpeechMessages.MSG_GEAR_DOWN,
-            "Gear up": SpeechMessages.MSG_GEAR_UP,
-            "Flaps extending": SpeechMessages.MSG_FLAPS_EXTENDING,
-            "Flaps retracting": SpeechMessages.MSG_FLAPS_RETRACTING,
-            "Throttle increased": SpeechMessages.MSG_THROTTLE_INCREASED,
-            "Throttle decreased": SpeechMessages.MSG_THROTTLE_DECREASED,
-            "Full throttle": SpeechMessages.MSG_FULL_THROTTLE,
-            "Throttle idle": SpeechMessages.MSG_THROTTLE_IDLE,
-            "Brakes on": SpeechMessages.MSG_BRAKES_ON,
-            "Parking brake set": SpeechMessages.MSG_PARKING_BRAKE_SET,
-            "Parking brake released": SpeechMessages.MSG_PARKING_BRAKE_RELEASED,
-            "Paused": SpeechMessages.MSG_PAUSED,
-            "Next": SpeechMessages.MSG_NEXT,
-            "Level flight": SpeechMessages.MSG_LEVEL_FLIGHT,
-            "Level attitude": SpeechMessages.MSG_LEVEL_ATTITUDE,
-        }
-
-        return action_to_key.get(message, SpeechMessages.MSG_ERROR)
