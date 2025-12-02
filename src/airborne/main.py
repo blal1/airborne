@@ -130,6 +130,9 @@ class AirBorne:
         # Load plugins and aircraft
         self._initialize_plugins()
 
+        # Publish initial parking status to ground services plugin
+        self._publish_initial_parking_status()
+
         # Subscribe to quit events
         self.event_bus.subscribe(InputActionEvent, self._handle_input_action)
 
@@ -148,7 +151,7 @@ class AirBorne:
         logger.info("AirBorne initialized successfully")
 
         # Send startup announcement via TTS
-        from airborne.audio.tts.speech_messages import MSG_STARTUP
+        from airborne.core.i18n import t
 
         self.message_queue.publish(
             Message(
@@ -156,7 +159,7 @@ class AirBorne:
                 recipients=["*"],
                 topic=MessageTopic.TTS_SPEAK,
                 data={
-                    "text": MSG_STARTUP,
+                    "text": t("system.startup"),
                     "priority": "high",
                 },
                 priority=MessagePriority.HIGH,
@@ -300,16 +303,13 @@ class AirBorne:
                     self.plugin_context.config["audio"] = {}
                 self.plugin_context.config["audio"]["aircraft"] = audio_config
 
-            # Load TTS settings from saved settings (menu selections persist here)
-            # CLI argument (--tts) takes precedence if specified
+            # Load TTS settings from saved settings
             if "tts" not in self.plugin_context.config:
                 self.plugin_context.config["tts"] = {}
 
             from airborne.settings import get_tts_settings
-            from airborne.settings.tts_settings import TTS_MODE_REALTIME
 
             tts_settings = get_tts_settings()
-            saved_mode = tts_settings.mode
             saved_language = tts_settings.language
 
             # Apply saved language to i18n system (critical for --skip-menu)
@@ -317,22 +317,8 @@ class AirBorne:
 
             set_language(saved_language)
 
-            # Map mode to expected values
-            if saved_mode == TTS_MODE_REALTIME:
-                self.plugin_context.config["tts"]["tts_mode"] = "system"
-            else:
-                self.plugin_context.config["tts"]["tts_mode"] = "self-voiced"
-
             self.plugin_context.config["tts"]["language"] = saved_language
-            logger.info(
-                f"TTS settings loaded from saved settings: mode={saved_mode}, "
-                f"language={saved_language}"
-            )
-
-            # CLI argument overrides saved settings
-            if self.args.tts:
-                self.plugin_context.config["tts"]["tts_mode"] = self.args.tts
-                logger.info(f"TTS mode overridden by CLI: {self.args.tts}")
+            logger.info(f"TTS settings loaded: language={saved_language}")
 
             # Extract aircraft characteristics (fixed_gear, etc.) and performance config
             aircraft_info = config.get("aircraft", {})
@@ -517,6 +503,38 @@ class AirBorne:
 
         # Default to US registration if unknown
         return "N"
+
+    def _publish_initial_parking_status(self) -> None:
+        """Publish initial parking status based on spawn state.
+
+        This notifies the ground services plugin whether we're at a parking spot
+        so the F3 ground services menu works immediately after spawn.
+        """
+        if not self.spawn_state:
+            logger.debug("No spawn state, not publishing parking status")
+            return
+
+        at_parking = self.spawn_state.at_parking
+        parking_id = self.spawn_state.parking_id
+
+        logger.info(
+            "Publishing initial parking status: at_parking=%s, parking_id=%s",
+            at_parking,
+            parking_id,
+        )
+
+        self.message_queue.publish(
+            Message(
+                sender="main",
+                recipients=["ground_services_plugin"],
+                topic="parking.status",
+                data={
+                    "at_parking": at_parking,
+                    "parking_id": parking_id,
+                },
+                priority=MessagePriority.NORMAL,
+            )
+        )
 
     def _initialize_input_handlers(self) -> None:
         """Initialize and register input handlers with priority-based dispatch."""
@@ -1055,14 +1073,6 @@ def parse_args() -> argparse.Namespace:
         "--callsign",
         type=str,
         help="Aircraft callsign (e.g., N12345, Cessna 123)",
-    )
-
-    parser.add_argument(
-        "--tts",
-        type=str,
-        choices=["self-voiced", "system"],
-        default=None,
-        help="TTS backend: 'self-voiced' (pre-generated audio chunks) or 'system' (pyttsx3 real-time)",
     )
 
     parser.add_argument(
