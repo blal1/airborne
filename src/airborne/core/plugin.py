@@ -105,12 +105,16 @@ class PluginContext:
         message_queue: Message queue for async plugin communication.
         config: Plugin-specific configuration dictionary.
         plugin_registry: Registry to access other loaded plugins.
+        scenario: Flight scenario with initial values (fuel, passengers, etc.).
+        spawn_state: Spawn state with position, heading, engine state.
     """
 
     event_bus: Any  # EventBus type (avoid circular import)
     message_queue: Any  # MessageQueue type
     config: dict[str, Any]
     plugin_registry: Any  # PluginRegistry type
+    scenario: Any = None  # Scenario type (optional for backwards compatibility)
+    spawn_state: Any = None  # SpawnState type (optional)
 
 
 class IPlugin(ABC):

@@ -411,9 +411,7 @@ class TestPositionTracker:
 class TestCenterlineDeviation:
     """Test centerline deviation calculation."""
 
-    def test_deviation_none_when_not_on_taxiway(
-        self, tracker: PositionTracker
-    ) -> None:
+    def test_deviation_none_when_not_on_taxiway(self, tracker: PositionTracker) -> None:
         """Test that deviation is None when not on taxiway/runway."""
         # Move to parking
         tracker.update(Vector3(-122.0, 10.0, 37.5), 90.0, 100.0)
@@ -421,9 +419,7 @@ class TestCenterlineDeviation:
         deviation = tracker.get_centerline_deviation()
         assert deviation is None
 
-    def test_deviation_none_when_no_position(
-        self, taxiway_graph: TaxiwayGraph
-    ) -> None:
+    def test_deviation_none_when_no_position(self, taxiway_graph: TaxiwayGraph) -> None:
         """Test that deviation is None when no position history."""
         tracker = PositionTracker(taxiway_graph, None)
         # Don't call update - no position history
@@ -547,9 +543,7 @@ class TestApproachingJunctions:
         assert junction.distance_m == 50.0
         assert junction.direction == "left"
 
-    def test_no_junctions_when_no_position(
-        self, taxiway_graph: TaxiwayGraph
-    ) -> None:
+    def test_no_junctions_when_no_position(self, taxiway_graph: TaxiwayGraph) -> None:
         """Test no junctions returned when no position history."""
         tracker = PositionTracker(taxiway_graph, None)
         # Don't call update - no position history
@@ -658,9 +652,7 @@ class TestHoldShortDetection:
         assert hold_short.taxiway_name == "A"
         assert hold_short.distance_m == 25.0
 
-    def test_no_hold_short_when_no_position(
-        self, taxiway_graph: TaxiwayGraph
-    ) -> None:
+    def test_no_hold_short_when_no_position(self, taxiway_graph: TaxiwayGraph) -> None:
         """Test no hold short returned when no position history."""
         tracker = PositionTracker(taxiway_graph, None)
         # Don't call update - no position history

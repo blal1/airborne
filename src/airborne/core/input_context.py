@@ -101,27 +101,41 @@ class InputContextManager:
     the active context stack. Contexts are checked in priority order:
     global (100) → active menu (75) → flight_mode (50).
 
+    User-defined keybindings (from ~/.airborne/keybindings/{aircraft_id}.yaml)
+    override the default YAML configurations when an aircraft_id is provided.
+
     Attributes:
         contexts: Loaded context configurations by name.
         context_stack: Active contexts (top = current).
         message_queue: Message queue for publishing input events.
         action_handlers: Direct action handlers (bypass messaging).
+        aircraft_id: Aircraft identifier for loading user keybindings.
     """
 
-    def __init__(self, config_dir: Path, message_queue: MessageQueue):
+    def __init__(
+        self,
+        config_dir: Path,
+        message_queue: MessageQueue,
+        aircraft_id: str | None = None,
+    ):
         """Initialize input context manager.
 
         Args:
             config_dir: Path to config/input directory.
             message_queue: Message queue for publishing input events.
+            aircraft_id: Aircraft identifier for loading user keybindings.
+                If provided, user overrides from ~/.airborne/keybindings/
+                will be applied on top of default YAML bindings.
         """
         self.config_dir = config_dir
         self.message_queue = message_queue
+        self.aircraft_id = aircraft_id
         self.contexts: dict[str, InputContextConfig] = {}
         self.context_stack: list[str] = [InputContext.FLIGHT_MODE]
         self.action_handlers: dict[str, Callable] = {}
 
         self._load_all_contexts()
+        self._apply_user_overrides()
 
     def _load_all_contexts(self):
         """Load all YAML context files from config/input/contexts/."""
@@ -179,6 +193,96 @@ class InputContextManager:
 
         self.contexts[context_name] = context_cfg
         logger.debug(f"Loaded context '{context_name}' with {len(bindings)} bindings")
+
+    def _apply_user_overrides(self) -> None:
+        """Apply user keybinding overrides from settings.
+
+        Loads user settings for the current aircraft and overrides or unbinds
+        the default bindings accordingly. User overrides take precedence over
+        YAML defaults.
+        """
+        if not self.aircraft_id:
+            logger.debug("No aircraft_id set, skipping user keybinding overrides")
+            return
+
+        try:
+            from airborne.settings.keybindings_settings import get_keybindings_settings
+
+            settings = get_keybindings_settings(self.aircraft_id)
+
+            if not settings.has_overrides():
+                logger.debug("No user keybinding overrides for %s", self.aircraft_id)
+                return
+
+            override_count = 0
+            unbind_count = 0
+
+            for context_name, overrides in settings.overrides.items():
+                context_cfg = self.contexts.get(context_name)
+                if not context_cfg:
+                    logger.warning(
+                        "User override for unknown context '%s', skipping", context_name
+                    )
+                    continue
+
+                for override in overrides:
+                    # Find the binding for this action
+                    binding_found = False
+                    for i, binding in enumerate(context_cfg.bindings):
+                        if binding.action == override.action:
+                            binding_found = True
+                            if override.unbound:
+                                # Remove the binding entirely
+                                context_cfg.bindings.pop(i)
+                                unbind_count += 1
+                                logger.debug(
+                                    "Unbound action '%s' in context '%s'",
+                                    override.action,
+                                    context_name,
+                                )
+                            else:
+                                # Override the keys and modifiers
+                                binding.keys = [k.upper() for k in override.keys]
+                                binding.modifiers = [m.upper() for m in override.modifiers]
+                                override_count += 1
+                                logger.debug(
+                                    "Override binding for '%s' in '%s': %s+%s",
+                                    override.action,
+                                    context_name,
+                                    binding.modifiers,
+                                    binding.keys,
+                                )
+                            break
+
+                    if not binding_found and not override.unbound:
+                        # Action not found in defaults - add as new binding
+                        new_binding = KeyBinding(
+                            keys=[k.upper() for k in override.keys],
+                            action=override.action,
+                            modifiers=[m.upper() for m in override.modifiers],
+                        )
+                        context_cfg.bindings.append(new_binding)
+                        override_count += 1
+                        logger.debug(
+                            "Added new binding for '%s' in '%s': %s+%s",
+                            override.action,
+                            context_name,
+                            new_binding.modifiers,
+                            new_binding.keys,
+                        )
+
+            if override_count > 0 or unbind_count > 0:
+                logger.info(
+                    "Applied user keybindings for %s: %d overrides, %d unbound",
+                    self.aircraft_id,
+                    override_count,
+                    unbind_count,
+                )
+
+        except ImportError:
+            logger.debug("keybindings_settings not available, skipping user overrides")
+        except Exception as e:
+            logger.error("Failed to apply user keybinding overrides: %s", e)
 
     def handle_key_press(self, key: int, mods: int, is_repeat: bool = False) -> bool:
         """Handle key press with context awareness.

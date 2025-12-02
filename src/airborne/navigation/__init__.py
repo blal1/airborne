@@ -23,6 +23,10 @@ from airborne.navigation.flight_plan import (
     FlightType,
     SpeedConstraint,
 )
+from airborne.navigation.ground_navigation import (
+    GroundNavigationConfig,
+    GroundNavigationManager,
+)
 from airborne.navigation.navdata import (
     Navaid,
     NavaidType,
@@ -32,10 +36,6 @@ from airborne.navigation.routes import (
     OpenFlightsProvider,
     Route,
     RouteProvider,
-)
-from airborne.navigation.ground_navigation import (
-    GroundNavigationConfig,
-    GroundNavigationManager,
 )
 from airborne.navigation.waypoint import Waypoint
 

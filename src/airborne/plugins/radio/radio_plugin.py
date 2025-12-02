@@ -88,6 +88,9 @@ class RadioPlugin(IPlugin):
         self._departure_airport: str = ""
         self._departure_airport_name: str = ""  # Human-readable airport name
         self._departure_runway: str = "31"  # Default, should be determined from wind
+        self._arrival_airport: str = ""  # Destination airport
+        self._arrival_airport_name: str = ""  # Human-readable destination name
+        self._circuit_training: bool = False  # True if doing pattern work at single airport
 
         # TTS voice for ATC (if available)
         self._atc_voice_rate: int = 150  # Slightly faster than normal
@@ -127,6 +130,28 @@ class RadioPlugin(IPlugin):
         self._departure_airport = radio_config.get("departure_airport", "KPAO")
         self._departure_airport_name = self._get_airport_name(self._departure_airport)
         self._weather_service = radio_config.get("weather_service")
+
+        # Get flight plan info from scenario (source of truth)
+        if hasattr(context, "scenario") and context.scenario is not None:
+            scenario = context.scenario
+            # Departure airport (scenario overrides config)
+            if hasattr(scenario, "airport_icao") and scenario.airport_icao:
+                self._departure_airport = scenario.airport_icao
+                self._departure_airport_name = self._get_airport_name(self._departure_airport)
+            # Arrival airport
+            if hasattr(scenario, "arrival_icao") and scenario.arrival_icao:
+                self._arrival_airport = scenario.arrival_icao
+                self._arrival_airport_name = self._get_airport_name(self._arrival_airport)
+            # Circuit training mode
+            if hasattr(scenario, "circuit_training"):
+                self._circuit_training = scenario.circuit_training
+
+            logger.info(
+                "Flight plan from scenario: %s -> %s%s",
+                self._departure_airport,
+                self._arrival_airport or "(circuit training)" if self._circuit_training else self._arrival_airport or "(no destination)",
+                " [circuit training]" if self._circuit_training else "",
+            )
 
         # Generate initial ATIS from weather
         self._generate_initial_atis()

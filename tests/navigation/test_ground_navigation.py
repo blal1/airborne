@@ -1,12 +1,11 @@
 """Tests for Ground Navigation Manager."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
 from airborne.airports.layout import (
     AirportLayout,
-    LayoutParking,
     LayoutRunway,
     LayoutTaxiway,
     TaxiwaySegment,
@@ -329,9 +328,7 @@ class TestGroundNavigationManager:
         mock_centerline_beep.toggle.assert_called_once()
         assert result is True
 
-    def test_find_nearest_runway(
-        self, manager: GroundNavigationManager
-    ) -> None:
+    def test_find_nearest_runway(self, manager: GroundNavigationManager) -> None:
         """Test finding nearest runway."""
         position = Vector3(-122.005, 10.0, 37.5)
 

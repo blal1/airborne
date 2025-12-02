@@ -82,6 +82,10 @@ class WeightBalancePlugin(IPlugin):
         # Create weight & balance system
         self.wb_system = WeightBalanceSystem(wb_config)
 
+        # Apply scenario passenger_count (overrides config defaults)
+        # Scenario is the source of truth for initial values
+        self._apply_scenario_passengers(context)
+
         # Register system in registry
         if context.plugin_registry:
             context.plugin_registry.register("weight_balance_system", self.wb_system)
@@ -93,6 +97,53 @@ class WeightBalancePlugin(IPlugin):
         self._publish_weight_update()
 
         logger.info("Weight & balance plugin initialized")
+
+    def _apply_scenario_passengers(self, context: PluginContext) -> None:
+        """Apply passenger count from scenario to seat stations.
+
+        Args:
+            context: Plugin context with scenario.
+        """
+        if not self.wb_system:
+            return
+
+        if not hasattr(context, "scenario") or context.scenario is None:
+            return
+
+        scenario = context.scenario
+        if not hasattr(scenario, "passenger_count"):
+            return
+
+        passenger_count = int(scenario.passenger_count)
+        if passenger_count <= 0:
+            # Clear all passenger seats (keep pilot)
+            for name, station in self.wb_system.stations.items():
+                if station.station_type == "seat" and name != "seat_pilot":
+                    self.wb_system.update_station_weight(name, 0.0)
+            logger.info("Passengers initialized from scenario: 0")
+            return
+
+        # Standard passenger weight (FAA average)
+        standard_passenger_weight = 170.0
+
+        # Passenger seat order (excluding pilot)
+        passenger_seats = ["seat_copilot", "seat_rear_left", "seat_rear_right"]
+
+        # Fill seats in order up to passenger_count
+        passengers_placed = 0
+        for seat_name in passenger_seats:
+            if passengers_placed >= passenger_count:
+                # Clear remaining seats
+                if seat_name in self.wb_system.stations:
+                    self.wb_system.update_station_weight(seat_name, 0.0)
+            else:
+                # Add passenger
+                if seat_name in self.wb_system.stations:
+                    self.wb_system.update_station_weight(seat_name, standard_passenger_weight)
+                    passengers_placed += 1
+
+        logger.info("Passengers initialized from scenario: %d (%.0f lbs each)",
+                    passengers_placed, standard_passenger_weight)
 
     def update(self, dt: float) -> None:
         """Update weight and balance calculations.

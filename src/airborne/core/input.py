@@ -506,8 +506,12 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
         else:
             logger.debug("No joystick detected")
 
-    def _initialize_context_manager(self) -> None:
-        """Initialize context-aware input system from YAML configs."""
+    def _initialize_context_manager(self, aircraft_id: str | None = None) -> None:
+        """Initialize context-aware input system from YAML configs.
+
+        Args:
+            aircraft_id: Aircraft identifier for loading user keybinding overrides.
+        """
         if not self.message_queue:
             logger.debug("Context manager disabled (no message queue)")
             return
@@ -521,10 +525,13 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
                 logger.warning(f"Input config directory not found: {config_dir}")
                 return
 
-            self.context_manager = InputContextManager(config_dir, self.message_queue)
+            self.context_manager = InputContextManager(
+                config_dir, self.message_queue, aircraft_id=aircraft_id
+            )
             logger.info(
-                "Context-aware input system initialized (%d contexts loaded)",
+                "Context-aware input system initialized (%d contexts loaded, aircraft=%s)",
                 len(self.context_manager.contexts),
+                aircraft_id or "none",
             )
 
             # Detect and log any conflicts
@@ -540,6 +547,18 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
             logger.debug(f"Context manager not available: {e}")
         except Exception as e:
             logger.error(f"Failed to initialize context manager: {e}")
+
+    def reinitialize_context_manager(self, aircraft_id: str) -> None:
+        """Reinitialize context manager with aircraft-specific keybindings.
+
+        Call this after loading an aircraft to apply user-defined keybinding
+        overrides for that aircraft.
+
+        Args:
+            aircraft_id: Aircraft identifier (e.g., "cessna172").
+        """
+        logger.info("Reinitializing context manager for aircraft: %s", aircraft_id)
+        self._initialize_context_manager(aircraft_id=aircraft_id)
 
     def process_events(self, events: list[pygame.event.Event]) -> None:
         """Process pygame events.

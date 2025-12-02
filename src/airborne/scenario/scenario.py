@@ -64,13 +64,15 @@ class Scenario:
 
     Attributes:
         airport_icao: Departure airport ICAO code
+        arrival_icao: Arrival airport ICAO code (optional, None for circuit training)
+        circuit_training: If True, practicing patterns at departure airport only
         spawn_location: Where to spawn at airport
         spawn_position: Specific position (if None, auto-selected)
         spawn_heading: Initial heading in degrees (0-359)
         aircraft_type: Aircraft type identifier
         engine_state: Initial engine state
-        fuel_percentage: Fuel load as percentage (0-100)
-        payload_percentage: Payload as percentage of max (0-100)
+        fuel_gallons: Fuel load in gallons (None = use aircraft default)
+        passenger_count: Number of passengers (0-max based on aircraft)
         time_of_day: Hour of day (0-23)
         weather_preset: Weather preset name (optional)
         callsign: Aircraft callsign (if None, auto-generated)
@@ -85,13 +87,15 @@ class Scenario:
     """
 
     airport_icao: str
+    arrival_icao: str | None = None
+    circuit_training: bool = False
     spawn_location: SpawnLocation = SpawnLocation.RAMP
     spawn_position: Vector3 | None = None
     spawn_heading: float = 0.0
     aircraft_type: str = "cessna172"
     engine_state: EngineState = EngineState.COLD_AND_DARK
-    fuel_percentage: float = 100.0
-    payload_percentage: float = 50.0
+    fuel_gallons: float | None = None  # None = use aircraft default
+    passenger_count: int = 0
     time_of_day: int = 12
     weather_preset: str | None = None
     callsign: str | None = None
@@ -113,13 +117,15 @@ class ScenarioBuilder:
     def __init__(self) -> None:
         """Initialize scenario builder with defaults."""
         self._airport_icao: str | None = None
+        self._arrival_icao: str | None = None
+        self._circuit_training: bool = False
         self._spawn_location = SpawnLocation.RAMP
         self._spawn_position: Vector3 | None = None
         self._spawn_heading: float = 0.0
         self._aircraft_type = "cessna172"
         self._engine_state = EngineState.COLD_AND_DARK
-        self._fuel_percentage: float = 100.0
-        self._payload_percentage: float = 50.0
+        self._fuel_gallons: float | None = None
+        self._passenger_count: int = 0
         self._time_of_day: int = 12
         self._weather_preset: str | None = None
         self._callsign: str | None = None
@@ -134,6 +140,30 @@ class ScenarioBuilder:
             Self for method chaining
         """
         self._airport_icao = icao.upper()
+        return self
+
+    def with_arrival(self, icao: str | None) -> "ScenarioBuilder":
+        """Set arrival airport.
+
+        Args:
+            icao: Airport ICAO code or None for circuit training
+
+        Returns:
+            Self for method chaining
+        """
+        self._arrival_icao = icao.upper() if icao else None
+        return self
+
+    def with_circuit_training(self, enabled: bool = True) -> "ScenarioBuilder":
+        """Enable or disable circuit training mode.
+
+        Args:
+            enabled: True for circuit training at single airport
+
+        Returns:
+            Self for method chaining
+        """
+        self._circuit_training = enabled
         return self
 
     def with_spawn_location(self, location: SpawnLocation) -> "ScenarioBuilder":
@@ -196,28 +226,28 @@ class ScenarioBuilder:
         self._engine_state = state
         return self
 
-    def with_fuel(self, percentage: float) -> "ScenarioBuilder":
-        """Set fuel load percentage.
+    def with_fuel(self, gallons: float | None) -> "ScenarioBuilder":
+        """Set fuel load in gallons.
 
         Args:
-            percentage: Fuel percentage (0-100)
+            gallons: Fuel amount in gallons, or None for aircraft default
 
         Returns:
             Self for method chaining
         """
-        self._fuel_percentage = max(0.0, min(100.0, percentage))
+        self._fuel_gallons = gallons
         return self
 
-    def with_payload(self, percentage: float) -> "ScenarioBuilder":
-        """Set payload percentage.
+    def with_passengers(self, count: int) -> "ScenarioBuilder":
+        """Set number of passengers.
 
         Args:
-            percentage: Payload percentage (0-100)
+            count: Number of passengers (0 or more)
 
         Returns:
             Self for method chaining
         """
-        self._payload_percentage = max(0.0, min(100.0, percentage))
+        self._passenger_count = max(0, count)
         return self
 
     def with_time_of_day(self, hour: int) -> "ScenarioBuilder":
@@ -270,13 +300,15 @@ class ScenarioBuilder:
 
         return Scenario(
             airport_icao=self._airport_icao,
+            arrival_icao=self._arrival_icao,
+            circuit_training=self._circuit_training,
             spawn_location=self._spawn_location,
             spawn_position=self._spawn_position,
             spawn_heading=self._spawn_heading,
             aircraft_type=self._aircraft_type,
             engine_state=self._engine_state,
-            fuel_percentage=self._fuel_percentage,
-            payload_percentage=self._payload_percentage,
+            fuel_gallons=self._fuel_gallons,
+            passenger_count=self._passenger_count,
             time_of_day=self._time_of_day,
             weather_preset=self._weather_preset,
             callsign=self._callsign,

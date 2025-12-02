@@ -142,6 +142,21 @@ class SimplePistonEngine(IPlugin):
             if "max_rpm" in cfg:
                 self.max_rpm = float(cfg["max_rpm"])
 
+        # Apply spawn state if available (source of truth for initial engine state)
+        if hasattr(context, "spawn_state") and context.spawn_state is not None:
+            spawn = context.spawn_state
+            if hasattr(spawn, "engine_running") and spawn.engine_running:
+                # Engine should be running - set to idle state
+                self.running = True
+                self.rpm = self.idle_rpm
+                self.magneto_left = True
+                self.magneto_right = True
+                self.mixture = 1.0
+                self.oil_temp = 80.0  # Warmed up
+                self.oil_pressure = 60.0  # Normal operating pressure
+                self._fuel_available = True  # Assume fuel available
+                logger.info("Engine initialized RUNNING from spawn state (idle)")
+
         # Subscribe to control messages
         context.message_queue.subscribe(MessageTopic.ENGINE_STATE, self.handle_message)
 

@@ -5,7 +5,7 @@ import time
 import pytest
 
 from airborne.audio.orientation import OrientationAudioManager, ProximityAlert
-from airborne.core.messaging import Message, MessageQueue, MessageTopic
+from airborne.core.messaging import Message, MessageQueue
 from airborne.physics.vectors import Vector3
 from airborne.plugins.navigation.position_tracker import (
     ApproachingJunction,
@@ -487,6 +487,7 @@ class TestSpatialAnnouncements:
 
         # Distance should be capped
         import math
+
         distance = math.sqrt(rel_pos.x**2 + rel_pos.z**2)
         assert distance <= 50.1  # Allow small floating point error
 
@@ -503,11 +504,7 @@ class TestSpatialAnnouncements:
         )
 
         # Should not crash
-        manager.announce_junction_spatial(
-            junction,
-            Vector3(-122.0, 10.0, 37.5),
-            0.0
-        )
+        manager.announce_junction_spatial(junction, Vector3(-122.0, 10.0, 37.5), 0.0)
 
 
 class TestHoldShortAnnouncements:

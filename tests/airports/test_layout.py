@@ -1,14 +1,13 @@
 """Tests for Airport Layout abstraction."""
 
 import math
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
 from airborne.airports.layout import (
     AirportLayout,
     AirportLayoutLoader,
-    LayoutHoldShort,
     LayoutParking,
     LayoutRunway,
     LayoutTaxiway,

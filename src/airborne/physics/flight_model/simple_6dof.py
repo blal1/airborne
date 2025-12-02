@@ -393,7 +393,7 @@ class Simple6DOFFlightModel(IFlightModel):
 
         # DEBUG: Log lift calculation details every 60 frames (~1 second)
         if self._updates % 60 == 0:
-            logger.info(
+            logger.debug(
                 f"[LIFT CALC] airspeed={airspeed:.1f}m/s q={q:.1f}Pa wing_area={self.wing_area:.2f}m² AOA={angle_of_attack * RADIANS_TO_DEGREES:.2f}° CL_slope={self.lift_coefficient_slope:.3f} CL={cl:.3f} lift_mag={lift_magnitude:.1f}N mass={self.state.mass:.1f}kg weight={self.state.mass * GRAVITY:.1f}N"
             )
 
@@ -641,6 +641,32 @@ class Simple6DOFFlightModel(IFlightModel):
         # The landing gear geometry limits how far the aircraft can pitch
         if self.state.on_ground:
             current_pitch = self.state.rotation.x
+
+            # When stationary on ground (low airspeed), add ground contact physics
+            # This simulates the landing gear's natural settling behavior
+            # Without this, pitch drifts because aerodynamic damping is zero at zero airspeed
+            GROUND_STATIONARY_THRESHOLD = 5.0  # m/s - below this, apply ground settling
+            if airspeed < GROUND_STATIONARY_THRESHOLD:
+                # Ground spring: pull pitch towards neutral resting position
+                # This simulates the landing gear geometry settling the aircraft
+                pitch_error = current_pitch - GROUND_PITCH_NEUTRAL_RAD
+                ground_spring_stiffness = 2.0  # rad/s² per radian of error
+                ground_damping = 3.0  # 1/s - damping coefficient
+
+                # Spring acceleration towards neutral
+                spring_accel = -ground_spring_stiffness * pitch_error
+
+                # Damping acceleration (opposes velocity)
+                damping_accel = -ground_damping * self.state.angular_velocity.x
+
+                # Apply ground settling acceleration
+                ground_pitch_accel = spring_accel + damping_accel
+                self.state.angular_velocity.x += ground_pitch_accel * dt
+
+                # Also zero out roll angular velocity on ground when stationary
+                # Aircraft should settle wings-level
+                roll_damping = 3.0
+                self.state.angular_velocity.y -= roll_damping * self.state.angular_velocity.y * dt
 
             # Clamp pitch to ground limits
             if current_pitch < GROUND_PITCH_MIN_RAD:

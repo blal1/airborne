@@ -62,9 +62,25 @@ class FuelPlugin(IPlugin):
         """
         self.context = context
 
-        # Get fuel config
-        fuel_config = context.config.get("fuel", {})
+        # Get fuel config (make a copy to modify)
+        fuel_config = dict(context.config.get("fuel", {}))
         implementation = fuel_config.get("implementation", "simple_gravity")
+
+        # Apply scenario fuel_gallons if specified (overrides config defaults)
+        # Scenario is the source of truth for initial values
+        if hasattr(context, "scenario") and context.scenario is not None:
+            scenario = context.scenario
+            if hasattr(scenario, "fuel_gallons") and scenario.fuel_gallons is not None:
+                total_fuel = float(scenario.fuel_gallons)
+                # Update tank initial quantities in config
+                if "tanks" in fuel_config:
+                    tank_count = len(fuel_config["tanks"])
+                    fuel_per_tank = total_fuel / tank_count if tank_count > 0 else total_fuel
+                    for tank_name, tank_cfg in fuel_config["tanks"].items():
+                        # Clamp to tank capacity
+                        max_quantity = tank_cfg.get("capacity_usable", tank_cfg.get("capacity_total", 26.0))
+                        tank_cfg["initial_quantity"] = min(fuel_per_tank, max_quantity)
+                logger.info("Fuel initialized from scenario: %.1f gallons total", total_fuel)
 
         # Create appropriate fuel system implementation
         if implementation == "simple_gravity":

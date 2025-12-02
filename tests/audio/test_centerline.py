@@ -1,6 +1,6 @@
 """Tests for Centerline Beep Manager."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -113,9 +113,7 @@ class TestCenterlineBeepManager:
         assert result3 is True
         assert mock_queue.publish.call_count == 2
 
-    def test_beep_panned_left(
-        self, manager: CenterlineBeepManager, mock_queue: MagicMock
-    ) -> None:
+    def test_beep_panned_left(self, manager: CenterlineBeepManager, mock_queue: MagicMock) -> None:
         """Test that left deviation produces left-panned beep."""
         manager.enable()
         manager.update((2.5, "left"), 1.0)  # 2.5m left, max is 5m
@@ -129,9 +127,7 @@ class TestCenterlineBeepManager:
         position = message.data["position"]
         assert position["x"] == pytest.approx(-5.0)
 
-    def test_beep_panned_right(
-        self, manager: CenterlineBeepManager, mock_queue: MagicMock
-    ) -> None:
+    def test_beep_panned_right(self, manager: CenterlineBeepManager, mock_queue: MagicMock) -> None:
         """Test that right deviation produces right-panned beep."""
         manager.enable()
         manager.update((3.0, "right"), 1.0)  # 3m right
@@ -143,9 +139,7 @@ class TestCenterlineBeepManager:
         position = message.data["position"]
         assert position["x"] == pytest.approx(6.0)
 
-    def test_beep_centered(
-        self, manager: CenterlineBeepManager, mock_queue: MagicMock
-    ) -> None:
+    def test_beep_centered(self, manager: CenterlineBeepManager, mock_queue: MagicMock) -> None:
         """Test that on-centerline produces centered beep."""
         manager.enable()
         manager.update((0.1, "left"), 1.0)  # 0.1m < 0.3m threshold
@@ -157,9 +151,7 @@ class TestCenterlineBeepManager:
         position = message.data["position"]
         assert position["x"] == pytest.approx(0.0)
 
-    def test_no_beep_on_centerline_when_disabled(
-        self, mock_queue: MagicMock
-    ) -> None:
+    def test_no_beep_on_centerline_when_disabled(self, mock_queue: MagicMock) -> None:
         """Test no centered beep when on_centerline_beep is False."""
         config = CenterlineConfig(on_centerline_beep=False)
         manager = CenterlineBeepManager(mock_queue, config)
@@ -184,9 +176,7 @@ class TestCenterlineBeepManager:
         position = message.data["position"]
         assert position["x"] == pytest.approx(10.0)
 
-    def test_beep_sound_id(
-        self, manager: CenterlineBeepManager, mock_queue: MagicMock
-    ) -> None:
+    def test_beep_sound_id(self, manager: CenterlineBeepManager, mock_queue: MagicMock) -> None:
         """Test that beep uses correct sound ID."""
         manager.enable()
         manager.update((2.0, "left"), 1.0)
@@ -194,9 +184,7 @@ class TestCenterlineBeepManager:
         message = mock_queue.publish.call_args[0][0]
         assert message.data["sound_id"] == "centerline_beep"
 
-    def test_beep_volume(
-        self, manager: CenterlineBeepManager, mock_queue: MagicMock
-    ) -> None:
+    def test_beep_volume(self, manager: CenterlineBeepManager, mock_queue: MagicMock) -> None:
         """Test beep volume."""
         manager.enable()
         manager.update((2.0, "left"), 1.0)

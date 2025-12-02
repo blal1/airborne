@@ -20,9 +20,9 @@ Typical usage:
 """
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-from airborne.airports.layout import AirportLayout, LayoutRunway
+from airborne.airports.layout import AirportLayout
 from airborne.audio.centerline import CenterlineBeepManager
 from airborne.audio.orientation import OrientationAudioManager
 from airborne.physics.vectors import Vector3
@@ -166,9 +166,7 @@ class GroundNavigationManager:
 
             # Announce once per junction
             if junction_key not in self._announced_junctions:
-                self.orientation_audio.announce_junction_spatial(
-                    junction, position, heading
-                )
+                self.orientation_audio.announce_junction_spatial(junction, position, heading)
                 self._announced_junctions.add(junction_key)
 
         # Clear old announcements when we move away from junctions

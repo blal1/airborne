@@ -194,11 +194,14 @@ class AircraftBuilder:
         }
 
         # Create plugin context with merged config
+        # Propagate scenario and spawn_state from parent context
         plugin_context = PluginContext(
             event_bus=self.context.event_bus,
             message_queue=self.context.message_queue,
             config=merged_config,
             plugin_registry=self.context.plugin_registry,
+            scenario=getattr(self.context, "scenario", None),
+            spawn_state=getattr(self.context, "spawn_state", None),
         )
 
         # Load plugin using plugin loader

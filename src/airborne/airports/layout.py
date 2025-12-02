@@ -18,7 +18,7 @@ import logging
 import math
 from dataclasses import dataclass, field
 
-from airborne.airports.database import AirportDatabase, Runway
+from airborne.airports.database import AirportDatabase
 from airborne.physics.vectors import Vector3
 from airborne.services.atc.gateway_loader import GatewayAirportData
 
@@ -487,7 +487,9 @@ class AirportLayoutLoader:
         # Create taxiway from hangar to runway
         # Taxiway meets runway at midpoint
         taxiway_runway_junction = self._offset_position(
-            midpoint, hangar_direction, runway_width_m / 2 + 2  # Just off runway edge
+            midpoint,
+            hangar_direction,
+            runway_width_m / 2 + 2,  # Just off runway edge
         )
 
         layout.taxiways.append(
@@ -504,9 +506,7 @@ class AirportLayoutLoader:
         )
 
         # Hold short point 10m before runway edge
-        hold_short_pos = self._offset_position(
-            midpoint, hangar_direction, runway_width_m / 2 + 10
-        )
+        hold_short_pos = self._offset_position(midpoint, hangar_direction, runway_width_m / 2 + 10)
 
         layout.hold_short_points.append(
             LayoutHoldShort(

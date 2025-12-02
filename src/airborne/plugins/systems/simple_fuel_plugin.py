@@ -119,16 +119,29 @@ class SimpleFuelSystem(IPlugin):
             cfg = context.config
             if "left_tank_capacity" in cfg:
                 self.left_tank_capacity = float(cfg["left_tank_capacity"])
-                # Initialize quantity to full capacity
+                # Initialize quantity to full capacity (may be overridden by scenario)
                 self.left_tank_quantity = self.left_tank_capacity
             if "right_tank_capacity" in cfg:
                 self.right_tank_capacity = float(cfg["right_tank_capacity"])
-                # Initialize quantity to full capacity
+                # Initialize quantity to full capacity (may be overridden by scenario)
                 self.right_tank_quantity = self.right_tank_capacity
             if "unusable_fuel" in cfg:
                 self.unusable_fuel = float(cfg["unusable_fuel"])
             if "fuel_selector" in cfg:
                 self.fuel_selector = str(cfg["fuel_selector"])
+
+        # Apply scenario fuel_gallons if specified (overrides config defaults)
+        # Scenario is the source of truth for initial values
+        if hasattr(context, "scenario") and context.scenario is not None:
+            scenario = context.scenario
+            if hasattr(scenario, "fuel_gallons") and scenario.fuel_gallons is not None:
+                total_fuel = float(scenario.fuel_gallons)
+                total_capacity = self.left_tank_capacity + self.right_tank_capacity
+                # Clamp to total capacity
+                total_fuel = min(total_fuel, total_capacity)
+                # Split fuel evenly between tanks
+                self.left_tank_quantity = total_fuel / 2.0
+                self.right_tank_quantity = total_fuel / 2.0
 
         # Subscribe to engine state for fuel consumption
         context.message_queue.subscribe(MessageTopic.ENGINE_STATE, self.handle_message)
