@@ -1,6 +1,10 @@
 # English translations for AirBorne
 # This is the default/fallback language
 
+# System messages
+system:
+  startup: "AirBorne flight simulator"
+
 # Common UI elements
 common:
   back: "Back"
@@ -15,6 +19,8 @@ common:
   selected: "Selected"
   items: "items"
   none_available: "None available"
+  menu_closed: "Menu closed"
+  invalid_option: "Invalid option"
 
 # Main menu
 menu:
@@ -193,14 +199,22 @@ actions:
   gear_down: "Gear down"
   flaps_extending: "Flaps extending"
   flaps_retracting: "Flaps retracting"
+  flaps_up: "Flaps up"
+  flaps_degrees: "Flaps {value} degrees"
+  flaps_up_set: "Flaps up set"
+  flaps_degrees_set: "Flaps {value} degrees set"
   throttle_increased: "Throttle increased"
   throttle_decreased: "Throttle decreased"
   throttle_full: "Full throttle"
   throttle_idle: "Throttle idle"
+  throttle_percent: "Throttle {value} percent"
   brakes_on: "Brakes on"
   parking_brake_set: "Parking brake set"
   parking_brake_released: "Parking brake released"
   paused: "Paused"
+  auto_trim_on: "Auto trim on"
+  auto_trim_off: "Auto trim off"
+  stall: "Stall"
 
 # Ground navigation
 ground:
@@ -220,6 +234,373 @@ ground:
   meters_to_intersection: "{distance} meters to next intersection"
   heading_degrees: "heading {value} degrees"
   location_type: "{type} {id}"
+
+# Panels
+panels:
+  instrument_panel: "Instrument Panel"
+  pedestal: "Pedestal"
+  engine_controls: "Engine Controls"
+  overhead_panel: "Overhead Panel"
+  flight_controls: "Flight Controls"
+
+# Controls (switches, levers, knobs, buttons)
+controls:
+  # Switch states
+  on: "on"
+  off: "off"
+
+  # Electrical switches
+  master_switch: "Master Switch"
+  avionics_master_switch: "Avionics Master"
+  beacon_switch: "Beacon"
+  nav_lights_switch: "Navigation Lights"
+  strobe_switch: "Strobe Lights"
+  taxi_light_switch: "Taxi Light"
+  landing_light_switch: "Landing Light"
+  pitot_heat_switch: "Pitot Heat"
+
+  # Engine controls
+  magneto_switch: "Magnetos"
+  magneto_off: "off"
+  magneto_r: "right"
+  magneto_l: "left"
+  magneto_both: "both"
+  magneto_start: "start"
+  starter_button: "Starter"
+  mixture_lever: "Mixture"
+  mixture_idle_cutoff: "idle cutoff"
+  mixture_lean: "lean"
+  mixture_rich: "rich"
+  carburetor_heat_lever: "Carburetor Heat"
+  carburetor_cold: "cold"
+  carburetor_hot: "hot"
+  throttle_lever: "Throttle"
+  primer_pump: "Primer"
+
+  # Fuel controls
+  fuel_selector_valve: "Fuel Selector"
+  fuel_off: "off"
+  fuel_left: "left tank"
+  fuel_right: "right tank"
+  fuel_both: "both tanks"
+  fuel_shutoff_valve: "Fuel Shutoff"
+  fuel_closed: "closed"
+  fuel_open: "open"
+  fuel_pump_switch: "Fuel Pump"
+
+  # Flight controls
+  flaps_lever: "Flaps"
+  flaps_up: "up"
+  flaps_10: "10 degrees"
+  flaps_20: "20 degrees"
+  flaps_30: "30 degrees"
+  flaps_full: "full"
+  elevator_trim_wheel: "Elevator Trim"
+  trim_nose_down: "nose down"
+  trim_neutral: "neutral"
+  trim_nose_up: "nose up"
+  parking_brake_lever: "Parking Brake"
+  parking_brake_released: "released"
+  parking_brake_set: "set"
+  auto_trim_switch: "Auto Trim"
+
+# ATC Menu
+atc_menu:
+  opened: "ATC Menu"
+  closed: "ATC Menu closed"
+  invalid_option: "Invalid option"
+  # Menu options
+  contact_ground: "Contact Ground"
+  contact_tower: "Contact Tower"
+  contact_approach: "Contact Approach"
+  contact_departure: "Contact Departure"
+  contact_center: "Contact Center"
+  request_taxi: "Request Taxi"
+  request_takeoff: "Request Takeoff"
+  request_landing: "Request Landing"
+  listen_atis: "Listen to ATIS"
+  radio_check: "Radio Check"
+  request_startup: "Request Startup"
+  request_startup_no_atis: "Request Startup without ATIS"
+  announce_taxi: "Announce Taxi"
+  ready_departure: "Ready for Departure"
+  announce_departure: "Announce Departure"
+  report_ready: "Report Ready"
+  announce_takeoff: "Announce Takeoff"
+  checkin_departure: "Contact Departure"
+  request_freq_change: "Request Frequency Change"
+  request_flight_following: "Request Flight Following"
+  position_report: "Position Report"
+  request_higher: "Request Higher Altitude"
+
+# Checklist Menu
+checklist_menu:
+  opened: "Checklist Menu"
+  closed: "Checklist Menu closed"
+  invalid_option: "Invalid option"
+  start_failed: "Failed to start checklist"
+
+# Checklist announcements
+checklist:
+  starting: "Starting checklist"
+  complete: "complete"
+  failed: "failed"
+  skipped: "skipped"
+  checklist: "Checklist"
+
+# Checklist names (keyed by checklist ID)
+checklists:
+  cessna172_before_start: "Before Engine Start"
+  cessna172_engine_start: "Engine Start"
+  cessna172_before_takeoff: "Before Takeoff"
+  cessna172_takeoff: "Takeoff"
+  cessna172_climb: "Climb"
+  cessna172_cruise: "Cruise"
+  cessna172_descent: "Descent"
+  cessna172_approach: "Approach"
+  cessna172_before_landing: "Before Landing"
+  cessna172_landing: "Landing"
+  cessna172_after_landing: "After Landing"
+  cessna172_shutdown: "Shutdown"
+
+# Checklist item challenges (spoken during checklist execution)
+checklist_items:
+  # Challenges - Before Start
+  preflight_inspection: "Preflight Inspection"
+  passenger_briefing: "Passenger Briefing"
+  seats_and_seat_belts: "Seats and Seat Belts"
+  fuel_quantity: "Fuel Quantity"
+  fuel_selector_valve: "Fuel Selector Valve"
+  fuel_shutoff_valve: "Fuel Shutoff Valve"
+  brakes: "Brakes"
+  circuit_breakers: "Circuit Breakers"
+  electrical_equipment: "Electrical Equipment"
+  avionics_master_switch: "Avionics Master Switch"
+  master_switch: "Master Switch"
+  fuel_quantity_indicators: "Fuel Quantity Indicators"
+  parking_brake: "Parking Brake"
+
+  # Challenges - Engine Start
+  mixture: "Mixture"
+  carburetor_heat: "Carburetor Heat"
+  primer: "Primer"
+  throttle: "Throttle"
+  propeller_area: "Propeller Area"
+  beacon_light: "Beacon Light"
+  magnetos: "Magnetos"
+  engine_start: "Engine Start"
+  oil_pressure: "Oil Pressure"
+  engine_instruments: "Engine Instruments"
+  navigation_lights: "Navigation Lights"
+  radios: "Radios"
+
+  # Challenges - Before Takeoff
+  cabin_doors: "Cabin Doors"
+  flight_controls: "Flight Controls"
+  flight_instruments: "Flight Instruments"
+  elevator_trim: "Elevator Trim"
+  annunciator_panel: "Annunciator Panel"
+  strobes_and_landing_light: "Strobes and Landing Light"
+  transponder: "Transponder"
+  flaps: "Flaps"
+
+  # Challenges - Takeoff
+  wing_flaps: "Wing Flaps"
+  elevator_control: "Elevator Control"
+  climb_speed: "Climb Speed"
+  after_takeoff: "After Takeoff"
+
+  # Challenges - Before Landing
+  landing_light: "Landing Light"
+  airspeed: "Airspeed"
+  trim: "Trim"
+
+  # Challenges - After Landing
+  strobe_lights: "Strobe Lights"
+
+  # Challenges - Shutdown
+  hobbstach_time: "Hobbs/Tach Time"
+  control_lock: "Control Lock"
+
+  # Legacy/Alternate names
+  master_and_beacon: "Master Switch and Beacon"
+  ignition: "Ignition Switch"
+  engine_indicators: "Engine Indicators"
+  engine_gauges: "Engine Gauges"
+  doors_and_windows: "Doors and Windows"
+  autopilot: "Autopilot"
+  fuel_pump: "Fuel Pump"
+
+  # Responses
+  complete: "COMPLETE"
+  checked: "CHECKED"
+  check: "CHECK"
+  adjusted_and_locked: "ADJUSTED AND LOCKED"
+  both: "BOTH"
+  "on": "ON"
+  "off": "OFF"
+  test_and_set: "TEST AND SET"
+  check_in: "CHECK IN"
+  set: "SET"
+  idle_cutoff: "IDLE CUTOFF"
+  cold: "COLD"
+  as_required: "AS REQUIRED"
+  open_quarter: "OPEN 1/4 INCH"
+  open_14_inch: "OPEN 1/4 INCH"
+  clear: "CLEAR"
+  start: "START"
+  in_green: "IN GREEN"
+  green: "GREEN"
+  set_nav: "SET FOR NAV"
+  set_alt: "SET FOR ALT"
+  takeoff: "TAKEOFF"
+  free_and_correct: "FREE AND CORRECT"
+  set_squawk: "SET AND SQUAWK"
+  disengaged: "DISENGAGED"
+  rich: "RICH"
+  engage_starter: "ENGAGE STARTER"
+  set_frequencies: "SET FREQUENCIES"
+  closed_and_locked: "CLOSED AND LOCKED"
+  release: "RELEASE"
+  full_open: "FULL OPEN"
+  up: "UP"
+  secure: "SECURE"
+  adjust: "ADJUST"
+  standby: "STANDBY"
+  record: "RECORD"
+  install: "INSTALL"
+  alt: "ALT"
+  left_or_right: "LEFT or RIGHT"
+  wing_flaps_up: "Wing Flaps UP"
+  in_and_locked: "IN AND LOCKED"
+  1700_rpm: "1700 RPM"
+  1000_rpm_or_less: "1000 RPM or less"
+  010_degrees: "0-10 degrees"
+  7080_kias: "70-80 KIAS"
+  6070_kias_flaps_up: "60-70 KIAS (flaps UP)"
+  5565_kias_flaps_down: "55-65 KIAS (flaps DOWN)"
+
+# Ground Services Menu
+ground_menu:
+  opened: "Ground Services"
+  closed: "Ground Services closed"
+  invalid_option: "Invalid option"
+  not_at_parking: "Not at parking"
+  no_services: "No services available"
+  option_refuel: "Request Refueling"
+  option_pushback: "Request Pushback"
+  option_boarding: "Request Boarding"
+  option_deboarding: "Request Deboarding"
+  option_gpu: "Request Ground Power"
+  option_catering: "Request Catering"
+  service_cancelled: "Service cancelled"
+
+# Performance Display / FMC
+fmc:
+  not_available: "Performance display not available"
+  opened: "Performance display"
+  closed: "Performance display closed"
+  page_1: "Page 1"
+  page_2: "Page 2"
+  page_3: "Page 3"
+  # Weight & Balance
+  wb_title: "Weight and Balance"
+  wb_total_weight: "Total weight"
+  wb_cg_position: "Center of gravity"
+  wb_within_limits: "Within limits"
+  wb_out_of_limits: "Out of limits"
+  # V-Speeds
+  vs_title: "V-Speeds"
+  vs_weight: "Weight"
+  vs_vstall: "V stall"
+  vs_vr: "V rotate"
+  vs_vx: "V X"
+  vs_vy: "V Y"
+  # Takeoff Performance
+  to_title: "Takeoff Performance"
+  to_weight: "Weight"
+  to_ground_roll: "Ground roll"
+  to_distance_50: "Distance to 50 feet"
+  to_climb_rate: "Initial climb rate"
+  # Units
+  pounds: "pounds"
+  feet: "feet"
+  inches: "inches"
+  knots: "knots"
+  fpm: "feet per minute"
+  hundred: "hundred"
+  thousand: "thousand"
+
+# Flight Instructor
+instructor:
+  enabled: "Flight instructor enabled"
+  disabled: "Flight instructor disabled"
+  assessment: "Flight assessment"
+  pitch_too_high: "Pitch too high, lower the nose"
+  pitch_too_low: "Pitch too low, raise the nose"
+  stall_warning: "Stall warning! Lower the nose and add power"
+  airspeed_low: "Airspeed low, add power"
+  airspeed_high: "Airspeed high, reduce power"
+
+# Ground Services Audio
+ground_services:
+  # Boarding
+  boarding_acknowledged: "Boarding acknowledged"
+  boarding_in_progress: "Boarding passengers"
+  boarding_complete: "Boarding complete"
+  deboarding_acknowledged: "Deboarding acknowledged"
+  deboarding_complete: "Deboarding complete"
+  # Refueling
+  refuel_acknowledged: "Refueling acknowledged"
+  refuel_starting: "Beginning refueling"
+  refuel_in_progress: "Refueling in progress"
+  refuel_complete: "Refueling complete"
+  # Pushback
+  pushback_acknowledged: "Pushback acknowledged"
+  pushback_starting: "Beginning pushback"
+  pushback_complete: "Pushback complete"
+
+# Ground/Taxi Instructions
+taxi:
+  hold_short: "Hold short"
+  cross_runway: "Cross runway"
+  taxi_via: "Taxi via"
+  contact_tower: "Contact tower"
+  hold_short_traffic: "Hold short, traffic"
+
+# ATC Phraseology
+atc:
+  # Facilities
+  ground: "Ground"
+  tower: "Tower"
+  departure: "Departure"
+  approach: "Approach"
+  # Common phrases
+  request_startup: "request startup"
+  startup_approved: "startup approved"
+  startup_denied: "startup denied, advise when you have information"
+  request_taxi: "request taxi"
+  taxi_to_runway: "taxi to runway"
+  taxi_via: "via"
+  hold_short: "hold short"
+  contact_tower: "contact tower"
+  ready_for_departure: "ready for departure"
+  cleared_takeoff: "cleared for takeoff"
+  lineup_wait: "line up and wait"
+  contact_departure: "contact departure"
+  radio_check: "radio check"
+  loud_and_clear: "loud and clear"
+  readback_correct: "readback correct"
+  # Pilot responses
+  wilco: "wilco"
+  roger: "roger"
+  affirm: "affirm"
+  negative: "negative"
+  # Context phrases
+  with_information: "with information"
+  passengers_on_board: "passengers on board"
+  at: "at"
+  on: "on"
 
 # Language names (in the target language)
 languages:

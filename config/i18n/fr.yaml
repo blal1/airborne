@@ -1,6 +1,10 @@
 # French translations for AirBorne
 # Traductions françaises pour AirBorne
 
+# System messages
+system:
+  startup: "Simulateur de vol AirBorne"
+
 # Common UI elements
 common:
   back: "Retour"
@@ -15,6 +19,8 @@ common:
   selected: "Sélectionné"
   items: "éléments"
   none_available: "Aucun disponible"
+  menu_closed: "Menu fermé"
+  invalid_option: "Option invalide"
 
 # Main menu
 menu:
@@ -193,14 +199,22 @@ actions:
   gear_down: "Train sorti"
   flaps_extending: "Volets en sortie"
   flaps_retracting: "Volets en rentrée"
+  flaps_up: "Volets rentrés"
+  flaps_degrees: "Volets {value} degrés"
+  flaps_up_set: "Volets rentrés"
+  flaps_degrees_set: "Volets {value} degrés"
   throttle_increased: "Gaz augmentés"
   throttle_decreased: "Gaz réduits"
   throttle_full: "Plein gaz"
   throttle_idle: "Gaz ralenti"
+  throttle_percent: "Gaz {value} pour cent"
   brakes_on: "Freins"
   parking_brake_set: "Frein de parking serré"
   parking_brake_released: "Frein de parking relâché"
   paused: "Pause"
+  auto_trim_on: "Trim automatique activé"
+  auto_trim_off: "Trim automatique désactivé"
+  stall: "Décrochage"
 
 # Ground navigation
 ground:
@@ -220,6 +234,373 @@ ground:
   meters_to_intersection: "{distance} mètres jusqu'à la prochaine intersection"
   heading_degrees: "direction {value} degrés"
   location_type: "{type} {id}"
+
+# Panels
+panels:
+  instrument_panel: "Tableau de bord"
+  pedestal: "Console centrale"
+  engine_controls: "Commandes moteur"
+  overhead_panel: "Panneau supérieur"
+  flight_controls: "Commandes de vol"
+
+# Controls (switches, levers, knobs, buttons)
+controls:
+  # Switch states
+  on: "activé"
+  off: "désactivé"
+
+  # Electrical switches
+  master_switch: "Interrupteur principal"
+  avionics_master_switch: "Avionique"
+  beacon_switch: "Gyrophare"
+  nav_lights_switch: "Feux de navigation"
+  strobe_switch: "Feux à éclats"
+  taxi_light_switch: "Phare de roulage"
+  landing_light_switch: "Phare d'atterrissage"
+  pitot_heat_switch: "Réchauffage pitot"
+
+  # Engine controls
+  magneto_switch: "Magnétos"
+  magneto_off: "coupées"
+  magneto_r: "droite"
+  magneto_l: "gauche"
+  magneto_both: "les deux"
+  magneto_start: "démarrage"
+  starter_button: "Démarreur"
+  mixture_lever: "Mélange"
+  mixture_idle_cutoff: "étouffoir"
+  mixture_lean: "pauvre"
+  mixture_rich: "riche"
+  carburetor_heat_lever: "Réchauffage carburateur"
+  carburetor_cold: "froid"
+  carburetor_hot: "chaud"
+  throttle_lever: "Manette des gaz"
+  primer_pump: "Pompe d'amorçage"
+
+  # Fuel controls
+  fuel_selector_valve: "Sélecteur carburant"
+  fuel_off: "fermé"
+  fuel_left: "réservoir gauche"
+  fuel_right: "réservoir droit"
+  fuel_both: "les deux réservoirs"
+  fuel_shutoff_valve: "Vanne carburant"
+  fuel_closed: "fermée"
+  fuel_open: "ouverte"
+  fuel_pump_switch: "Pompe carburant"
+
+  # Flight controls
+  flaps_lever: "Volets"
+  flaps_up: "rentrés"
+  flaps_10: "10 degrés"
+  flaps_20: "20 degrés"
+  flaps_30: "30 degrés"
+  flaps_full: "pleins"
+  elevator_trim_wheel: "Trim de profondeur"
+  trim_nose_down: "piqué"
+  trim_neutral: "neutre"
+  trim_nose_up: "cabré"
+  parking_brake_lever: "Frein de parking"
+  parking_brake_released: "relâché"
+  parking_brake_set: "serré"
+  auto_trim_switch: "Trim automatique"
+
+# ATC Menu
+atc_menu:
+  opened: "Menu ATC"
+  closed: "Menu ATC fermé"
+  invalid_option: "Option invalide"
+  # Menu options
+  contact_ground: "Contacter le Sol"
+  contact_tower: "Contacter la Tour"
+  contact_approach: "Contacter l'Approche"
+  contact_departure: "Contacter le Départ"
+  contact_center: "Contacter le Centre"
+  request_taxi: "Demander le roulage"
+  request_takeoff: "Demander le décollage"
+  request_landing: "Demander l'atterrissage"
+  listen_atis: "Écouter l'ATIS"
+  radio_check: "Test radio"
+  request_startup: "Demander la mise en route"
+  request_startup_no_atis: "Demander la mise en route sans ATIS"
+  announce_taxi: "Annoncer le roulage"
+  ready_departure: "Prêt au départ"
+  announce_departure: "Annoncer le départ"
+  report_ready: "Annoncer prêt"
+  announce_takeoff: "Annoncer le décollage"
+  checkin_departure: "Contacter le Départ"
+  request_freq_change: "Demander changement de fréquence"
+  request_flight_following: "Demander le suivi de vol"
+  position_report: "Compte-rendu de position"
+  request_higher: "Demander une altitude plus élevée"
+
+# Checklist Menu
+checklist_menu:
+  opened: "Menu Checklist"
+  closed: "Menu Checklist fermé"
+  invalid_option: "Option invalide"
+  start_failed: "Échec du démarrage de la checklist"
+
+# Checklist announcements
+checklist:
+  starting: "Début de la checklist"
+  complete: "terminée"
+  failed: "échouée"
+  skipped: "ignoré"
+  checklist: "Checklist"
+
+# Checklist names (keyed by checklist ID)
+checklists:
+  cessna172_before_start: "Avant démarrage"
+  cessna172_engine_start: "Démarrage moteur"
+  cessna172_before_takeoff: "Avant décollage"
+  cessna172_takeoff: "Décollage"
+  cessna172_climb: "Montée"
+  cessna172_cruise: "Croisière"
+  cessna172_descent: "Descente"
+  cessna172_approach: "Approche"
+  cessna172_before_landing: "Avant atterrissage"
+  cessna172_landing: "Atterrissage"
+  cessna172_after_landing: "Après atterrissage"
+  cessna172_shutdown: "Arrêt moteur"
+
+# Checklist item challenges (spoken during checklist execution)
+checklist_items:
+  # Challenges - Before Start
+  preflight_inspection: "Visite prévol"
+  passenger_briefing: "Briefing passagers"
+  seats_and_seat_belts: "Sièges et ceintures"
+  fuel_quantity: "Quantité de carburant"
+  fuel_selector_valve: "Sélecteur carburant"
+  fuel_shutoff_valve: "Robinet d'arrêt carburant"
+  brakes: "Freins"
+  circuit_breakers: "Disjoncteurs"
+  electrical_equipment: "Équipements électriques"
+  avionics_master_switch: "Maître avionique"
+  master_switch: "Coupe-batterie"
+  fuel_quantity_indicators: "Jauges carburant"
+  parking_brake: "Frein de parc"
+
+  # Challenges - Engine Start
+  mixture: "Mélange"
+  carburetor_heat: "Réchauffe carburateur"
+  primer: "Pompe d'amorçage"
+  throttle: "Manette des gaz"
+  propeller_area: "Zone hélice"
+  beacon_light: "Feu rotatif"
+  magnetos: "Magnétos"
+  engine_start: "Démarrage moteur"
+  oil_pressure: "Pression d'huile"
+  engine_instruments: "Instruments moteur"
+  navigation_lights: "Feux de navigation"
+  radios: "Radios"
+
+  # Challenges - Before Takeoff
+  cabin_doors: "Portes cabine"
+  flight_controls: "Commandes de vol"
+  flight_instruments: "Instruments de vol"
+  elevator_trim: "Compensateur de profondeur"
+  annunciator_panel: "Panneau d'alarmes"
+  strobes_and_landing_light: "Strobes et phare d'atterrissage"
+  transponder: "Transpondeur"
+  flaps: "Volets"
+
+  # Challenges - Takeoff
+  wing_flaps: "Volets"
+  elevator_control: "Commande de profondeur"
+  climb_speed: "Vitesse de montée"
+  after_takeoff: "Après décollage"
+
+  # Challenges - Before Landing
+  landing_light: "Phare d'atterrissage"
+  airspeed: "Vitesse"
+  trim: "Compensateur"
+
+  # Challenges - After Landing
+  strobe_lights: "Feux à éclat"
+
+  # Challenges - Shutdown
+  hobbstach_time: "Temps Hobbs"
+  control_lock: "Blocage des commandes"
+
+  # Legacy/Alternate names
+  master_and_beacon: "Coupe-batterie et feu rotatif"
+  ignition: "Magnétos"
+  engine_indicators: "Indicateurs moteur"
+  engine_gauges: "Paramètres moteur"
+  doors_and_windows: "Portes et fenêtres"
+  autopilot: "Pilote automatique"
+  fuel_pump: "Pompe carburant"
+
+  # Responses
+  complete: "TERMINÉ"
+  checked: "VÉRIFIÉ"
+  check: "VÉRIFIER"
+  adjusted_and_locked: "RÉGLÉS ET VERROUILLÉS"
+  both: "LES DEUX"
+  "on": "MARCHE"
+  "off": "ARRÊT"
+  test_and_set: "TESTÉS ET SERRÉS"
+  check_in: "ENCLENCHÉS"
+  set: "SERRÉ"
+  idle_cutoff: "ÉTOUFFOIR"
+  cold: "FROID"
+  as_required: "SELON BESOIN"
+  open_quarter: "OUVERT 1/4 POUCE"
+  open_14_inch: "OUVERT 1/4 POUCE"
+  clear: "DÉGAGÉE"
+  start: "DÉMARRAGE"
+  in_green: "DANS LE VERT"
+  green: "VERT"
+  set_nav: "RÉGLÉES"
+  set_alt: "CALÉ"
+  takeoff: "DÉCOLLAGE"
+  free_and_correct: "LIBRES ET CORRECTES"
+  set_squawk: "RÉGLÉ"
+  disengaged: "DÉSACTIVÉ"
+  rich: "PLEIN RICHE"
+  engage_starter: "ACTIVER DÉMARREUR"
+  set_frequencies: "FRÉQUENCES RÉGLÉES"
+  closed_and_locked: "FERMÉES ET VERROUILLÉES"
+  release: "RELÂCHÉS"
+  full_open: "PLEIN GAZ"
+  up: "RENTRÉS"
+  secure: "ATTACHÉES"
+  adjust: "RÉGLER"
+  standby: "VEILLE"
+  record: "NOTER"
+  install: "INSTALLER"
+  alt: "ALT"
+  left_or_right: "GAUCHE ou DROITE"
+  wing_flaps_up: "Volets rentrés"
+  in_and_locked: "ENFONCÉE ET VERROUILLÉE"
+  1700_rpm: "1700 tours"
+  1000_rpm_or_less: "1000 tours ou moins"
+  010_degrees: "0 à 10 degrés"
+  7080_kias: "70 à 80 noeuds"
+  6070_kias_flaps_up: "60 à 70 noeuds volets rentrés"
+  5565_kias_flaps_down: "55 à 65 noeuds volets sortis"
+
+# Ground Services Menu
+ground_menu:
+  opened: "Services au sol"
+  closed: "Services au sol fermé"
+  invalid_option: "Option invalide"
+  not_at_parking: "Pas au parking"
+  no_services: "Aucun service disponible"
+  option_refuel: "Demander le ravitaillement"
+  option_pushback: "Demander le repoussage"
+  option_boarding: "Demander l'embarquement"
+  option_deboarding: "Demander le débarquement"
+  option_gpu: "Demander l'alimentation au sol"
+  option_catering: "Demander la restauration"
+  service_cancelled: "Service annulé"
+
+# Performance Display / FMC
+fmc:
+  not_available: "Affichage des performances non disponible"
+  opened: "Affichage des performances"
+  closed: "Affichage des performances fermé"
+  page_1: "Page 1"
+  page_2: "Page 2"
+  page_3: "Page 3"
+  # Weight & Balance
+  wb_title: "Masse et centrage"
+  wb_total_weight: "Masse totale"
+  wb_cg_position: "Centre de gravité"
+  wb_within_limits: "Dans les limites"
+  wb_out_of_limits: "Hors limites"
+  # V-Speeds
+  vs_title: "Vitesses caractéristiques"
+  vs_weight: "Masse"
+  vs_vstall: "V décrochage"
+  vs_vr: "V rotation"
+  vs_vx: "V X"
+  vs_vy: "V Y"
+  # Takeoff Performance
+  to_title: "Performances au décollage"
+  to_weight: "Masse"
+  to_ground_roll: "Roulement au sol"
+  to_distance_50: "Distance à 50 pieds"
+  to_climb_rate: "Vitesse de montée initiale"
+  # Units
+  pounds: "livres"
+  feet: "pieds"
+  inches: "pouces"
+  knots: "noeuds"
+  fpm: "pieds par minute"
+  hundred: "cent"
+  thousand: "mille"
+
+# Flight Instructor
+instructor:
+  enabled: "Instructeur de vol activé"
+  disabled: "Instructeur de vol désactivé"
+  assessment: "Évaluation de vol"
+  pitch_too_high: "Assiette trop cabrée, baissez le nez"
+  pitch_too_low: "Assiette trop piquée, relevez le nez"
+  stall_warning: "Avertissement de décrochage! Baissez le nez et ajoutez de la puissance"
+  airspeed_low: "Vitesse faible, ajoutez de la puissance"
+  airspeed_high: "Vitesse élevée, réduisez la puissance"
+
+# Ground Services Audio
+ground_services:
+  # Boarding
+  boarding_acknowledged: "Embarquement confirmé"
+  boarding_in_progress: "Embarquement des passagers"
+  boarding_complete: "Embarquement terminé"
+  deboarding_acknowledged: "Débarquement confirmé"
+  deboarding_complete: "Débarquement terminé"
+  # Refueling
+  refuel_acknowledged: "Ravitaillement confirmé"
+  refuel_starting: "Début du ravitaillement"
+  refuel_in_progress: "Ravitaillement en cours"
+  refuel_complete: "Ravitaillement terminé"
+  # Pushback
+  pushback_acknowledged: "Repoussage confirmé"
+  pushback_starting: "Début du repoussage"
+  pushback_complete: "Repoussage terminé"
+
+# Ground/Taxi Instructions
+taxi:
+  hold_short: "Maintenez avant"
+  cross_runway: "Traversez la piste"
+  taxi_via: "Roulez via"
+  contact_tower: "Contactez la tour"
+  hold_short_traffic: "Maintenez avant, trafic"
+
+# ATC Phraseology
+atc:
+  # Facilities
+  ground: "Sol"
+  tower: "Tour"
+  departure: "Départ"
+  approach: "Approche"
+  # Common phrases
+  request_startup: "demandons la mise en route"
+  startup_approved: "mise en route approuvée"
+  startup_denied: "mise en route refusée, rappeler avec l'ATIS"
+  request_taxi: "demandons le roulage"
+  taxi_to_runway: "roulez vers la piste"
+  taxi_via: "via"
+  hold_short: "maintenez avant"
+  contact_tower: "contactez la tour"
+  ready_for_departure: "prêts au départ"
+  cleared_takeoff: "autorisé décollage"
+  lineup_wait: "alignez-vous et attendez"
+  contact_departure: "contactez le départ"
+  radio_check: "test radio"
+  loud_and_clear: "fort et clair"
+  readback_correct: "collationnement correct"
+  # Pilot responses
+  wilco: "bien compris"
+  roger: "reçu"
+  affirm: "affirmatif"
+  negative: "négatif"
+  # Context phrases
+  with_information: "avec l'information"
+  passengers_on_board: "passagers à bord"
+  at: "à"
+  on: "sur"
 
 # Language names (displayed in target language)
 languages:
