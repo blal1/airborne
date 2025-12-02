@@ -24,7 +24,7 @@ except ImportError:
     pygame = None  # type: ignore[assignment]
 
 from airborne.core.i18n import t
-from airborne.settings import VOICE_CATEGORIES, get_tts_settings
+from airborne.settings import VOICE_CATEGORIES, get_atc_v2_settings, get_tts_settings
 from airborne.ui.menus.base_menu import AudioMenu, MenuItem
 
 logger = logging.getLogger(__name__)
@@ -322,6 +322,17 @@ class VoiceSettingsMenu(AudioMenu):
         """Build menu items for each voice category."""
         items = []
 
+        # ATC V2 Voice Mode toggle
+        v2_settings = get_atc_v2_settings()
+        v2_status = t("common.enabled") if v2_settings.enabled else t("common.disabled")
+        items.append(
+            MenuItem(
+                "atc_v2_toggle",
+                t("voice.atc_v2_mode", status=v2_status),
+                action=self._toggle_atc_v2,
+            )
+        )
+
         for category in VOICE_CATEGORIES:
             # Create or get category menu
             if category not in self._category_menus:
@@ -349,3 +360,16 @@ class VoiceSettingsMenu(AudioMenu):
         )
 
         return items
+
+    def _toggle_atc_v2(self) -> None:
+        """Toggle ATC V2 voice mode on/off."""
+        v2_settings = get_atc_v2_settings()
+        v2_settings.set_enabled(not v2_settings.enabled)
+        v2_settings.save()
+
+        # Update menu and announce
+        self.items = self._build_items()
+        status = t("common.enabled") if v2_settings.enabled else t("common.disabled")
+        self._speak(t("voice.atc_v2_mode", status=status))
+
+        logger.info("ATC V2 voice mode %s", "enabled" if v2_settings.enabled else "disabled")
