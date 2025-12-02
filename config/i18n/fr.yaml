@@ -12,6 +12,7 @@ common:
   save: "Enregistrer"
   cancel: "Annuler"
   confirm: "Confirmer"
+  enabled: "Activé"
   disabled: "Désactivé"
   not_set: "Non défini"
   saved: "Enregistré"
@@ -103,6 +104,14 @@ voice:
   no_voice_selected: "Aucune voix sélectionnée"
   rate_label: "Vitesse: {rate} MPM"
   voice_label: "Voix: {voice}"
+
+  # ATC V2 Voice Control
+  atc_v2_mode: "Mode vocal ATC: {status}"
+  atc_v2_enabled: "Contrôle vocal ATC activé. Maintenez espace pour parler."
+  atc_v2_disabled: "Contrôle vocal ATC désactivé."
+  atc_v2_recording: "Enregistrement..."
+  atc_v2_processing: "Traitement..."
+  atc_v2_say_again: "Répétez"
 
   # Voice categories
   categories:

@@ -12,6 +12,7 @@ common:
   save: "Save"
   cancel: "Cancel"
   confirm: "Confirm"
+  enabled: "Enabled"
   disabled: "Disabled"
   not_set: "Not set"
   saved: "Saved"
@@ -103,6 +104,14 @@ voice:
   no_voice_selected: "No voice selected"
   rate_label: "Rate: {rate} WPM"
   voice_label: "Voice: {voice}"
+
+  # ATC V2 Voice Control
+  atc_v2_mode: "ATC Voice Mode: {status}"
+  atc_v2_enabled: "ATC voice control enabled. Hold spacebar to speak."
+  atc_v2_disabled: "ATC voice control disabled."
+  atc_v2_recording: "Recording..."
+  atc_v2_processing: "Processing..."
+  atc_v2_say_again: "Say again"
 
   # Voice categories
   categories:
