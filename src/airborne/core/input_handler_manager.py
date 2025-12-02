@@ -149,13 +149,16 @@ class InputHandlerManager:
         for handler in self._handlers:
             # Skip inactive handlers
             if not handler.is_active():
+                logger.debug("Handler '%s' is inactive, skipping", handler.get_name())
                 continue
 
             # Check if handler wants this event
             if not handler.can_handle_input(event):
+                logger.debug("Handler '%s' cannot handle this event", handler.get_name())
                 continue
 
             # Let handler process event
+            logger.debug("Dispatching to handler '%s'", handler.get_name())
             try:
                 consumed = handler.handle_input(event)
                 if consumed:
@@ -165,6 +168,8 @@ class InputHandlerManager:
                         handler.get_priority(),
                     )
                     return True
+                else:
+                    logger.debug("Handler '%s' did not consume event", handler.get_name())
             except Exception as e:
                 logger.error(
                     "Error in handler '%s': %s",
