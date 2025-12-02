@@ -127,6 +127,9 @@ class AudioPlugin(IPlugin):
         self._pitch_tone_active = False  # Whether tone is currently playing
         self._last_pitch_freq = 440.0  # Last frequency played (for change detection)
 
+        # Ground surface type for rolling sounds (updated by position tracker)
+        self._current_surface_type = "concrete"  # Default to concrete
+
     def get_metadata(self) -> PluginMetadata:
         """Return plugin metadata.
 
@@ -252,6 +255,13 @@ class AudioPlugin(IPlugin):
 
         # Subscribe to click sound messages from panel controls
         context.message_queue.subscribe("audio.play_click", self.handle_message)
+
+        # Subscribe to navigation location messages for surface type tracking
+        context.message_queue.subscribe("navigation.entered_taxiway", self.handle_message)
+        context.message_queue.subscribe("navigation.entered_runway", self.handle_message)
+        context.message_queue.subscribe("navigation.entered_parking", self.handle_message)
+        context.message_queue.subscribe("navigation.entered_apron", self.handle_message)
+        context.message_queue.subscribe("navigation.location_changed", self.handle_message)
 
         # Subscribe to input action events from event bus for TTS feedback
         if context.event_bus:
@@ -514,6 +524,11 @@ class AudioPlugin(IPlugin):
             self.context.message_queue.unsubscribe(MessageTopic.SYSTEM_STATE, self.handle_message)
             self.context.message_queue.unsubscribe("electrical.master_switch", self.handle_message)
             self.context.message_queue.unsubscribe("audio.play_click", self.handle_message)
+            self.context.message_queue.unsubscribe("navigation.entered_taxiway", self.handle_message)
+            self.context.message_queue.unsubscribe("navigation.entered_runway", self.handle_message)
+            self.context.message_queue.unsubscribe("navigation.entered_parking", self.handle_message)
+            self.context.message_queue.unsubscribe("navigation.entered_apron", self.handle_message)
+            self.context.message_queue.unsubscribe("navigation.location_changed", self.handle_message)
 
             # Unregister components (only if they were registered)
             if self.context.plugin_registry:
@@ -655,11 +670,13 @@ class AudioPlugin(IPlugin):
                 airspeed = data["airspeed"]
                 self.sound_manager.update_wind_sound(airspeed)
 
-            # Update rolling sound based on ground speed and on_ground status
+            # Update rolling sound based on ground speed, on_ground status, and surface type
             if "groundspeed" in data and "on_ground" in data and self.sound_manager:
                 ground_speed = data["groundspeed"]
                 on_ground = data["on_ground"]
-                self.sound_manager.update_rolling_sound(ground_speed, on_ground)
+                self.sound_manager.update_rolling_sound(
+                    ground_speed, on_ground, self._current_surface_type
+                )
 
             if "position" in data:
                 pos = data["position"]
@@ -853,6 +870,15 @@ class AudioPlugin(IPlugin):
                     sound_file = str(get_resource_path("assets/sounds/aircraft/click_knob.mp3"))
 
                 self.sound_manager.play_sound_2d(sound_file, volume=0.8)
+
+        elif message.topic.startswith("navigation."):
+            # Handle navigation location messages for surface type tracking
+            data = message.data
+            if "surface_type" in data:
+                new_surface = data["surface_type"]
+                if new_surface != self._current_surface_type:
+                    logger.debug(f"Surface type changed: {self._current_surface_type} -> {new_surface}")
+                    self._current_surface_type = new_surface
 
     def on_config_changed(self, config: dict[str, Any]) -> None:
         """Handle configuration changes.

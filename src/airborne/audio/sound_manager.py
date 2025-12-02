@@ -664,60 +664,159 @@ class SoundManager:
                     logger.warning(f"Battery shutdown sound not found: {self._battery_off_path}")
 
     def start_rolling_sound(self, path: str | None = None) -> None:
-        """Start looping rolling/tire sound.
+        """Start looping base rolling/tire sound.
 
         Args:
-            path: Path to rolling sound file (default: assets/sounds/aircraft/rolling.wav).
+            path: Path to rolling sound file (default: data/sounds/environment/ground_roll.wav).
         """
         if path is None:
-            path = str(get_resource_path("assets/sounds/aircraft/rolling.wav"))
+            path = str(get_resource_path("data/sounds/environment/ground_roll.wav"))
 
         if not self._audio_engine:
             return
 
-        # Check if we already have a rolling source
-        if hasattr(self, "_rolling_source_id") and self._rolling_source_id is not None:
-            return  # Already playing
+        from airborne.audio.engine.base import SourceState
 
-        # Start new looping rolling sound at zero volume (controlled by ground speed)
+        # Check if rolling sound is still playing (might have stopped despite loop=True)
+        if hasattr(self, "_rolling_source_id") and self._rolling_source_id is not None:
+            state = self._audio_engine.get_source_state(self._rolling_source_id)
+            if state == SourceState.PLAYING:
+                return  # Still playing, no need to restart
+
+            # Sound stopped, clear the ID so we restart it
+            self._rolling_source_id = None
+
+        # Start new looping rolling sound at low volume/pitch (controlled by ground speed)
         try:
-            self._rolling_source_id = self.play_sound_2d(path, volume=0.0, pitch=1.0, loop=True)
+            self._rolling_source_id = self.play_sound_2d(path, volume=0.05, pitch=0.4, loop=True)
             logger.debug("Rolling sound started")
         except FileNotFoundError:
             logger.warning(f"Rolling sound not found: {path}")
 
-    def update_rolling_sound(self, ground_speed: float, on_ground: bool) -> None:
-        """Update rolling sound based on ground speed.
+    def _start_surface_sound(self, surface_type: str) -> None:
+        """Start looping surface texture sound.
+
+        Args:
+            surface_type: Surface type (concrete, grass, gravel, asphalt, etc.)
+        """
+        if not self._audio_engine:
+            return
+
+        from airborne.audio.engine.base import SourceState
+
+        # Initialize surface sound tracking if needed
+        if not hasattr(self, "_surface_source_id"):
+            self._surface_source_id: int | None = None
+            self._current_surface_type: str | None = None
+
+        # Map surface types to sound files
+        surface_sound_map = {
+            "concrete": "data/sounds/environment/concrete.wav",
+            "asphalt": "data/sounds/environment/concrete.wav",  # Use concrete for asphalt
+            "grass": "data/sounds/environment/grass.wav",
+            "turf": "data/sounds/environment/grass.wav",  # Use grass for turf
+            "gravel": "data/sounds/environment/gravel.wav",
+            "dirt": "data/sounds/environment/gravel.wav",  # Use gravel for dirt
+        }
+
+        # Get sound path for surface type, default to concrete
+        sound_file = surface_sound_map.get(surface_type.lower(), "data/sounds/environment/concrete.wav")
+
+        # Check if surface sound is still playing (might have stopped despite loop=True)
+        sound_still_playing = False
+        if self._surface_source_id is not None:
+            state = self._audio_engine.get_source_state(self._surface_source_id)
+            sound_still_playing = state == SourceState.PLAYING
+
+        # If surface hasn't changed and sound is still playing, don't restart
+        if self._current_surface_type == surface_type and sound_still_playing:
+            return
+
+        # Stop existing surface sound if switching surfaces or restarting
+        if self._surface_source_id is not None:
+            self._audio_engine.stop_source(self._surface_source_id)
+            self._surface_source_id = None
+
+        # Start new surface texture sound
+        try:
+            path = str(get_resource_path(sound_file))
+            self._surface_source_id = self.play_sound_2d(path, volume=0.03, pitch=1.0, loop=True)
+            self._current_surface_type = surface_type
+            logger.debug(f"Surface sound started: {surface_type}")
+        except FileNotFoundError:
+            logger.warning(f"Surface sound not found: {sound_file}")
+            self._current_surface_type = None
+
+    def _stop_surface_sound(self) -> None:
+        """Stop surface texture sound."""
+        if not self._audio_engine:
+            return
+
+        if hasattr(self, "_surface_source_id") and self._surface_source_id is not None:
+            self._audio_engine.stop_source(self._surface_source_id)
+            self._surface_source_id = None
+            self._current_surface_type = None
+
+    def update_rolling_sound(
+        self, ground_speed: float, on_ground: bool, surface_type: str = "concrete"
+    ) -> None:
+        """Update rolling sound based on ground speed and surface type.
+
+        Plays two layered sounds:
+        1. Base ground_roll.wav - pitch varies from 0.8 to 2.0 with speed
+        2. Surface texture sound (concrete/grass/gravel) - volume varies with speed
 
         Args:
             ground_speed: Ground speed in knots
             on_ground: Whether aircraft is on the ground
+            surface_type: Surface type (concrete, grass, gravel, asphalt, etc.)
         """
         if not self._audio_engine:
             return
 
         if not hasattr(self, "_rolling_source_id"):
             self._rolling_source_id = None
+        if not hasattr(self, "_surface_source_id"):
+            self._surface_source_id = None
+            self._current_surface_type = None
 
-        # Start rolling sound if on ground and not already playing
-        if on_ground and self._rolling_source_id is None:
-            self.start_rolling_sound()
+        # Start rolling sounds if on ground and moving
+        is_moving = ground_speed > 0.5  # Threshold for "moving"
 
-        # Stop rolling sound if airborne
-        if not on_ground and self._rolling_source_id is not None:
-            self._audio_engine.stop_source(self._rolling_source_id)
-            self._rolling_source_id = None
+        if on_ground and is_moving:
+            # Start base rolling sound if not playing
+            if self._rolling_source_id is None:
+                self.start_rolling_sound()
+
+            # Start/switch surface sound
+            self._start_surface_sound(surface_type)
+        elif not on_ground or not is_moving:
+            # Stop all rolling sounds if airborne or stationary
+            if self._rolling_source_id is not None:
+                self._audio_engine.stop_source(self._rolling_source_id)
+                self._rolling_source_id = None
+            self._stop_surface_sound()
             return
 
         # Update volume and pitch based on ground speed
-        if self._rolling_source_id is not None:
-            # Volume: 0 at 0 knots, 1.0 at 50+ knots
-            volume = min(ground_speed / 50.0, 1.0)
-            # Pitch: 0.5 at 0 knots, 2.0 at 100+ knots
-            pitch = 0.5 + (min(ground_speed / 100.0, 1.0) * 1.5)
+        # Speed normalization: 0 knots = 0.0, 55 knots (rotation speed) = 1.0
+        speed_factor = min(ground_speed / 55.0, 1.0)
 
-            self._audio_engine.update_source_volume(self._rolling_source_id, volume)
-            self._audio_engine.update_source_pitch(self._rolling_source_id, pitch)
+        # Base rolling sound: pitch 0.4-1.0, volume 0.05-0.5
+        if self._rolling_source_id is not None:
+            # Pitch: 0.4 at low speed, 1.0 at rotation speed (55+ knots)
+            roll_pitch = 0.4 + (speed_factor * 0.6)
+            # Volume: 0.05 at first motion, 0.5 at rotation speed
+            roll_volume = 0.05 + (speed_factor * 0.45)
+
+            self._audio_engine.update_source_pitch(self._rolling_source_id, roll_pitch)
+            self._audio_engine.update_source_volume(self._rolling_source_id, roll_volume)
+
+        # Surface texture sound: pitch 1.0 (fixed), volume 0.03-0.3
+        if self._surface_source_id is not None:
+            # Surface sound volume increases with speed (quieter than base roll)
+            surface_volume = 0.03 + (speed_factor * 0.27)
+            self._audio_engine.update_source_volume(self._surface_source_id, surface_volume)
 
     def update(self) -> None:
         """Update sound manager state.

@@ -159,11 +159,30 @@ class PhysicsPlugin(IPlugin):
         )
         logger.info(f"Ground physics initialized with mass={aircraft_mass_kg:.1f} kg")
 
-        # Initialize parking brake from initial state if available
-        initial_state = context.config.get("aircraft", {}).get("initial_state", {})
-        controls_state = initial_state.get("controls", {})
-        self.parking_brake_engaged = controls_state.get("parking_brake", False)
-        logger.info(f"Parking brake initial state: {self.parking_brake_engaged}")
+        # Apply spawn state if available (source of truth for initial position/heading)
+        if hasattr(context, "spawn_state") and context.spawn_state is not None:
+            spawn = context.spawn_state
+            # Apply position
+            if hasattr(spawn, "position") and spawn.position is not None:
+                self.flight_model.state.position = spawn.position
+                logger.info(f"Initial position from spawn: {spawn.position}")
+            # Apply heading (spawn.heading is in degrees, rotation.z is yaw in radians)
+            if hasattr(spawn, "heading"):
+                yaw_rad = math.radians(spawn.heading)
+                self.flight_model.state.rotation = Vector3(0.0, 0.0, yaw_rad)
+                logger.info(f"Initial heading from spawn: {spawn.heading}°")
+            # Apply parking brake
+            if hasattr(spawn, "parking_brake"):
+                self.parking_brake_engaged = spawn.parking_brake
+                logger.info(f"Parking brake from spawn: {spawn.parking_brake}")
+            # Set on_ground based on spawn location
+            self.flight_model.state.on_ground = True
+        else:
+            # Fallback to initial state from config
+            initial_state = context.config.get("aircraft", {}).get("initial_state", {})
+            controls_state = initial_state.get("controls", {})
+            self.parking_brake_engaged = controls_state.get("parking_brake", False)
+            logger.info(f"Parking brake from config: {self.parking_brake_engaged}")
 
         # Register components in registry
         if context.plugin_registry:
@@ -174,6 +193,9 @@ class PhysicsPlugin(IPlugin):
         # Subscribe to control input messages and parking brake toggle
         context.message_queue.subscribe(MessageTopic.CONTROL_INPUT, self.handle_message)
         context.message_queue.subscribe("parking_brake", self.handle_message)
+        # Also subscribe to new input context manager action topics
+        context.message_queue.subscribe("input.parking_brake_set", self.handle_message)
+        context.message_queue.subscribe("input.parking_brake_release", self.handle_message)
 
         # Subscribe to terrain updates
         context.message_queue.subscribe(MessageTopic.TERRAIN_UPDATED, self.handle_message)
@@ -218,7 +240,7 @@ class PhysicsPlugin(IPlugin):
 
             # Log every 60 frames to see what's happening
             if self._ground_detection_log_counter % 60 == 0:
-                logger.info(
+                logger.debug(
                     f"[GROUND_DETECT] position_y={state.position.y:.2f}m "
                     f"flight_model_on_ground={state.on_ground} "
                     f"collision_is_colliding={collision_result.is_colliding} "
@@ -292,6 +314,8 @@ class PhysicsPlugin(IPlugin):
                 MessageTopic.TERRAIN_UPDATED, self.handle_message
             )
             self.context.message_queue.unsubscribe("parking_brake", self.handle_message)
+            self.context.message_queue.unsubscribe("input.parking_brake_set", self.handle_message)
+            self.context.message_queue.unsubscribe("input.parking_brake_release", self.handle_message)
             self.context.message_queue.unsubscribe(MessageTopic.ENGINE_STATE, self.handle_message)
             self.context.message_queue.unsubscribe("weight_balance.updated", self.handle_message)
             self.context.message_queue.unsubscribe("flight_controls.auto_trim", self.handle_message)
@@ -350,7 +374,7 @@ class PhysicsPlugin(IPlugin):
                 self._terrain_elevation = float(data["elevation"])
 
         elif message.topic == "parking_brake":
-            # Set or release parking brake
+            # Set or release parking brake (old InputManager format)
             data = message.data
             action = data.get("action", "toggle")  # Default to toggle for backward compatibility
 
@@ -365,6 +389,16 @@ class PhysicsPlugin(IPlugin):
                 logger.info(
                     f"Parking brake {'engaged' if self.parking_brake_engaged else 'released'}"
                 )
+
+        elif message.topic == "input.parking_brake_set":
+            # Set parking brake (new InputContextManager format)
+            self.parking_brake_engaged = True
+            logger.info("Parking brake SET (from input context)")
+
+        elif message.topic == "input.parking_brake_release":
+            # Release parking brake (new InputContextManager format)
+            self.parking_brake_engaged = False
+            logger.info("Parking brake RELEASED (from input context)")
 
         elif message.topic == MessageTopic.ENGINE_STATE:
             # Update engine state for propeller thrust calculations

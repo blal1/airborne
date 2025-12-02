@@ -61,6 +61,7 @@ class HoldShortPoint:
     taxiway_name: str
     distance_m: float
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -228,6 +229,63 @@ class PositionTracker:  # pylint: disable=too-many-instance-attributes
             At taxiway: A
         """
         return (self.current_location_type, self.current_location_id)
+
+    def set_runway_surfaces(self, runway_surfaces: dict[str, str]) -> None:
+        """Set runway surface type mapping.
+
+        Args:
+            runway_surfaces: Dict mapping runway ID (e.g., "09", "27L") to surface
+                type string (e.g., "asphalt", "concrete", "grass").
+
+        Examples:
+            >>> tracker.set_runway_surfaces({"09": "asphalt", "27": "asphalt", "04": "grass"})
+        """
+        if not hasattr(self, "_runway_surfaces"):
+            self._runway_surfaces: dict[str, str] = {}
+        self._runway_surfaces = runway_surfaces
+        logger.debug(f"Runway surfaces configured: {runway_surfaces}")
+
+    def get_surface_type(self) -> str:
+        """Get current ground surface type based on location.
+
+        Returns the surface type for audio feedback (rolling sounds).
+        Uses runway data when available, otherwise applies sensible defaults.
+
+        Returns:
+            Surface type string: "concrete", "asphalt", "grass", "gravel", "dirt", etc.
+
+        Examples:
+            >>> surface = tracker.get_surface_type()
+            >>> print(f"Rolling on {surface}")
+            Rolling on concrete
+        """
+        # Default surfaces by location type
+        location_surface_map = {
+            LocationType.RUNWAY: "concrete",  # Default, overridden by runway data
+            LocationType.TAXIWAY: "concrete",
+            LocationType.PARKING: "concrete",
+            LocationType.APRON: "concrete",
+            LocationType.GRASS: "grass",
+            LocationType.UNKNOWN: "grass",  # Off paved surface
+        }
+
+        # Get default surface for location type
+        surface = location_surface_map.get(self.current_location_type, "concrete")
+
+        # For runways, check if we have specific surface data
+        if self.current_location_type == LocationType.RUNWAY and self.current_location_id:
+            if hasattr(self, "_runway_surfaces") and self._runway_surfaces:
+                # Try exact match first (e.g., "09L")
+                runway_id = self.current_location_id
+                if runway_id in self._runway_surfaces:
+                    surface = self._runway_surfaces[runway_id]
+                else:
+                    # Try without suffix (e.g., "09" from "09L")
+                    base_id = runway_id.rstrip("LRC")
+                    if base_id in self._runway_surfaces:
+                        surface = self._runway_surfaces[base_id]
+
+        return surface
 
     def get_nearest_taxiway(self) -> str | None:
         """Get name of nearest taxiway.
@@ -756,6 +814,9 @@ class PositionTracker:  # pylint: disable=too-many-instance-attributes
 
         topic = topic_map.get(event.location_type, "navigation.location_changed")
 
+        # Get current surface type for audio feedback
+        surface_type = self.get_surface_type()
+
         # Create message
         message = Message(
             sender="position_tracker",
@@ -772,6 +833,7 @@ class PositionTracker:  # pylint: disable=too-many-instance-attributes
                     "z": event.position.z,
                 },
                 "timestamp": event.timestamp,
+                "surface_type": surface_type,  # For rolling sound audio
             },
             priority=MessagePriority.HIGH,  # Location changes are important
         )
