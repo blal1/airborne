@@ -17,6 +17,7 @@ import math
 import time
 from dataclasses import dataclass
 
+from airborne.core.i18n import t
 from airborne.core.messaging import Message, MessagePriority, MessageQueue, MessageTopic
 from airborne.physics.vectors import Vector3
 from airborne.plugins.navigation.position_tracker import (
@@ -463,17 +464,17 @@ class OrientationAudioManager:
         """
         if location_type == LocationType.TAXIWAY:
             taxiway_phonetic = self._to_phonetic(location_id) if location_id else "unknown"
-            return f"On taxiway {taxiway_phonetic}"
+            return t("ground.on_taxiway", id=taxiway_phonetic)
         if location_type == LocationType.RUNWAY:
             runway_phonetic = self._to_phonetic(location_id) if location_id else "unknown"
-            return f"On runway {runway_phonetic}"
+            return t("ground.on_runway", id=runway_phonetic)
         if location_type == LocationType.PARKING:
-            return f"At parking position {location_id}"
+            return t("ground.at_parking", id=location_id)
         if location_type == LocationType.APRON:
-            return "On apron"
+            return t("ground.on_apron")
         if location_type == LocationType.GRASS:
-            return "Off pavement"
-        return "Location unknown"
+            return t("ground.off_pavement")
+        return t("ground.position_unknown")
 
     def _generate_approaching_message(
         self, feature_type: str, feature_id: str, distance_m: float
@@ -489,12 +490,13 @@ class OrientationAudioManager:
             Audio message text
         """
         feature_phonetic = self._to_phonetic(feature_id)
+        distance = int(distance_m)
 
         if feature_type == "runway":
-            return f"Approaching runway {feature_phonetic}, {int(distance_m)} meters"
+            return t("ground.approaching_runway", id=feature_phonetic, distance=distance)
         if feature_type == "intersection":
-            return f"Approaching {feature_phonetic} intersection, {int(distance_m)} meters"
-        return f"Approaching {feature_type} {feature_phonetic}, {int(distance_m)} meters"
+            return t("ground.approaching_intersection", id=feature_phonetic, distance=distance)
+        return t("ground.approaching_feature", type=feature_type, id=feature_phonetic, distance=distance)
 
     def _announce(self, message: str, priority: MessagePriority = MessagePriority.NORMAL) -> None:
         """Publish TTS announcement message.

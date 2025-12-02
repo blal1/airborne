@@ -17,6 +17,7 @@ from airborne.audio.engine.base import IAudioEngine, Vector3
 from airborne.audio.sound_manager import SoundManager
 from airborne.audio.tts.base import ITTSProvider
 from airborne.audio.tts.speech_messages import SpeechMessages
+from airborne.core.i18n import t
 from airborne.core.logging_system import get_logger
 from airborne.core.messaging import Message, MessagePriority, MessageTopic
 from airborne.core.plugin import IPlugin, PluginContext, PluginMetadata, PluginType
@@ -1019,120 +1020,137 @@ class AudioPlugin(IPlugin):
 
         message: str | None = None
 
-        # Handle instrument readouts
+        # Handle instrument readouts (using translations)
         if event.action == "read_airspeed":
             import math
 
             airspeed_val = 0 if math.isnan(self._airspeed) else int(self._airspeed)
-            message = f"{airspeed_val} knots"  # Removed "Airspeed" prefix
+            message = t("cockpit.airspeed_readout", value=airspeed_val)
         elif event.action == "read_altitude":
             import math
 
             altitude_val = 0 if math.isnan(self._altitude) else int(self._altitude)
-            message = f"{altitude_val} feet"  # Removed "Altitude" prefix
+            message = t("cockpit.altitude_readout", value=altitude_val)
         elif event.action == "read_heading":
             import math
 
             heading_val = 0 if math.isnan(self._heading) else int(self._heading)
-            message = f"Heading {heading_val} degrees"
+            message = t("cockpit.heading_readout", value=heading_val)
         elif event.action == "read_vspeed":
-            # Format vertical speed with sign (removed "Vertical speed" prefix)
+            # Format vertical speed with sign
             import math
 
             vspeed_int = 0 if math.isnan(self._vspeed) else int(self._vspeed)
             if vspeed_int > 0:
-                message = f"Climbing {vspeed_int}"  # Removed "feet per minute"
+                message = t("cockpit.climbing_readout", value=vspeed_int)
             elif vspeed_int < 0:
-                message = f"Descending {abs(vspeed_int)}"  # Removed "feet per minute"
+                message = t("cockpit.descending_readout", value=abs(vspeed_int))
             else:
-                message = "Level"  # Removed "flight"
+                message = t("cockpit.level")
         elif event.action == "read_attitude":
             # Format bank and pitch angles
             bank_int = int(self._bank)
             pitch_int = int(self._pitch)
-            bank_dir = "left" if bank_int < 0 else "right" if bank_int > 0 else "level"
-            pitch_dir = "up" if pitch_int > 0 else "down" if pitch_int < 0 else "level"
             if bank_int == 0 and pitch_int == 0:
-                message = "Level attitude"
+                message = t("cockpit.wings_level")
             elif bank_int == 0:
-                message = f"Pitch {abs(pitch_int)} degrees {pitch_dir}"
+                pitch_key = "cockpit.pitch_up" if pitch_int > 0 else "cockpit.pitch_down"
+                message = f"{t(pitch_key)} {abs(pitch_int)} {t('cockpit.degrees')}"
             elif pitch_int == 0:
-                message = f"Bank {abs(bank_int)} degrees {bank_dir}"
+                bank_key = "cockpit.bank_left" if bank_int < 0 else "cockpit.bank_right"
+                message = f"{t(bank_key)} {abs(bank_int)} {t('cockpit.degrees')}"
             else:
-                message = f"Bank {abs(bank_int)} {bank_dir}, pitch {abs(pitch_int)} {pitch_dir}"
+                bank_key = "cockpit.bank_left" if bank_int < 0 else "cockpit.bank_right"
+                pitch_key = "cockpit.pitch_up" if pitch_int > 0 else "cockpit.pitch_down"
+                message = f"{t(bank_key)} {abs(bank_int)}, {t(pitch_key)} {abs(pitch_int)}"
 
         # Engine instrument readouts
         elif event.action == "read_rpm":
             if self._engine_running:
-                message = f"Engine RPM {int(self._engine_rpm)}"
+                message = t("cockpit.engine_rpm", value=int(self._engine_rpm))
             else:
-                message = "Engine stopped"
+                message = t("cockpit.engine_stopped")
         elif event.action == "read_manifold_pressure":
-            message = f"Manifold pressure {self._manifold_pressure:.1f} inches"
+            message = t("cockpit.manifold_pressure", value=f"{self._manifold_pressure:.1f}")
         elif event.action == "read_oil_pressure":
-            message = f"Oil pressure {int(self._oil_pressure)} PSI"
+            message = t("cockpit.oil_pressure", value=int(self._oil_pressure))
         elif event.action == "read_oil_temp":
             # Convert Celsius to Fahrenheit for readout
             oil_temp_f = self._oil_temp * 9 / 5 + 32
-            message = f"Oil temperature {int(oil_temp_f)} degrees"
+            message = t("cockpit.oil_temperature", value=int(oil_temp_f))
         elif event.action == "read_fuel_flow":
-            message = f"Fuel flow {self._fuel_flow:.1f} gallons per hour"
+            message = t("cockpit.fuel_flow", value=f"{self._fuel_flow:.1f}")
 
         # Electrical instrument readouts
         elif event.action == "read_battery_voltage":
-            message = f"Battery {self._battery_voltage:.1f} volts"
+            message = t("cockpit.battery_volts", value=f"{self._battery_voltage:.1f}")
         elif event.action == "read_battery_percent":
-            message = f"Battery {int(self._battery_percent)} percent"
+            message = t("cockpit.battery_percent", value=int(self._battery_percent))
         elif event.action == "read_battery_status":
             if self._battery_current > 1.0:
-                message = f"Battery charging at {self._battery_current:.1f} amps"
+                message = t("cockpit.battery_charging", value=f"{self._battery_current:.1f}")
             elif self._battery_current < -1.0:
-                message = f"Battery discharging at {abs(self._battery_current):.1f} amps"
+                message = t("cockpit.battery_discharging", value=f"{abs(self._battery_current):.1f}")
             else:
-                message = "Battery stable"
+                message = t("cockpit.battery_stable")
         elif event.action == "read_alternator":
-            message = f"Alternator output {self._alternator_output:.1f} amps"
+            message = t("cockpit.alternator_output", value=f"{self._alternator_output:.1f}")
 
         # Fuel instrument readouts
         elif event.action == "read_fuel_quantity":
-            message = f"Fuel quantity {self._fuel_quantity:.1f} gallons"
+            message = t("cockpit.fuel_quantity", value=f"{self._fuel_quantity:.1f}")
         elif event.action == "read_fuel_remaining":
             fuel_minutes = self._fuel_remaining_minutes or 0.0
             hours = int(fuel_minutes / 60)
             minutes = int(fuel_minutes % 60)
             if hours > 0:
-                message = f"Fuel remaining {hours} hours {minutes} minutes"
+                message = t("cockpit.fuel_remaining_hours", hours=hours, minutes=minutes)
             else:
-                message = f"Fuel remaining {minutes} minutes"
+                message = t("cockpit.fuel_remaining_minutes", value=minutes)
 
         # Comprehensive status readouts (Alt+5, Alt+6, Alt+7)
         elif event.action == "read_engine":
             if self._engine_running:
-                message = f"Engine {int(self._engine_rpm)} RPM"
+                message = t("cockpit.engine_rpm", value=int(self._engine_rpm))
             else:
-                message = "Engine stopped"
+                message = t("cockpit.engine_stopped")
         elif event.action == "read_electrical":
             message = (
-                f"Battery {self._battery_voltage:.1f} volts {int(self._battery_percent)} percent"
+                f"{t('cockpit.battery_volts', value=f'{self._battery_voltage:.1f}')} "
+                f"{int(self._battery_percent)} {t('cockpit.percent')}"
             )
         elif event.action == "read_fuel":
             fuel_minutes = self._fuel_remaining_minutes or 0.0
             hours = int(fuel_minutes / 60)
             minutes = int(fuel_minutes % 60)
             if hours > 0:
-                message = f"Fuel {self._fuel_quantity:.1f} gallons remaining {hours} hours {minutes} minutes"
+                message = t(
+                    "cockpit.fuel_status_hours",
+                    gallons=f"{self._fuel_quantity:.1f}",
+                    hours=hours,
+                    minutes=minutes,
+                )
             else:
-                message = f"Fuel {self._fuel_quantity:.1f} gallons remaining {minutes} minutes"
+                message = t(
+                    "cockpit.fuel_status_minutes",
+                    gallons=f"{self._fuel_quantity:.1f}",
+                    minutes=minutes,
+                )
 
         # Trim readouts
         elif event.action == "read_pitch_trim":
             # Convert trim value (-1.0 to 1.0) to percentage (0-100) for announcement
             trim_percent = int((self._pitch_trim + 1.0) * 50)
-            message = f"Pitch trim {trim_percent} percent"
+            message = t("cockpit.pitch_trim", value=trim_percent)
         elif event.action == "read_rudder_trim":
-            # Convert trim value (-1.0 to 1.0) to percentage (0-100) for announcement
-            trim_percent = int((self._rudder_trim + 1.0) * 50)
-            message = f"Rudder trim {trim_percent} percent"
+            # Convert trim value (-1.0 to 1.0) to direction for announcement
+            if self._rudder_trim < -0.1:
+                trim_dir = t("cockpit.trim_left")
+            elif self._rudder_trim > 0.1:
+                trim_dir = t("cockpit.trim_right")
+            else:
+                trim_dir = t("cockpit.trim_neutral")
+            message = t("cockpit.rudder_trim", value=trim_dir)
 
         else:
             # Map actions to TTS announcements

@@ -4,7 +4,7 @@ This module provides disk-based caching of TTS audio files organized by
 voice settings. Each unique combination of settings gets its own directory.
 
 Cache structure:
-    ~/.cache/airborne/tts/
+    ~/.airborne/tts_cache/
     ├── a1b2c3d4/          # hash of {rate:180, voice:"Samantha"}
     │   ├── manifest.json
     │   └── *.wav
@@ -78,7 +78,8 @@ class TTSDiskCache:
     Supports LRU cleanup with configurable grace period.
     """
 
-    DEFAULT_CACHE_BASE = Path.home() / ".cache" / "airborne" / "tts"
+    # Cache location (same base as settings: ~/.airborne on Mac/Linux, %USERPROFILE%\.airborne on Windows)
+    DEFAULT_CACHE_BASE = Path.home() / ".airborne" / "tts_cache"
     MANIFEST_FILE = "manifest.json"
     SETTINGS_FILE = "settings.json"
 

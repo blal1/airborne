@@ -22,7 +22,8 @@ menu:
     welcome: "AirBorne"
     title: "Main Menu"
     fly: "Fly!"
-    fly_settings: "Fly Settings"
+    fly_disabled: "Fly! (select aircraft and airport first)"
+    fly_settings: "Flight Settings"
     settings: "Settings"
     about: "About"
     about_text: "{name} version {version}. By {author}. {license} License."
@@ -30,10 +31,34 @@ menu:
     starting_flight: "Starting flight"
     goodbye: "Goodbye"
 
-  fly_settings:
-    title: "Fly Settings"
-    flight_plan: "Flight Plan"
-    aircraft_selection: "Aircraft Selection"
+  flight_settings:
+    title: "Flight Settings"
+    aircraft: "Aircraft"
+    aircraft_value: "Aircraft: {aircraft}"
+    from_airport: "From"
+    from_airport_value: "From: {airport}"
+    to_airport: "To"
+    to_airport_value: "To: {airport}"
+    circuit_training: "Circuit Training"
+    circuit_training_on: "Circuit Training: On"
+    circuit_training_off: "Circuit Training: Off"
+    passengers: "Passengers"
+    passengers_value: "Passengers: {count}"
+    passengers_max: "Maximum: {max}"
+    fuel: "Fuel"
+    fuel_value: "Fuel: {gallons} gallons"
+    fuel_max: "Maximum: {max} gallons"
+    initial_position: "Initial Position"
+    initial_position_value: "Initial Position: {position}"
+    initial_state: "Initial State"
+    initial_state_value: "Initial State: {state}"
+    # Position options
+    position_parking: "Parking"
+    position_runway: "Runway Threshold"
+    # State options
+    state_cold_and_dark: "Cold and Dark"
+    state_ready_to_start: "Ready to Start"
+    state_ready_for_takeoff: "Ready for Takeoff"
 
   settings:
     title: "Settings"
@@ -96,6 +121,90 @@ voice:
     approach: "November 123 Alpha Bravo, turn left heading 180."
     departure: "November 123 Alpha Bravo, climb and maintain 6,000."
     center: "November 123 Alpha Bravo, cleared direct destination."
+
+# Cockpit instrument readouts
+cockpit:
+  # Instrument names
+  altitude: "Altitude"
+  heading: "Heading"
+  airspeed: "Airspeed"
+  vertical_speed: "Vertical speed"
+  # Units
+  feet: "feet"
+  knots: "knots"
+  degrees: "degrees"
+  feet_per_minute: "feet per minute"
+  inches: "inches"
+  psi: "PSI"
+  volts: "volts"
+  amps: "amps"
+  percent: "percent"
+  gallons: "gallons"
+  gallons_per_hour: "gallons per hour"
+  hours: "hours"
+  minutes: "minutes"
+  rpm: "RPM"
+  # Vertical speed states
+  climbing: "Climbing"
+  descending: "Descending"
+  level: "Level"
+  # Attitude
+  pitch_up: "Nose up"
+  pitch_down: "Nose down"
+  bank_left: "Left bank"
+  bank_right: "Right bank"
+  wings_level: "Wings level"
+  # Format patterns (use {value} for the number)
+  altitude_readout: "{value} feet"
+  heading_readout: "Heading {value} degrees"
+  airspeed_readout: "{value} knots"
+  climbing_readout: "Climbing {value}"
+  descending_readout: "Descending {value}"
+  # Engine readouts
+  engine_rpm: "Engine {value} RPM"
+  engine_stopped: "Engine stopped"
+  manifold_pressure: "Manifold pressure {value} inches"
+  oil_pressure: "Oil pressure {value} PSI"
+  oil_temperature: "Oil temperature {value} degrees"
+  fuel_flow: "Fuel flow {value} gallons per hour"
+  # Electrical readouts
+  battery_volts: "Battery {value} volts"
+  battery_percent: "Battery {value} percent"
+  battery_charging: "Battery charging at {value} amps"
+  battery_discharging: "Battery discharging at {value} amps"
+  battery_stable: "Battery stable"
+  alternator_output: "Alternator output {value} amps"
+  # Fuel readouts
+  fuel_quantity: "Fuel quantity {value} gallons"
+  fuel_remaining_hours: "Fuel remaining {hours} hours {minutes} minutes"
+  fuel_remaining_minutes: "Fuel remaining {value} minutes"
+  fuel_status_hours: "Fuel {gallons} gallons remaining {hours} hours {minutes} minutes"
+  fuel_status_minutes: "Fuel {gallons} gallons remaining {minutes} minutes"
+  # Trim readouts
+  pitch_trim: "Pitch trim {value} percent"
+  rudder_trim: "Rudder trim {value}"
+  trim_left: "left"
+  trim_right: "right"
+  trim_neutral: "neutral"
+
+# Ground navigation
+ground:
+  on_taxiway: "On taxiway {id}"
+  on_runway: "On runway {id}"
+  on_apron: "On apron"
+  at_gate: "At gate {id}"
+  at_parking: "At parking {id}"
+  holding_short: "Holding short runway {id}"
+  position_unknown: "Position unknown"
+  off_pavement: "Off pavement"
+  approaching_runway: "Approaching runway {id}, {distance} meters"
+  approaching_intersection: "Approaching {id} intersection, {distance} meters"
+  approaching_feature: "Approaching {type} {id}, {distance} meters"
+  # Detailed position query
+  nearest_taxiway: "nearest taxiway {id}"
+  meters_to_intersection: "{distance} meters to next intersection"
+  heading_degrees: "heading {value} degrees"
+  location_type: "{type} {id}"
 
 # Language names (in the target language)
 languages:

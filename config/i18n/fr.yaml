@@ -22,6 +22,7 @@ menu:
     welcome: "AirBorne"
     title: "Menu Principal"
     fly: "Voler!"
+    fly_disabled: "Voler! (sélectionnez un avion et un aéroport)"
     fly_settings: "Paramètres de vol"
     settings: "Paramètres"
     about: "À propos"
@@ -30,10 +31,34 @@ menu:
     starting_flight: "Démarrage du vol"
     goodbye: "Au revoir"
 
-  fly_settings:
+  flight_settings:
     title: "Paramètres de vol"
-    flight_plan: "Plan de vol"
-    aircraft_selection: "Sélection de l'avion"
+    aircraft: "Avion"
+    aircraft_value: "Avion: {aircraft}"
+    from_airport: "Départ"
+    from_airport_value: "Départ: {airport}"
+    to_airport: "Arrivée"
+    to_airport_value: "Arrivée: {airport}"
+    circuit_training: "Tours de piste"
+    circuit_training_on: "Tours de piste: Activé"
+    circuit_training_off: "Tours de piste: Désactivé"
+    passengers: "Passagers"
+    passengers_value: "Passagers: {count}"
+    passengers_max: "Maximum: {max}"
+    fuel: "Carburant"
+    fuel_value: "Carburant: {gallons} gallons"
+    fuel_max: "Maximum: {max} gallons"
+    initial_position: "Position initiale"
+    initial_position_value: "Position initiale: {position}"
+    initial_state: "État initial"
+    initial_state_value: "État initial: {state}"
+    # Position options
+    position_parking: "Parking"
+    position_runway: "Seuil de piste"
+    # State options
+    state_cold_and_dark: "Avion éteint"
+    state_ready_to_start: "Prêt à démarrer"
+    state_ready_for_takeoff: "Prêt au décollage"
 
   settings:
     title: "Paramètres"
@@ -96,6 +121,90 @@ voice:
     approach: "Fox-Bravo-Alpha-Charlie-Delta, virez à gauche cap 180."
     departure: "Fox-Bravo-Alpha-Charlie-Delta, montez et maintenez 2000 mètres."
     center: "Fox-Bravo-Alpha-Charlie-Delta, autorisé direct destination."
+
+# Cockpit instrument readouts
+cockpit:
+  # Instrument names
+  altitude: "Altitude"
+  heading: "Direction"
+  airspeed: "Vitesse"
+  vertical_speed: "Vitesse verticale"
+  # Units
+  feet: "pieds"
+  knots: "noeuds"
+  degrees: "degrés"
+  feet_per_minute: "pieds par minute"
+  inches: "pouces"
+  psi: "PSI"
+  volts: "volts"
+  amps: "ampères"
+  percent: "pour cent"
+  gallons: "gallons"
+  gallons_per_hour: "gallons par heure"
+  hours: "heures"
+  minutes: "minutes"
+  rpm: "tours minute"
+  # Vertical speed states
+  climbing: "Montée"
+  descending: "Descente"
+  level: "Palier"
+  # Attitude
+  pitch_up: "Cabré"
+  pitch_down: "Piqué"
+  bank_left: "Inclinaison gauche"
+  bank_right: "Inclinaison droite"
+  wings_level: "Ailes à plat"
+  # Format patterns (use {value} for the number)
+  altitude_readout: "{value} pieds"
+  heading_readout: "Direction {value} degrés"
+  airspeed_readout: "{value} noeuds"
+  climbing_readout: "Montée {value}"
+  descending_readout: "Descente {value}"
+  # Engine readouts
+  engine_rpm: "Moteur {value} tours minute"
+  engine_stopped: "Moteur arrêté"
+  manifold_pressure: "Pression admission {value} pouces"
+  oil_pressure: "Pression huile {value} PSI"
+  oil_temperature: "Température huile {value} degrés"
+  fuel_flow: "Débit carburant {value} gallons par heure"
+  # Electrical readouts
+  battery_volts: "Batterie {value} volts"
+  battery_percent: "Batterie {value} pour cent"
+  battery_charging: "Batterie en charge {value} ampères"
+  battery_discharging: "Batterie en décharge {value} ampères"
+  battery_stable: "Batterie stable"
+  alternator_output: "Alternateur {value} ampères"
+  # Fuel readouts
+  fuel_quantity: "Quantité carburant {value} gallons"
+  fuel_remaining_hours: "Carburant restant {hours} heures {minutes} minutes"
+  fuel_remaining_minutes: "Carburant restant {value} minutes"
+  fuel_status_hours: "Carburant {gallons} gallons restant {hours} heures {minutes} minutes"
+  fuel_status_minutes: "Carburant {gallons} gallons restant {minutes} minutes"
+  # Trim readouts
+  pitch_trim: "Trim profondeur {value} pour cent"
+  rudder_trim: "Trim direction {value}"
+  trim_left: "gauche"
+  trim_right: "droite"
+  trim_neutral: "neutre"
+
+# Ground navigation
+ground:
+  on_taxiway: "Sur le taxiway {id}"
+  on_runway: "Sur piste {id}"
+  on_apron: "Sur le tarmac"
+  at_gate: "À la porte {id}"
+  at_parking: "Au parking {id}"
+  holding_short: "En attente piste {id}"
+  position_unknown: "Position inconnue"
+  off_pavement: "Hors revêtement"
+  approaching_runway: "Approche piste {id}, {distance} mètres"
+  approaching_intersection: "Approche intersection {id}, {distance} mètres"
+  approaching_feature: "Approche {type} {id}, {distance} mètres"
+  # Detailed position query
+  nearest_taxiway: "taxiway le plus proche {id}"
+  meters_to_intersection: "{distance} mètres jusqu'à la prochaine intersection"
+  heading_degrees: "direction {value} degrés"
+  location_type: "{type} {id}"
 
 # Language names (displayed in target language)
 languages:

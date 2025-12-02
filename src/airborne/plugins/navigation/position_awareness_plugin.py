@@ -17,6 +17,7 @@ from typing import Any
 
 from airborne.airports.taxiway import TaxiwayGraph
 from airborne.audio.orientation import OrientationAudioManager
+from airborne.core.i18n import t
 from airborne.core.messaging import Message, MessageTopic
 from airborne.core.plugin import IPlugin, PluginContext, PluginMetadata, PluginType
 from airborne.physics.vectors import Vector3
@@ -247,17 +248,17 @@ class PositionAwarenessPlugin(IPlugin):
         nearest_taxiway = self.position_tracker.get_nearest_taxiway()
         distance_to_next = self.position_tracker.get_distance_to_next_intersection()
 
-        # Build detailed message
-        details = [f"{location_type.value} {location_id}"]
+        # Build detailed message with translations
+        details = [t("ground.location_type", type=location_type.value, id=location_id)]
 
         if nearest_taxiway and nearest_taxiway != location_id:
-            details.append(f"nearest taxiway {nearest_taxiway}")
+            details.append(t("ground.nearest_taxiway", id=nearest_taxiway))
 
         if distance_to_next < 1000.0:
-            details.append(f"{int(distance_to_next)} meters to next intersection")
+            details.append(t("ground.meters_to_intersection", distance=int(distance_to_next)))
 
         if self.last_heading:
-            details.append(f"heading {int(self.last_heading)} degrees")
+            details.append(t("ground.heading_degrees", value=int(self.last_heading)))
 
         message_text = ", ".join(details)
 
@@ -337,9 +338,7 @@ class PositionAwarenessPlugin(IPlugin):
         junctions = self.position_tracker.get_approaching_junctions(look_ahead_m=100.0)
         for junction in junctions[:3]:  # Limit to 3 nearest
             if junction.name != location_id:
-                nearby_features.append(
-                    (junction.junction_type, junction.name, junction.distance_m)
-                )
+                nearby_features.append((junction.junction_type, junction.name, junction.distance_m))
 
         # Use orientation audio to announce detailed position
         self.orientation_audio.announce_detailed_position(

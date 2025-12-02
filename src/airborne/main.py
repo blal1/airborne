@@ -167,7 +167,7 @@ class AirBorne:
         """Initialize navigation, aviation, and scenario systems."""
         from airborne.airports.database import AirportDatabase
         from airborne.aviation import CallsignGenerator
-        from airborne.scenario import ScenarioBuilder, SpawnLocation, SpawnManager
+        from airborne.scenario import EngineState, ScenarioBuilder, SpawnLocation, SpawnManager
         from airborne.services.weather import WeatherService
 
         logger.info("Initializing navigation systems...")
@@ -183,10 +183,13 @@ class AirBorne:
             callsigns_file=str(get_data_path("aviation/callsigns.yaml"))
         )
 
-        # Create scenario from CLI args or default
+        # Get flight config from menu or use defaults
+        flight_config = getattr(self.args, "flight_config", {})
+
+        # Create scenario from CLI args or menu config
         if self.args.from_airport:
             airport_icao = self.args.from_airport.upper()
-            logger.info(f"Using departure airport from CLI: {airport_icao}")
+            logger.info(f"Using departure airport: {airport_icao}")
         else:
             # Default to Palo Alto
             airport_icao = "KPAO"
@@ -207,14 +210,31 @@ class AirBorne:
             callsign_obj = self.callsign_gen.generate_ga_callsign(country_prefix)
             callsign = callsign_obj.full
 
-        # Build scenario
-        self.scenario = (
+        # Get settings from flight config
+        spawn_location = flight_config.get("initial_position", SpawnLocation.RAMP)
+        engine_state = flight_config.get("initial_state", EngineState.COLD_AND_DARK)
+        arrival_icao = flight_config.get("arrival")
+        circuit_training = flight_config.get("circuit_training", False)
+        fuel_gallons = flight_config.get("fuel_gallons")
+        passenger_count = flight_config.get("passengers", 0)
+
+        # Build scenario with all settings
+        builder = (
             ScenarioBuilder()
             .with_airport(airport_icao)
-            .with_spawn_location(SpawnLocation.RAMP)
+            .with_spawn_location(spawn_location)
+            .with_engine_state(engine_state)
             .with_callsign(callsign)
-            .build()
+            .with_circuit_training(circuit_training)
+            .with_passengers(passenger_count)
         )
+
+        if arrival_icao:
+            builder = builder.with_arrival(arrival_icao)
+        if fuel_gallons is not None:
+            builder = builder.with_fuel(fuel_gallons)
+
+        self.scenario = builder.build()
 
         logger.info(
             f"Scenario created: {callsign} at {airport_icao} ({self.scenario.spawn_location.value})"
@@ -233,6 +253,11 @@ class AirBorne:
             # Fall back to default position
             self.spawn_state = None
             logger.warning("Using default spawn position")
+
+        # Update plugin context with scenario and spawn state
+        # This makes scenario values available to all plugins during initialization
+        self.plugin_context.scenario = self.scenario
+        self.plugin_context.spawn_state = self.spawn_state
 
     def _initialize_plugins(self) -> None:
         """Initialize core plugins and load aircraft."""
@@ -286,6 +311,11 @@ class AirBorne:
             tts_settings = get_tts_settings()
             saved_mode = tts_settings.mode
             saved_language = tts_settings.language
+
+            # Apply saved language to i18n system (critical for --skip-menu)
+            from airborne.core.i18n import set_language
+
+            set_language(saved_language)
 
             # Map mode to expected values
             if saved_mode == TTS_MODE_REALTIME:
@@ -425,6 +455,11 @@ class AirBorne:
             logger.info(
                 f"InputManager updated with aircraft config: fixed_gear={self.input_manager.fixed_gear}"
             )
+
+            # Reinitialize context manager with aircraft-specific keybindings
+            # This applies user-defined key binding overrides for this aircraft
+            aircraft_type_for_keybindings = Path(aircraft_config_path).stem
+            self.input_manager.reinitialize_context_manager(aircraft_type_for_keybindings)
 
             # Initialize input handlers with loaded plugins
             self._initialize_input_handlers()
@@ -1089,7 +1124,10 @@ def main() -> int:
                 args.from_airport = flight_config["departure"]
             if flight_config.get("arrival"):
                 args.to_airport = flight_config["arrival"]
-            # Aircraft selection would be used here once aircraft loading is refactored
+            if flight_config.get("aircraft"):
+                args.aircraft = flight_config["aircraft"]
+            # Store additional flight config for scenario building
+            args.flight_config = flight_config
             logger.info("Starting flight with config: %s", flight_config)
 
         app = AirBorne(args, tts_service=tts_service)

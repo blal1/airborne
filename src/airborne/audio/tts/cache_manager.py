@@ -5,7 +5,7 @@ across sessions. It supports background generation of common phrases while
 prioritizing user requests.
 
 Architecture:
-    - Disk cache in ~/.cache/airborne/tts/{voice}/
+    - Disk cache in ~/.airborne/tts_cache/{voice}/
     - Manifest file tracks cached items with metadata
     - Background thread generates priority items
     - User requests interrupt background and get immediate service
@@ -110,8 +110,8 @@ class TTSCacheManager:
         >>> cache.shutdown()
     """
 
-    # Cache location
-    DEFAULT_CACHE_BASE = Path.home() / ".cache" / "airborne" / "tts"
+    # Cache location (same base as settings: ~/.airborne on Mac/Linux, %USERPROFILE%\.airborne on Windows)
+    DEFAULT_CACHE_BASE = Path.home() / ".airborne" / "tts_cache"
 
     # Manifest filename
     MANIFEST_FILE = "manifest.json"
@@ -129,7 +129,7 @@ class TTSCacheManager:
             voice: Voice identifier for subdirectory (e.g., "cockpit", "tower").
             rate: Speech rate in words per minute.
             voice_name: Platform-specific voice name (None = system default).
-            cache_base: Base cache directory. If None, uses ~/.cache/airborne/tts/.
+            cache_base: Base cache directory. If None, uses ~/.airborne/tts_cache/.
         """
         self.voice = voice
         self.rate = rate
