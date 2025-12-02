@@ -1,0 +1,15 @@
+# Remote Control WebSocket Server Configuration
+#
+# This configuration controls the WebSocket server that allows external
+# clients to receive telemetry and send control inputs.
+
+remote_control:
+  # Server binding settings
+  host: "0.0.0.0"  # Listen on all interfaces (use "127.0.0.1" for localhost only)
+  port: 51128      # WebSocket port number
+
+  # Default telemetry rate for new clients (can be overridden per-client)
+  default_telemetry_rate_ms: 50  # 50ms = 20 Hz
+
+  # Enable/disable the server (set to false to disable)
+  enabled: true
