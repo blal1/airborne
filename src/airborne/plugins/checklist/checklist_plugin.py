@@ -15,6 +15,7 @@ from typing import Any
 
 import yaml
 
+from airborne.core.i18n import t
 from airborne.core.logging_system import get_logger
 from airborne.core.messaging import Message, MessagePriority, MessageTopic
 from airborne.core.plugin import IPlugin, PluginContext, PluginMetadata, PluginType
@@ -293,12 +294,22 @@ class ChecklistPlugin(IPlugin):
         Returns:
             True if item was completed successfully.
         """
+        logger.info("complete_current_item called, manual=%s", manual)
+
         if not self.active_checklist:
+            logger.warning("complete_current_item: no active checklist")
             return False
 
         current_item = self.active_checklist.get_current_item()
         if not current_item:
+            logger.warning("complete_current_item: no current item")
             return False
+
+        logger.info(
+            "complete_current_item: completing '%s' -> '%s'",
+            current_item.challenge,
+            current_item.response,
+        )
 
         # Mark as completed
         current_item.state = ChecklistItemState.COMPLETED
@@ -308,10 +319,13 @@ class ChecklistPlugin(IPlugin):
         if self.context:
             # Pilot confirms by stating the response/action taken
             response_key = self._get_response_message_key(current_item.response)
+            logger.info("complete_current_item: speaking response '%s'", response_key)
             self._speak(response_key)
 
         # Move to next item
-        return self._advance_to_next_item()
+        result = self._advance_to_next_item()
+        logger.info("complete_current_item: advance returned %s", result)
+        return result
 
     def skip_current_item(self) -> bool:
         """Skip the current checklist item.
@@ -329,11 +343,10 @@ class ChecklistPlugin(IPlugin):
         # Mark as skipped
         current_item.state = ChecklistItemState.SKIPPED
 
-        # Announce skip
+        # Announce skip with translated challenge
         if self.context:
-            challenge_key = self._get_challenge_message_key(current_item.challenge)
-            message_keys = [challenge_key, "MSG_WORD_SKIPPED"]
-            self._speak(message_keys)
+            translated_challenge = self._translate_checklist_text(current_item.challenge)
+            self._speak(f"{translated_challenge}, {t('checklist.skipped')}")
 
         # Move to next item
         return self._advance_to_next_item()
@@ -347,14 +360,12 @@ class ChecklistPlugin(IPlugin):
         if not self.active_checklist:
             return False
 
-        # Announce failure
+        # Announce failure with translated name
         if self.context:
-            message_keys = [
-                "MSG_CHECKLIST_TEXT",
-                self._get_checklist_message_key(self.active_checklist.name),
-                "MSG_WORD_FAILED",
-            ]
-            self._speak(message_keys)
+            checklist_name = self._get_translated_checklist_name(
+                self.active_checklist.id, self.active_checklist.name
+            )
+            self._speak(f"{t('checklist.checklist')} {checklist_name} {t('checklist.failed')}")
 
         # Clear active checklist
         self.active_checklist = None
@@ -442,17 +453,73 @@ class ChecklistPlugin(IPlugin):
                 return None
         return value
 
+    def _get_translated_checklist_name(self, checklist_id: str, fallback_name: str) -> str:
+        """Get translated checklist name.
+
+        Args:
+            checklist_id: The checklist ID (used as translation key).
+            fallback_name: Fallback name if translation not found.
+
+        Returns:
+            Translated checklist name.
+        """
+        translation_key = f"checklists.{checklist_id}"
+        translated = t(translation_key)
+        # If translation returns the key itself, use fallback
+        if translated == translation_key:
+            return fallback_name
+        return translated
+
+    def _translate_checklist_text(self, text: str | bool) -> str:
+        """Translate a checklist challenge or response.
+
+        Converts text to a translation key and looks it up.
+        e.g., "Preflight Inspection" -> "checklist_items.preflight_inspection"
+
+        Args:
+            text: The English text to translate (or bool if YAML parsed ON/OFF).
+
+        Returns:
+            Translated text, or original if no translation found.
+        """
+        # Handle YAML boolean parsing (ON/OFF -> True/False)
+        if isinstance(text, bool):
+            text = "ON" if text else "OFF"
+
+        # Ensure we have a string
+        text = str(text)
+
+        # Convert to translation key: lowercase, replace spaces with underscores
+        key = text.lower().replace(" ", "_").replace("-", "_")
+        # Remove special characters except underscores
+        key = "".join(c for c in key if c.isalnum() or c == "_")
+        translation_key = f"checklist_items.{key}"
+        translated = t(translation_key)
+        # If translation returns the key itself, use original text
+        if translated == translation_key:
+            return text
+        return translated
+
+    def _get_response_message_key(self, response: str) -> str:
+        """Get translated response for checklist item.
+
+        Args:
+            response: The English response text (e.g., "COMPLETE", "ON").
+
+        Returns:
+            Translated response text.
+        """
+        return self._translate_checklist_text(response)
+
     def _announce_checklist_start(self) -> None:
         """Announce checklist start via TTS."""
         if not self.active_checklist or not self.context:
             return
 
-        # Build message: "Starting checklist" + checklist name
-        message_keys = [
-            "MSG_CHECKLIST_STARTING",
-            self._get_checklist_message_key(self.active_checklist.name),
-        ]
-        self._speak(message_keys)
+        checklist_name = self._get_translated_checklist_name(
+            self.active_checklist.id, self.active_checklist.name
+        )
+        self._speak(f"{t('checklist.starting')} {checklist_name}")
 
     def _announce_current_item(self) -> None:
         """Announce current checklist item via TTS."""
@@ -461,68 +528,28 @@ class ChecklistPlugin(IPlugin):
 
         current_item = self.active_checklist.get_current_item()
         if current_item:
-            # Only announce the challenge (the question)
+            # Announce the translated challenge (the question)
             # User will perform the action, then confirm with Shift+Enter
-            challenge_key = self._get_challenge_message_key(current_item.challenge)
-            self._speak(challenge_key)
+            translated_challenge = self._translate_checklist_text(current_item.challenge)
+            self._speak(translated_challenge)
 
     def _announce_checklist_complete(self) -> None:
         """Announce checklist completion via TTS."""
         if not self.active_checklist or not self.context:
             return
 
-        # Build message: "Checklist" + name + "complete"
-        message_keys = [
-            "MSG_CHECKLIST_TEXT",
-            self._get_checklist_message_key(self.active_checklist.name),
-            "MSG_CHECKLIST_COMPLETE",
-        ]
-        self._speak(message_keys)
-
-    def _get_checklist_message_key(self, checklist_name: str) -> str:
-        """Get MSG key for checklist name."""
-        name_to_key = {
-            "Before Engine Start": "MSG_CHECKLIST_BEFORE_START",
-            "Engine Start": "MSG_CHECKLIST_ENGINE_START",
-            "Before Takeoff": "MSG_CHECKLIST_BEFORE_TAKEOFF",
-            "Takeoff": "MSG_CHECKLIST_TAKEOFF",
-            "Normal Takeoff": "MSG_CHECKLIST_TAKEOFF",
-            "Before Landing": "MSG_CHECKLIST_BEFORE_LANDING",
-            "After Landing": "MSG_CHECKLIST_AFTER_LANDING",
-            "Shutdown": "MSG_CHECKLIST_SHUTDOWN",
-            "Engine Shutdown": "MSG_CHECKLIST_SHUTDOWN",
-        }
-        return name_to_key.get(checklist_name, "MSG_CHECKLIST_UNKNOWN")
-
-    def _get_challenge_message_key(self, challenge: str) -> str:
-        """Get MSG key for checklist challenge item."""
-        # Map challenges to MSG keys
-        # We'll generate these as needed
-        challenge_str = str(challenge)
-        challenge_normalized = challenge_str.upper().replace(" ", "_").replace("/", "_")
-        return f"MSG_CHALLENGE_{challenge_normalized}"
-
-    def _get_response_message_key(self, response: str) -> str:
-        """Get MSG key for checklist response item."""
-        # Map responses to MSG keys
-        # We'll generate these as needed
-        response_str = str(response)
-        response_normalized = (
-            response_str.upper()
-            .replace(" ", "_")
-            .replace("/", "_")
-            .replace("(", "")
-            .replace(")", "")
+        checklist_name = self._get_translated_checklist_name(
+            self.active_checklist.id, self.active_checklist.name
         )
-        return f"MSG_RESPONSE_{response_normalized}"
+        self._speak(f"{t('checklist.checklist')} {checklist_name} {t('checklist.complete')}")
 
-    def _speak(self, text: str | list[str]) -> None:
+    def _speak(self, text: str) -> None:
         """Speak text via TTS.
 
         Args:
-            text: Message key or list of message keys to speak.
+            text: Text to speak.
         """
-        if not self.context:
+        if not self.context or not text:
             return
 
         # Publish TTS message

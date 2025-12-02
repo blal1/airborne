@@ -12,6 +12,7 @@ Typical usage example:
 
 from typing import Any
 
+from airborne.core.i18n import t
 from airborne.core.logging_system import get_logger
 from airborne.plugins.checklist.checklist_plugin import ChecklistPlugin
 from airborne.ui.menu import Menu, MenuOption
@@ -104,6 +105,23 @@ class ChecklistMenu(Menu):
 
     # Implement abstract methods from Menu base class
 
+    def _get_translated_checklist_name(self, checklist_id: str, fallback_name: str) -> str:
+        """Get translated checklist name.
+
+        Args:
+            checklist_id: The checklist ID (used as translation key).
+            fallback_name: Fallback name if translation not found.
+
+        Returns:
+            Translated checklist name.
+        """
+        translation_key = f"checklists.{checklist_id}"
+        translated = t(translation_key)
+        # If translation returns the key itself, use fallback
+        if translated == translation_key:
+            return fallback_name
+        return translated
+
     def _build_options(self, context: Any) -> list[MenuOption]:
         """Build menu options from available checklists.
 
@@ -125,11 +143,14 @@ class ChecklistMenu(Menu):
         for idx, checklist_id in enumerate(checklist_ids, start=1):
             checklist = self._checklist_plugin.get_checklist(checklist_id)
             if checklist:
-                message_key = self._get_checklist_message_key(checklist.name)
+                # Get translated name for display and TTS
+                translated_name = self._get_translated_checklist_name(
+                    checklist.id, checklist.name
+                )
                 option = MenuOption(
                     key=str(idx),
-                    label=checklist.name,
-                    message_key=message_key,
+                    label=translated_name,
+                    message_key=translated_name,  # Use translated name for TTS
                     data={
                         "checklist_id": checklist.id,
                         "description": checklist.description,
@@ -161,31 +182,31 @@ class ChecklistMenu(Menu):
             self._executing_checklist = True
             # Don't close menu completely - wait for checklist completion
         else:
-            self._speak("MSG_CHECKLIST_START_FAILED")
+            self._speak(t("checklist_menu.start_failed"))
 
     def _get_menu_opened_message(self) -> str:
-        """Get TTS message key for menu opened.
+        """Get translated text for menu opened.
 
         Returns:
-            Message key string.
+            Translated menu opened message.
         """
-        return "MSG_CHECKLIST_MENU_OPENED"
+        return t("checklist_menu.opened")
 
     def _get_menu_closed_message(self) -> str:
-        """Get TTS message key for menu closed.
+        """Get translated text for menu closed.
 
         Returns:
-            Message key string.
+            Translated menu closed message.
         """
-        return "MSG_CHECKLIST_MENU_CLOSED"
+        return t("checklist_menu.closed")
 
     def _get_invalid_option_message(self) -> str:
-        """Get TTS message key for invalid option.
+        """Get translated text for invalid option.
 
         Returns:
-            Message key string.
+            Translated invalid option message.
         """
-        return "MSG_CHECKLIST_INVALID_OPTION"
+        return t("checklist_menu.invalid_option")
 
     def _is_available(self, context: Any) -> bool:
         """Check if checklist menu should be available.
@@ -209,11 +230,16 @@ class ChecklistMenu(Menu):
         Returns:
             True if item was verified successfully.
         """
+        logger.info("verify_item called, _executing_checklist=%s", self._executing_checklist)
+
         if not self._executing_checklist:
+            logger.warning("verify_item: not in execution mode")
             return False
 
         # Complete current item
+        logger.info("verify_item: calling complete_current_item")
         success = self._checklist_plugin.complete_current_item(manual=True)
+        logger.info("verify_item: complete_current_item returned %s", success)
 
         # If checklist is complete, close menu silently
         if not success:
@@ -263,27 +289,3 @@ class ChecklistMenu(Menu):
             self.open()
 
         return success
-
-    def _get_checklist_message_key(self, checklist_name: str) -> str:
-        """Get MSG key for checklist name.
-
-        Args:
-            checklist_name: Display name of checklist.
-
-        Returns:
-            MSG key for TTS.
-        """
-        # Map common checklist names to MSG keys
-        name_to_key = {
-            "Before Engine Start": "MSG_CHECKLIST_BEFORE_START",
-            "Engine Start": "MSG_CHECKLIST_ENGINE_START",
-            "Before Takeoff": "MSG_CHECKLIST_BEFORE_TAKEOFF",
-            "Takeoff": "MSG_CHECKLIST_TAKEOFF",
-            "Normal Takeoff": "MSG_CHECKLIST_TAKEOFF",
-            "Before Landing": "MSG_CHECKLIST_BEFORE_LANDING",
-            "After Landing": "MSG_CHECKLIST_AFTER_LANDING",
-            "Shutdown": "MSG_CHECKLIST_SHUTDOWN",
-            "Engine Shutdown": "MSG_CHECKLIST_SHUTDOWN",
-        }
-
-        return name_to_key.get(checklist_name, "MSG_CHECKLIST_UNKNOWN")
