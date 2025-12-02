@@ -12,6 +12,7 @@ from airborne.services.atc.providers.base import (
     INLUProvider,
 )
 from airborne.services.atc.providers.local_asr import LocalASRProvider
+from airborne.services.atc.providers.local_nlu import LocalNLUProvider
 
 __all__ = [
     "ATCIntent",
@@ -19,4 +20,5 @@ __all__ = [
     "IASRProvider",
     "INLUProvider",
     "LocalASRProvider",
+    "LocalNLUProvider",
 ]
