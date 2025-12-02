@@ -145,27 +145,45 @@ class ChecklistMenuInputHandler(MenuInputHandler):
         key = event.key
         mods = event.mods
 
+        # Log the current state for debugging
+        current_state = self._menu.get_state()
+        logger.info(
+            "ChecklistMenuInputHandler: key=%s, mods=%s, state=%s, is_open=%s",
+            key, mods, current_state, self._menu.is_open()
+        )
+
         # Handle checklist verification in execution mode
-        if self._menu.get_state() == "CHECKLIST_EXECUTION":
-            # Shift+Enter = verify affirmative (check item)
+        if current_state == "CHECKLIST_EXECUTION":
+            # Check for ctrl modifier (use all variants for cross-platform)
+            ctrl_pressed = mods & (pygame.KMOD_CTRL | pygame.KMOD_LCTRL | pygame.KMOD_RCTRL)
+
+            # Enter (with or without Shift) = verify/check current item
             if (
                 key in (pygame.K_RETURN, pygame.K_KP_ENTER)
-                and (mods & pygame.KMOD_SHIFT)
+                and not ctrl_pressed
                 and hasattr(self._menu, "verify_item")
             ):
+                logger.info("Enter detected - verifying checklist item")
                 self._menu.verify_item()
                 return True
 
             # Ctrl+Enter = cancel checklist
             if (
                 key in (pygame.K_RETURN, pygame.K_KP_ENTER)
-                and (mods & pygame.KMOD_CTRL)
+                and ctrl_pressed
                 and hasattr(self._menu, "cancel_checklist")
             ):
+                logger.info("Ctrl+Enter detected - cancelling checklist")
                 self._menu.cancel_checklist()
                 return True
 
-            # ESC also cancels checklist
+            # Space also verifies item (common alternative)
+            if key == pygame.K_SPACE and hasattr(self._menu, "verify_item"):
+                logger.info("Space detected - verifying checklist item")
+                self._menu.verify_item()
+                return True
+
+            # ESC cancels checklist
             if key == pygame.K_ESCAPE and hasattr(self._menu, "cancel_checklist"):
                 self._menu.cancel_checklist()
                 return True
