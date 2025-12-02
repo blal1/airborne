@@ -25,10 +25,6 @@ except ImportError:
 
 from airborne.core.i18n import t
 from airborne.settings import VOICE_CATEGORIES, get_tts_settings
-from airborne.settings.tts_settings import (
-    TTS_MODE_REALTIME,
-    TTS_MODE_SELFVOICED,
-)
 from airborne.ui.menus.base_menu import AudioMenu, MenuItem
 
 logger = logging.getLogger(__name__)
@@ -305,7 +301,6 @@ class VoiceSettingsMenu(AudioMenu):
         super().__init__(t("voice.title"), parent)
         self._category_menus: dict[str, VoiceCategoryMenu] = {}
         self._on_ui_voice_change: Callable[[str, int], None] | None = None
-        self._current_mode: str = TTS_MODE_REALTIME
 
     def set_on_ui_voice_change(self, callback: Callable[[str, int], None]) -> None:
         """Set callback for when UI voice settings change.
@@ -319,86 +314,13 @@ class VoiceSettingsMenu(AudioMenu):
             self._category_menus["ui"].set_on_ui_voice_change(callback)
 
     def open(self) -> None:
-        """Open the menu and load current TTS mode."""
+        """Open the menu."""
         self.title = t("voice.title")
-        settings = get_tts_settings()
-        self._current_mode = settings.mode
         super().open()
-
-    def handle_key(self, key: int, unicode: str = "") -> bool:
-        """Handle keyboard input with left/right for TTS mode toggle.
-
-        Args:
-            key: pygame key code.
-            unicode: Unicode character.
-
-        Returns:
-            True if key was consumed.
-        """
-        if not self.is_open or pygame is None:
-            return False
-
-        # Handle left/right for TTS mode toggle
-        current_item = self.items[self.selected_index] if self.items else None
-
-        if (
-            current_item
-            and current_item.item_id == "tts_mode"
-            and key in (pygame.K_LEFT, pygame.K_RIGHT)
-        ):
-            self._play_click("knob")
-            self._toggle_tts_mode()
-            return True
-
-        # Fall back to parent handling
-        return super().handle_key(key, unicode)
-
-    def _toggle_tts_mode(self) -> None:
-        """Toggle between TTS modes."""
-        if self._current_mode == TTS_MODE_REALTIME:
-            self._current_mode = TTS_MODE_SELFVOICED
-        else:
-            self._current_mode = TTS_MODE_REALTIME
-
-        # Save immediately
-        settings = get_tts_settings()
-        settings.set_mode(self._current_mode)
-        settings.save()
-
-        # Announce the new mode
-        mode_display = self._get_mode_display(self._current_mode)
-        self._speak(mode_display)
-
-        # Update menu items
-        self.items = self._build_items()
-
-    def _get_mode_display(self, mode: str) -> str:
-        """Get translated display name for TTS mode.
-
-        Args:
-            mode: TTS mode constant.
-
-        Returns:
-            Translated display name.
-        """
-        if mode == TTS_MODE_REALTIME:
-            return t("voice.system_tts")
-        elif mode == TTS_MODE_SELFVOICED:
-            return t("voice.self_voiced")
-        return mode
 
     def _build_items(self) -> list[MenuItem]:
         """Build menu items for each voice category."""
         items = []
-
-        # TTS Mode toggle at the top
-        mode_display = self._get_mode_display(self._current_mode)
-        items.append(
-            MenuItem(
-                "tts_mode",
-                t("voice.tts_mode_label", mode=mode_display),
-            )
-        )
 
         for category in VOICE_CATEGORIES:
             # Create or get category menu

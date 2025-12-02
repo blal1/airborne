@@ -7,10 +7,10 @@ other interactive prompts.
 Typical usage:
     question = Question(
         message_queue=message_queue,
-        prompt_message="MSG_CONFIRM_ACTION",
+        prompt_message="Confirm action?",
         options=[
-            QuestionOption(key="y", label="Yes", message_key="MSG_YES"),
-            QuestionOption(key="n", label="No", message_key="MSG_NO"),
+            QuestionOption(key="y", label="Yes", message_key="Yes"),
+            QuestionOption(key="n", label="No", message_key="No"),
         ]
     )
 
@@ -21,6 +21,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+from airborne.core.i18n import t
 from airborne.core.logging_system import get_logger
 from airborne.core.messaging import Message, MessagePriority, MessageQueue, MessageTopic
 
@@ -211,22 +212,31 @@ class Question:
         if not self._message_queue:
             return
 
-        self._speak("MSG_INVALID_OPTION")
+        self._speak(t("common.invalid_option"))
 
     def _speak(
         self,
-        message_keys: str | list[str],
+        message: str | list[str],
         priority: str = "high",
         interrupt: bool = False,
     ) -> None:
         """Speak message via TTS.
 
         Args:
-            message_keys: Message key or list of keys.
+            message: Text to speak, or list of texts to join.
             priority: Priority level.
             interrupt: Whether to interrupt current speech.
         """
         if not self._message_queue:
+            return
+
+        # Handle list of messages by joining them
+        if isinstance(message, list):
+            text = " ".join(str(m) for m in message if m)
+        else:
+            text = message
+
+        if not text:
             return
 
         self._message_queue.publish(
@@ -234,7 +244,7 @@ class Question:
                 sender=self._sender_name,
                 recipients=["*"],
                 topic=MessageTopic.TTS_SPEAK,
-                data={"text": message_keys, "priority": priority, "interrupt": interrupt},
+                data={"text": text, "priority": priority, "interrupt": interrupt},
                 priority=MessagePriority.HIGH if priority == "high" else MessagePriority.NORMAL,
             )
         )

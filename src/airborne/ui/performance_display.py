@@ -14,6 +14,7 @@ Navigation:
 
 from typing import Any
 
+from airborne.core.i18n import t
 from airborne.core.logging_system import get_logger
 from airborne.core.messaging import Message, MessagePriority, MessageQueue, MessageTopic
 from airborne.systems.performance.performance_calculator import PerformanceCalculator
@@ -89,7 +90,7 @@ class PerformanceDisplay:
 
         if not self.wb_system or not self.perf_calculator:
             logger.warning("PerformanceDisplay missing systems (W&B or PerformanceCalculator)")
-            self._speak("MSG_FMC_NOT_AVAILABLE")
+            self._speak(t("fmc.not_available"))
             return False
 
         self._state = "OPEN"
@@ -97,7 +98,7 @@ class PerformanceDisplay:
         logger.info("PerformanceDisplay opened to page 1")
 
         # Announce opening with page title
-        self._speak(["MSG_FMC_OPENED", "MSG_FMC_PAGE_1", "MSG_FMC_WB_TITLE"], interrupt=True)
+        self._speak(f"{t('fmc.opened')}, {t('fmc.page_1')}, {t('fmc.wb_title')}", interrupt=True)
 
         return True
 
@@ -113,7 +114,7 @@ class PerformanceDisplay:
         self._state = "CLOSED"
         logger.info("PerformanceDisplay closed")
 
-        self._speak("MSG_FMC_CLOSED", interrupt=True)
+        self._speak(t("fmc.closed"), interrupt=True)
 
         return True
 
@@ -233,25 +234,18 @@ class PerformanceDisplay:
         within_limits, status_msg = self.wb_system.is_within_limits()
 
         # Build TTS message
-        messages: list[str] = [
-            "MSG_FMC_WB_TITLE",
-            "MSG_FMC_WB_TOTAL_WEIGHT",
-        ]
-        messages.extend(self._flatten_speech(self._weight_to_speech(total_weight)))
-        messages.append("MSG_WORD_POUNDS")
+        weight_speech = self._number_to_speech(int(round(total_weight / 10.0) * 10))
+        cg_speech = self._number_to_speech(int(cg))
+        status_text = t("fmc.wb_within_limits") if within_limits else t("fmc.wb_out_of_limits")
 
-        # Add CG position
-        messages.append("MSG_FMC_WB_CG_POSITION")
-        messages.extend(self._flatten_speech(self._number_to_speech(int(cg))))
-        messages.append("MSG_WORD_INCHES")
+        message = (
+            f"{t('fmc.wb_title')}. "
+            f"{t('fmc.wb_total_weight')} {weight_speech} {t('fmc.pounds')}. "
+            f"{t('fmc.wb_cg_position')} {cg_speech} {t('fmc.inches')}. "
+            f"{status_text}."
+        )
 
-        # Add status
-        if within_limits:
-            messages.append("MSG_FMC_WB_WITHIN_LIMITS")
-        else:
-            messages.append("MSG_FMC_WB_OUT_OF_LIMITS")
-
-        self._speak(messages, interrupt=True)
+        self._speak(message, interrupt=True)
 
         logger.info(f"Read W&B: {total_weight:.0f} lbs, CG={cg:.1f} in, {status_msg}")
 
@@ -265,31 +259,19 @@ class PerformanceDisplay:
         vspeeds = self.perf_calculator.calculate_vspeeds(weight)
 
         # Build TTS message
-        messages: list[str] = [
-            "MSG_FMC_VS_TITLE",
-            "MSG_FMC_VS_WEIGHT",
-        ]
-        messages.extend(self._flatten_speech(self._weight_to_speech(weight)))
-        messages.append("MSG_WORD_POUNDS")
+        weight_speech = self._number_to_speech(int(round(weight / 10.0) * 10))
+        knots = t("fmc.knots")
 
-        # Add each V-speed
-        messages.append("MSG_FMC_VS_VSTALL")
-        messages.extend(self._flatten_speech(self._number_to_speech(int(vspeeds.v_s))))
-        messages.append("MSG_WORD_KNOTS")
+        message = (
+            f"{t('fmc.vs_title')}. "
+            f"{t('fmc.vs_weight')} {weight_speech} {t('fmc.pounds')}. "
+            f"{t('fmc.vs_vstall')} {int(vspeeds.v_s)} {knots}. "
+            f"{t('fmc.vs_vr')} {int(vspeeds.v_r)} {knots}. "
+            f"{t('fmc.vs_vx')} {int(vspeeds.v_x)} {knots}. "
+            f"{t('fmc.vs_vy')} {int(vspeeds.v_y)} {knots}."
+        )
 
-        messages.append("MSG_FMC_VS_VR")
-        messages.extend(self._flatten_speech(self._number_to_speech(int(vspeeds.v_r))))
-        messages.append("MSG_WORD_KNOTS")
-
-        messages.append("MSG_FMC_VS_VX")
-        messages.extend(self._flatten_speech(self._number_to_speech(int(vspeeds.v_x))))
-        messages.append("MSG_WORD_KNOTS")
-
-        messages.append("MSG_FMC_VS_VY")
-        messages.extend(self._flatten_speech(self._number_to_speech(int(vspeeds.v_y))))
-        messages.append("MSG_WORD_KNOTS")
-
-        self._speak(messages, interrupt=True)
+        self._speak(message, interrupt=True)
 
         logger.info(
             f"Read V-speeds: V_S={vspeeds.v_s:.0f}, V_R={vspeeds.v_r:.0f}, "
@@ -307,29 +289,18 @@ class PerformanceDisplay:
         climb_rate = self.perf_calculator.calculate_climb_rate(weight)
 
         # Build TTS message
-        messages: list[str] = [
-            "MSG_FMC_TO_TITLE",
-            "MSG_FMC_TO_WEIGHT",
-        ]
-        messages.extend(self._flatten_speech(self._weight_to_speech(weight)))
-        messages.append("MSG_WORD_POUNDS")
+        weight_speech = self._number_to_speech(int(round(weight / 10.0) * 10))
+        feet = t("fmc.feet")
 
-        # Ground roll
-        messages.append("MSG_FMC_TO_GROUND_ROLL")
-        messages.extend(self._flatten_speech(self._number_to_speech(int(takeoff.ground_roll_ft))))
-        messages.append("MSG_WORD_FEET")
+        message = (
+            f"{t('fmc.to_title')}. "
+            f"{t('fmc.to_weight')} {weight_speech} {t('fmc.pounds')}. "
+            f"{t('fmc.to_ground_roll')} {self._number_to_speech(int(takeoff.ground_roll_ft))} {feet}. "
+            f"{t('fmc.to_distance_50')} {self._number_to_speech(int(takeoff.distance_50ft))} {feet}. "
+            f"{t('fmc.to_climb_rate')} {self._number_to_speech(int(climb_rate))} {t('fmc.fpm')}."
+        )
 
-        # Distance to 50ft
-        messages.append("MSG_FMC_TO_DISTANCE_50")
-        messages.extend(self._flatten_speech(self._number_to_speech(int(takeoff.distance_50ft))))
-        messages.append("MSG_WORD_FEET")
-
-        # Climb rate
-        messages.append("MSG_FMC_TO_CLIMB_RATE")
-        messages.extend(self._flatten_speech(self._number_to_speech(int(climb_rate))))
-        messages.append("MSG_WORD_FPM")
-
-        self._speak(messages, interrupt=True)
+        self._speak(message, interrupt=True)
 
         logger.info(
             f"Read takeoff: ground_roll={takeoff.ground_roll_ft:.0f} ft, "
@@ -339,103 +310,49 @@ class PerformanceDisplay:
     def _announce_page(self) -> None:
         """Announce current page number and title via TTS."""
         if self._current_page == 1:
-            self._speak(["MSG_FMC_PAGE_1", "MSG_FMC_WB_TITLE"], interrupt=True)
+            self._speak(f"{t('fmc.page_1')}, {t('fmc.wb_title')}", interrupt=True)
         elif self._current_page == 2:
-            self._speak(["MSG_FMC_PAGE_2", "MSG_FMC_VS_TITLE"], interrupt=True)
+            self._speak(f"{t('fmc.page_2')}, {t('fmc.vs_title')}", interrupt=True)
         elif self._current_page == 3:
-            self._speak(["MSG_FMC_PAGE_3", "MSG_FMC_TO_TITLE"], interrupt=True)
+            self._speak(f"{t('fmc.page_3')}, {t('fmc.to_title')}", interrupt=True)
 
     # Helper methods for TTS
 
-    def _flatten_speech(self, speech: str | list[str]) -> list[str]:
-        """Flatten speech result to list of strings.
-
-        Args:
-            speech: String or list of strings.
-
-        Returns:
-            List of strings (flattened if needed).
-        """
-        if isinstance(speech, str):
-            return [speech]
-        return speech
-
-    def _weight_to_speech(self, weight: float) -> str | list[str]:
-        """Convert weight value to TTS message keys.
-
-        Args:
-            weight: Weight in pounds.
-
-        Returns:
-            Message key or list of keys for TTS.
-        """
-        # Round to nearest 10
-        weight_rounded = int(round(weight / 10.0) * 10)
-        return self._number_to_speech(weight_rounded)
-
-    def _number_to_speech(self, number: int) -> str | list[str]:
-        """Convert number to TTS message keys.
+    def _number_to_speech(self, number: int) -> str:
+        """Convert number to speakable string.
 
         Args:
             number: Integer number.
 
         Returns:
-            Message key or list of keys for TTS.
-
-        Note:
-            For numbers 0-100, uses MSG_NUMBER_X.
-            For larger numbers, breaks down into components.
+            String representation of the number for TTS.
         """
-        # Simple numbers (0-100): direct mapping
-        if 0 <= number <= 100:
-            return f"MSG_NUMBER_{number}"
-
-        # Larger numbers: break down into components
-        # For simplicity, just use the direct number for now
-        # Could be enhanced to speak "two thousand five hundred" etc.
-        if number < 1000:
-            # Hundreds: "500" -> "five hundred"
-            hundreds = number // 100
-            remainder = number % 100
-
-            messages = []
-            if hundreds > 0:
-                messages.append(f"MSG_NUMBER_{hundreds}")
-                messages.append("MSG_WORD_HUNDRED")
-
-            if remainder > 0:
-                messages.append(f"MSG_NUMBER_{remainder}")
-
-            return messages if len(messages) > 1 else messages[0]
-
-        # Thousands: "2500" -> "two thousand five hundred"
-        thousands = number // 1000
-        remainder = number % 1000
-
-        messages = []
-        if thousands > 0:
-            messages.append(f"MSG_NUMBER_{thousands}")
-            messages.append("MSG_WORD_THOUSAND")
-
-        if remainder > 0:
-            messages.extend(self._number_to_speech(remainder))
-
-        return messages if len(messages) > 1 else messages[0]
+        # TTS engines can speak numbers directly
+        return str(number)
 
     def _speak(
         self,
-        message_keys: str | list[str],
+        message: str | list[str],
         priority: str = "high",
         interrupt: bool = False,
     ) -> None:
         """Speak message via TTS.
 
         Args:
-            message_keys: Message key or list of keys to speak.
+            message: Message text or list of texts to speak.
             priority: Priority level (high, normal, low).
             interrupt: Whether to interrupt current speech.
         """
         if not self._message_queue:
+            return
+
+        # Handle list of messages by joining them
+        if isinstance(message, list):
+            text = " ".join(str(m) for m in message if m)
+        else:
+            text = message
+
+        if not text:
             return
 
         self._message_queue.publish(
@@ -443,7 +360,7 @@ class PerformanceDisplay:
                 sender="performance_display",
                 recipients=["*"],
                 topic=MessageTopic.TTS_SPEAK,
-                data={"text": message_keys, "priority": priority, "interrupt": interrupt},
+                data={"text": text, "priority": priority, "interrupt": interrupt},
                 priority=MessagePriority.HIGH if priority == "high" else MessagePriority.NORMAL,
             )
         )
@@ -472,82 +389,47 @@ class WeightBalanceMenu(Menu):
         cg = self.wb_system.calculate_cg()
         within_limits, status_msg = self.wb_system.is_within_limits()
 
+        weight_label = f"{t('fmc.wb_total_weight')}: {total_weight:.0f} lbs"
+        cg_label = f"{t('fmc.wb_cg_position')}: {cg:.1f} inches"
+        status_text = t("fmc.wb_within_limits") if within_limits else t("fmc.wb_out_of_limits")
+
         return [
             MenuOption(
                 key="1",
-                label=f"Total Weight: {total_weight:.0f} lbs",
-                message_key="MSG_FMC_WB_TOTAL_WEIGHT",
+                label=weight_label,
+                message_key=f"{t('fmc.wb_total_weight')} {int(round(total_weight / 10.0) * 10)} {t('fmc.pounds')}",
                 data={"value": total_weight, "type": "weight"},
             ),
             MenuOption(
                 key="2",
-                label=f"CG Position: {cg:.1f} inches",
-                message_key="MSG_FMC_WB_CG_POSITION",
+                label=cg_label,
+                message_key=f"{t('fmc.wb_cg_position')} {int(cg)} {t('fmc.inches')}",
                 data={"value": cg, "type": "cg"},
             ),
             MenuOption(
                 key="3",
                 label=f"Status: {status_msg}",
-                message_key="MSG_FMC_WB_WITHIN_LIMITS"
-                if within_limits
-                else "MSG_FMC_WB_OUT_OF_LIMITS",
+                message_key=status_text,
                 data={"within_limits": within_limits},
             ),
         ]
 
     def _handle_selection(self, option: MenuOption) -> None:
         """Handle menu option selection."""
-        # Speak the full value
-        if option.data and option.data.get("type") == "weight":
-            weight = option.data["value"]
-            messages = [option.message_key]
-            messages.extend(self._number_to_speech(int(round(weight / 10.0) * 10)))
-            messages.append("MSG_WORD_POUNDS")
-            self._speak(messages, interrupt=True)
-        elif option.data and option.data.get("type") == "cg":
-            cg = option.data["value"]
-            messages = [option.message_key]
-            messages.extend(self._number_to_speech(int(cg)))
-            messages.append("MSG_WORD_INCHES")
-            self._speak(messages, interrupt=True)
-        else:
-            # Just announce the status
-            self._speak(option.message_key, interrupt=True)
-
-    def _number_to_speech(self, number: int) -> list[str]:
-        """Convert number to speech messages."""
-        if 0 <= number <= 100:
-            return [f"MSG_NUMBER_{number}"]
-
-        messages = []
-        if number < 1000:
-            hundreds = number // 100
-            remainder = number % 100
-            if hundreds > 0:
-                messages.extend([f"MSG_NUMBER_{hundreds}", "MSG_WORD_HUNDRED"])
-            if remainder > 0:
-                messages.append(f"MSG_NUMBER_{remainder}")
-        else:
-            thousands = number // 1000
-            remainder = number % 1000
-            if thousands > 0:
-                messages.extend([f"MSG_NUMBER_{thousands}", "MSG_WORD_THOUSAND"])
-            if remainder > 0:
-                messages.extend(self._number_to_speech(remainder))
-
-        return messages
+        # Speak the message_key which already contains the full translated message
+        self._speak(option.message_key, interrupt=True)
 
     def _get_menu_opened_message(self) -> str:
         """Get TTS message for menu opened."""
-        return "MSG_FMC_WB_TITLE"
+        return t("fmc.wb_title")
 
     def _get_menu_closed_message(self) -> str:
         """Get TTS message for menu closed."""
-        return "MSG_MENU_CLOSED"
+        return t("common.menu_closed")
 
     def _get_invalid_option_message(self) -> str:
         """Get TTS message for invalid option."""
-        return "MSG_INVALID_OPTION"
+        return t("common.invalid_option")
 
 
 class VSpeedsMenu(Menu):
@@ -574,77 +456,51 @@ class VSpeedsMenu(Menu):
         """Build menu options for V-speeds page."""
         weight = self.wb_system.calculate_total_weight()
         vspeeds = self.perf_calculator.calculate_vspeeds(weight)
+        knots = t("fmc.knots")
 
         return [
             MenuOption(
                 key="1",
                 label=f"V-Stall: {vspeeds.v_s:.0f} KIAS",
-                message_key="MSG_FMC_VS_VSTALL",
+                message_key=f"{t('fmc.vs_vstall')} {int(vspeeds.v_s)} {knots}",
                 data={"value": vspeeds.v_s, "type": "vspeed"},
             ),
             MenuOption(
                 key="2",
                 label=f"V-Rotate: {vspeeds.v_r:.0f} KIAS",
-                message_key="MSG_FMC_VS_VR",
+                message_key=f"{t('fmc.vs_vr')} {int(vspeeds.v_r)} {knots}",
                 data={"value": vspeeds.v_r, "type": "vspeed"},
             ),
             MenuOption(
                 key="3",
                 label=f"V-X (Best Angle): {vspeeds.v_x:.0f} KIAS",
-                message_key="MSG_FMC_VS_VX",
+                message_key=f"{t('fmc.vs_vx')} {int(vspeeds.v_x)} {knots}",
                 data={"value": vspeeds.v_x, "type": "vspeed"},
             ),
             MenuOption(
                 key="4",
                 label=f"V-Y (Best Rate): {vspeeds.v_y:.0f} KIAS",
-                message_key="MSG_FMC_VS_VY",
+                message_key=f"{t('fmc.vs_vy')} {int(vspeeds.v_y)} {knots}",
                 data={"value": vspeeds.v_y, "type": "vspeed"},
             ),
         ]
 
     def _handle_selection(self, option: MenuOption) -> None:
         """Handle menu option selection."""
-        if option.data and option.data.get("type") == "vspeed":
-            speed = option.data["value"]
-            messages = [option.message_key]
-            messages.extend(self._number_to_speech(int(speed)))
-            messages.append("MSG_WORD_KNOTS")
-            self._speak(messages, interrupt=True)
-
-    def _number_to_speech(self, number: int) -> list[str]:
-        """Convert number to speech messages."""
-        if 0 <= number <= 100:
-            return [f"MSG_NUMBER_{number}"]
-
-        messages = []
-        if number < 1000:
-            hundreds = number // 100
-            remainder = number % 100
-            if hundreds > 0:
-                messages.extend([f"MSG_NUMBER_{hundreds}", "MSG_WORD_HUNDRED"])
-            if remainder > 0:
-                messages.append(f"MSG_NUMBER_{remainder}")
-        else:
-            thousands = number // 1000
-            remainder = number % 1000
-            if thousands > 0:
-                messages.extend([f"MSG_NUMBER_{thousands}", "MSG_WORD_THOUSAND"])
-            if remainder > 0:
-                messages.extend(self._number_to_speech(remainder))
-
-        return messages
+        # Speak the message_key which already contains the full translated message
+        self._speak(option.message_key, interrupt=True)
 
     def _get_menu_opened_message(self) -> str:
         """Get TTS message for menu opened."""
-        return "MSG_FMC_VS_TITLE"
+        return t("fmc.vs_title")
 
     def _get_menu_closed_message(self) -> str:
         """Get TTS message for menu closed."""
-        return "MSG_MENU_CLOSED"
+        return t("common.menu_closed")
 
     def _get_invalid_option_message(self) -> str:
         """Get TTS message for invalid option."""
-        return "MSG_INVALID_OPTION"
+        return t("common.invalid_option")
 
 
 class TakeoffMenu(Menu):
@@ -672,75 +528,42 @@ class TakeoffMenu(Menu):
         weight = self.wb_system.calculate_total_weight()
         takeoff = self.perf_calculator.calculate_takeoff_distance(weight)
         climb_rate = self.perf_calculator.calculate_climb_rate(weight)
+        feet = t("fmc.feet")
 
         return [
             MenuOption(
                 key="1",
                 label=f"Ground Roll: {takeoff.ground_roll_ft:.0f} ft",
-                message_key="MSG_FMC_TO_GROUND_ROLL",
+                message_key=f"{t('fmc.to_ground_roll')} {int(takeoff.ground_roll_ft)} {feet}",
                 data={"value": takeoff.ground_roll_ft, "type": "distance"},
             ),
             MenuOption(
                 key="2",
                 label=f"Distance to 50ft: {takeoff.distance_50ft:.0f} ft",
-                message_key="MSG_FMC_TO_DISTANCE_50",
+                message_key=f"{t('fmc.to_distance_50')} {int(takeoff.distance_50ft)} {feet}",
                 data={"value": takeoff.distance_50ft, "type": "distance"},
             ),
             MenuOption(
                 key="3",
                 label=f"Climb Rate: {climb_rate:.0f} fpm",
-                message_key="MSG_FMC_TO_CLIMB_RATE",
+                message_key=f"{t('fmc.to_climb_rate')} {int(climb_rate)} {t('fmc.fpm')}",
                 data={"value": climb_rate, "type": "climb_rate"},
             ),
         ]
 
     def _handle_selection(self, option: MenuOption) -> None:
         """Handle menu option selection."""
-        if option.data:
-            value = option.data["value"]
-            value_type = option.data.get("type")
-
-            messages = [option.message_key]
-            messages.extend(self._number_to_speech(int(value)))
-
-            if value_type == "distance":
-                messages.append("MSG_WORD_FEET")
-            elif value_type == "climb_rate":
-                messages.append("MSG_WORD_FPM")
-
-            self._speak(messages, interrupt=True)
-
-    def _number_to_speech(self, number: int) -> list[str]:
-        """Convert number to speech messages."""
-        if 0 <= number <= 100:
-            return [f"MSG_NUMBER_{number}"]
-
-        messages = []
-        if number < 1000:
-            hundreds = number // 100
-            remainder = number % 100
-            if hundreds > 0:
-                messages.extend([f"MSG_NUMBER_{hundreds}", "MSG_WORD_HUNDRED"])
-            if remainder > 0:
-                messages.append(f"MSG_NUMBER_{remainder}")
-        else:
-            thousands = number // 1000
-            remainder = number % 1000
-            if thousands > 0:
-                messages.extend([f"MSG_NUMBER_{thousands}", "MSG_WORD_THOUSAND"])
-            if remainder > 0:
-                messages.extend(self._number_to_speech(remainder))
-
-        return messages
+        # Speak the message_key which already contains the full translated message
+        self._speak(option.message_key, interrupt=True)
 
     def _get_menu_opened_message(self) -> str:
         """Get TTS message for menu opened."""
-        return "MSG_FMC_TO_TITLE"
+        return t("fmc.to_title")
 
     def _get_menu_closed_message(self) -> str:
         """Get TTS message for menu closed."""
-        return "MSG_MENU_CLOSED"
+        return t("common.menu_closed")
 
     def _get_invalid_option_message(self) -> str:
         """Get TTS message for invalid option."""
-        return "MSG_INVALID_OPTION"
+        return t("common.invalid_option")

@@ -372,9 +372,8 @@ class Menu(ABC):
 
         option = enabled_options[self._selected_index]
         if option.message_key:
-            # Speak: "Number X option"
-            message_keys = [f"MSG_NUMBER_{option.key}", option.message_key]
-            self._speak(message_keys, interrupt=True)
+            # Speak: "Number X: option name"
+            self._speak(f"{option.key}: {option.message_key}", interrupt=True)
 
     def _announce_invalid_option(self) -> None:
         """Announce invalid option selection via TTS."""
@@ -385,18 +384,27 @@ class Menu(ABC):
 
     def _speak(
         self,
-        message_keys: str | list[str],
+        message: str | list[str],
         priority: str = "high",
         interrupt: bool = False,
     ) -> None:
         """Speak message via TTS.
 
         Args:
-            message_keys: Message key or list of keys to speak.
+            message: Text to speak, or list of texts to join.
             priority: Priority level (high, normal, low).
             interrupt: Whether to interrupt current speech.
         """
         if not self._message_queue:
+            return
+
+        # Handle list of messages by joining them
+        if isinstance(message, list):
+            text = " ".join(str(m) for m in message if m)
+        else:
+            text = message
+
+        if not text:
             return
 
         self._message_queue.publish(
@@ -404,7 +412,7 @@ class Menu(ABC):
                 sender=self._sender_name,
                 recipients=["*"],
                 topic=MessageTopic.TTS_SPEAK,
-                data={"text": message_keys, "priority": priority, "interrupt": interrupt},
+                data={"text": text, "priority": priority, "interrupt": interrupt},
                 priority=MessagePriority.HIGH if priority == "high" else MessagePriority.NORMAL,
             )
         )
