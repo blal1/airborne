@@ -26,10 +26,13 @@ from airborne.physics.vectors import Vector3
 from airborne.plugins.radio.atc_manager import ATCController, ATCManager, ATCRequest, ATCType
 from airborne.plugins.radio.atc_menu import ATCMenu
 from airborne.plugins.radio.atc_queue import ATCMessageQueue
+from airborne.plugins.radio.atc_v2 import ATCV2Controller, V2State
 from airborne.plugins.radio.atis import ATISGenerator, ATISInfo
 from airborne.plugins.radio.frequency_manager import FrequencyManager, RadioType
 from airborne.plugins.radio.phraseology import PhraseMaker
 from airborne.plugins.radio.readback import ATCReadbackSystem
+from airborne.services.atc.intent_processor import FlightContext
+from airborne.settings import get_atc_v2_settings
 
 logger = get_logger(__name__)
 
@@ -69,6 +72,9 @@ class RadioPlugin(IPlugin):
         self.atc_queue: ATCMessageQueue | None = None
         self.atc_menu: ATCMenu | None = None
         self.readback_system: ATCReadbackSystem | None = None
+
+        # ATC V2 voice control (optional)
+        self.atc_v2_controller: ATCV2Controller | None = None
 
         # Current state
         self._current_position: Vector3 | None = None
@@ -196,6 +202,9 @@ class RadioPlugin(IPlugin):
         else:
             logger.warning("ATC audio manager or TTS not available - interactive ATC disabled")
 
+        # Initialize ATC V2 voice control (if enabled in settings)
+        self._initialize_atc_v2(context)
+
         # Subscribe to messages
         context.message_queue.subscribe("position_updated", self.handle_message)
         context.message_queue.subscribe("input.radio_tune", self.handle_message)
@@ -233,11 +242,22 @@ class RadioPlugin(IPlugin):
         if self.atc_queue:
             self.atc_queue.process(dt)
 
+        # Update ATC V2 controller
+        if self.atc_v2_controller and self.atc_v2_controller.is_enabled():
+            self.atc_v2_controller.update(dt)
+            # Update flight context for V2
+            self._update_v2_flight_context()
+
         # Check if we need to update ATIS (e.g., every 5 minutes in real implementation)
         # For now, we'll keep the current ATIS if it exists
 
     def shutdown(self) -> None:
         """Shutdown the radio plugin."""
+        # Shutdown ATC V2 controller
+        if self.atc_v2_controller:
+            self.atc_v2_controller.shutdown()
+            self.atc_v2_controller = None
+
         # Shutdown interactive ATC systems
         if self.atc_queue:
             self.atc_queue.shutdown()
@@ -355,6 +375,17 @@ class RadioPlugin(IPlugin):
         pressed = data.get("pressed", False)
         request_type = data.get("request_type", "taxi")
 
+        # If V2 is enabled, route PTT to voice control
+        if self.atc_v2_controller and self.atc_v2_controller.is_enabled():
+            if pressed and not self._push_to_talk_pressed:
+                self._push_to_talk_pressed = True
+                self.atc_v2_controller.on_ptt_pressed()
+            elif not pressed and self._push_to_talk_pressed:
+                self._push_to_talk_pressed = False
+                self.atc_v2_controller.on_ptt_released()
+            return
+
+        # Legacy menu-based PTT handling
         if pressed and not self._push_to_talk_pressed:
             # PTT pressed - transmit
             self._push_to_talk_pressed = True
@@ -866,3 +897,60 @@ class RadioPlugin(IPlugin):
         if new_callsign != self._callsign:
             self._callsign = new_callsign
             logger.info("Callsign changed to: %s", self._callsign)
+
+    def _initialize_atc_v2(self, context: PluginContext) -> None:
+        """Initialize ATC V2 voice control if enabled.
+
+        Args:
+            context: Plugin context with access to core systems.
+        """
+        settings = get_atc_v2_settings()
+        if not settings.enabled:
+            logger.info("ATC V2 voice control is disabled")
+            return
+
+        # Get audio engine from audio plugin
+        audio_engine = None
+        tts_service = None
+        if context.plugin_registry:
+            audio_plugin = context.plugin_registry.get("audio_plugin")
+            if audio_plugin:
+                audio_engine = getattr(audio_plugin, "audio_engine", None)
+                tts_service = getattr(audio_plugin, "tts_service", None)
+
+        if not audio_engine:
+            logger.warning("Audio engine not available - ATC V2 disabled")
+            return
+
+        # Create V2 controller
+        self.atc_v2_controller = ATCV2Controller(
+            audio_engine=audio_engine,
+            tts_service=tts_service,
+        )
+
+        # Initialize
+        try:
+            if self.atc_v2_controller.initialize():
+                logger.info("ATC V2 voice control initialized")
+            else:
+                logger.warning("ATC V2 initialization failed")
+                self.atc_v2_controller = None
+        except Exception as e:
+            logger.error(f"ATC V2 initialization error: {e}")
+            self.atc_v2_controller = None
+
+    def _update_v2_flight_context(self) -> None:
+        """Update the V2 controller's flight context."""
+        if not self.atc_v2_controller:
+            return
+
+        context = FlightContext(
+            callsign=self._callsign,
+            airport_icao=self._departure_airport,
+            on_ground=self._on_ground,
+            current_frequency=self.frequency_manager.get_active("COM1"),
+            assigned_runway=self._departure_runway,
+            assigned_taxiway="",  # Could track this from ATC handler
+            flight_phase="ground" if self._on_ground else "airborne",
+        )
+        self.atc_v2_controller.set_flight_context(context)
