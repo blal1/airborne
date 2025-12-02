@@ -11,11 +11,11 @@ items:
     verify_condition: null
 
   - challenge: Electrical Equipment
-    response: OFF
+    response: "OFF"
     verify_condition: null
 
   - challenge: Avionics Master Switch
-    response: OFF
+    response: "OFF"
     verify_condition: electrical.avionics_master == OFF
 
   - challenge: Mixture
@@ -27,7 +27,7 @@ items:
     verify_condition: engine.magnetos == OFF
 
   - challenge: Master Switch
-    response: OFF
+    response: "OFF"
     verify_condition: electrical.master == OFF
 
   - challenge: Hobbs/Tach Time

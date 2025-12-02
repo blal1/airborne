@@ -27,7 +27,7 @@ items:
     verify_condition: fuel.selector == BOTH
 
   - challenge: Fuel Shutoff Valve
-    response: ON
+    response: "ON"
     verify_condition: fuel.shutoff == ON
 
   - challenge: Brakes
@@ -39,15 +39,15 @@ items:
     verify_condition: null
 
   - challenge: Electrical Equipment
-    response: OFF
+    response: "OFF"
     verify_condition: null
 
   - challenge: Avionics Master Switch
-    response: OFF
+    response: "OFF"
     verify_condition: electrical.avionics_master == OFF
 
   - challenge: Master Switch
-    response: ON
+    response: "ON"
     verify_condition: electrical.master == ON
 
   - challenge: Fuel Quantity Indicators
@@ -55,7 +55,7 @@ items:
     verify_condition: null
 
   - challenge: Master Switch
-    response: OFF
+    response: "OFF"
     verify_condition: electrical.master == OFF
 
   - challenge: Parking Brake

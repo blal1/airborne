@@ -23,7 +23,7 @@ items:
     verify_condition: null
 
   - challenge: Landing Light
-    response: ON
+    response: "ON"
     verify_condition: null
 
   - challenge: Airspeed
@@ -43,5 +43,5 @@ items:
     verify_condition: null
 
   - challenge: Master Switch
-    response: ON
+    response: "ON"
     verify_condition: electrical.master == ON
