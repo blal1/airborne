@@ -27,21 +27,30 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
+from airborne.core.i18n import t
 from airborne.core.logging_system import get_logger
 
 logger = get_logger(__name__)
 
 
+def _facility_name(facility: str) -> str:
+    """Get translated facility name."""
+    key = f"atc.{facility.lower()}"
+    translated = t(key)
+    # If translation not found, return original
+    return translated if translated != key else facility
+
+
 class ATCFacility(Enum):
     """ATC facility types."""
 
-    GROUND = "Ground"
-    TOWER = "Tower"
-    DEPARTURE = "Departure"
-    APPROACH = "Approach"
-    CENTER = "Center"
-    CLEARANCE = "Clearance Delivery"
-    UNICOM = "Unicom"
+    GROUND = "ground"
+    TOWER = "tower"
+    DEPARTURE = "departure"
+    APPROACH = "approach"
+    CENTER = "center"
+    CLEARANCE = "clearance"
+    UNICOM = "unicom"
     CTAF = "Traffic"
 
 
@@ -423,18 +432,18 @@ class ATCPhraseology:
             with information [ATIS], [passengers] on board, request startup"
         """
         parts = [
-            f"{self.context.airport_name} Ground",
+            f"{self.context.airport_name} {_facility_name('ground')}",
             self._full_pilot_callsign(),
-            f"at {self.context.parking_location}",
+            f"{t('atc.at')} {self.context.parking_location}",
         ]
 
         # Include ATIS info only if received
         if self.context.atis_received and self.context.atis_info:
-            parts.append(f"with information {self.context.atis_info}")
+            parts.append(f"{t('atc.with_information')} {self.context.atis_info}")
 
         # Include passenger count
         parts.append(self._format_passengers(self.context.passengers))
-        parts.append("request startup")
+        parts.append(t("atc.request_startup"))
 
         return ", ".join(parts)
 
@@ -556,7 +565,7 @@ class ATCPhraseology:
         Returns:
             Wilco message with callsign
         """
-        return f"Wilco, {self._abbreviated_callsign()}"
+        return f"{t('atc.wilco')}, {self._abbreviated_callsign()}"
 
     # --- ATC Messages ---
 
@@ -568,9 +577,8 @@ class ATCPhraseology:
         """
         return (
             f"{self._abbreviated_callsign()}, "
-            f"{self.context.airport_name} Ground, "
-            f"startup approved, "
-            f"advise ready to taxi"
+            f"{self.context.airport_name} {_facility_name('ground')}, "
+            f"{t('atc.startup_approved')}"
         )
 
     def atc_startup_denied_no_atis(self) -> str:
@@ -580,7 +588,8 @@ class ATCPhraseology:
             ATC startup denied message
         """
         return (
-            f"{self._abbreviated_callsign()}, {self.context.airport_name} Ground, say information"
+            f"{self._abbreviated_callsign()}, {self.context.airport_name} {_facility_name('ground')}, "
+            f"{t('atc.startup_denied')}"
         )
 
     def pilot_readback_startup(self) -> str:
@@ -615,7 +624,7 @@ class ATCPhraseology:
         """
         return (
             f"{self._abbreviated_callsign()}, "
-            f"hold short runway {self._format_runway(self.context.runway)}"
+            f"{t('atc.hold_short')} {self._format_runway(self.context.runway)}"
         )
 
     def atc_cleared_takeoff(self, wind: str | None = None) -> str:
@@ -629,8 +638,8 @@ class ATCPhraseology:
         """
         base = (
             f"{self._abbreviated_callsign()}, "
-            f"runway {self._format_runway(self.context.runway)}, "
-            f"cleared for takeoff"
+            f"{self._format_runway(self.context.runway)}, "
+            f"{t('atc.cleared_takeoff')}"
         )
         if wind:
             base += f", wind {wind}"
@@ -644,8 +653,8 @@ class ATCPhraseology:
         """
         return (
             f"{self._abbreviated_callsign()}, "
-            f"runway {self._format_runway(self.context.runway)}, "
-            f"line up and wait"
+            f"{self._format_runway(self.context.runway)}, "
+            f"{t('atc.lineup_wait')}"
         )
 
     def atc_contact_tower(self) -> str:
@@ -656,7 +665,7 @@ class ATCPhraseology:
         """
         return (
             f"{self._abbreviated_callsign()}, "
-            f"contact tower {self._format_frequency(self.context.tower_freq)}"
+            f"{t('atc.contact_tower')} {self._format_frequency(self.context.tower_freq)}"
         )
 
     def atc_contact_departure(self) -> str:
@@ -667,7 +676,7 @@ class ATCPhraseology:
         """
         return (
             f"{self._abbreviated_callsign()}, "
-            f"contact departure {self._format_frequency(self.context.departure_freq)}"
+            f"{t('atc.contact_departure')} {self._format_frequency(self.context.departure_freq)}"
         )
 
     def atc_radar_contact(self, altitude: int | None = None) -> str:

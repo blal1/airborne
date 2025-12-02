@@ -20,6 +20,7 @@ Typical usage example:
 from enum import Enum
 from typing import Any
 
+from airborne.core.i18n import t
 from airborne.core.logging_system import get_logger
 from airborne.plugins.radio.atc_phraseology import ATCPhraseology, FlightContext
 from airborne.ui.menu import Menu, MenuOption
@@ -403,28 +404,28 @@ class ATCMenu(Menu):
                 logger.error(f"Error in option callback: {e}")
 
     def _get_menu_opened_message(self) -> str:
-        """Get TTS message key for menu opened.
+        """Get translated text for menu opened.
 
         Returns:
-            Message key string.
+            Translated menu opened message.
         """
-        return "MSG_ATC_MENU_OPENED"
+        return t("atc_menu.opened")
 
     def _get_menu_closed_message(self) -> str:
-        """Get TTS message key for menu closed.
+        """Get translated text for menu closed.
 
         Returns:
-            Message key string.
+            Translated menu closed message.
         """
-        return "MSG_ATC_MENU_CLOSED"
+        return t("atc_menu.closed")
 
     def _get_invalid_option_message(self) -> str:
-        """Get TTS message key for invalid option.
+        """Get translated text for invalid option.
 
         Returns:
-            Message key string.
+            Translated invalid option message.
         """
-        return "MSG_ATC_INVALID_OPTION"
+        return t("atc_menu.invalid_option")
 
     def _is_available(self, context: Any) -> bool:
         """Check if ATC menu should be available for current state.
@@ -504,14 +505,14 @@ class ATCMenu(Menu):
             options = [
                 MenuOption(
                     key="1",
-                    label="Listen to ATIS",
-                    message_key="MSG_ATC_OPTION_REQUEST_ATIS",
+                    label=t("atc_menu.listen_atis"),
+                    message_key=t("atc_menu.listen_atis"),
                     data={"is_atis_request": True},
                 ),
                 MenuOption(
                     key="2",
-                    label="Radio Check",
-                    message_key="MSG_ATC_OPTION_RADIO_CHECK",
+                    label=t("atc_menu.radio_check"),
+                    message_key=t("atc_menu.radio_check"),
                     data={
                         "pilot_text_func": lambda p: p.pilot_radio_check(),
                         "atc_text_func": lambda p: p.atc_radio_check_response(),
@@ -524,8 +525,8 @@ class ATCMenu(Menu):
                 options.append(
                     MenuOption(
                         key="3",
-                        label="Request Startup",
-                        message_key="MSG_ATC_OPTION_REQUEST_STARTUP",
+                        label=t("atc_menu.request_startup"),
+                        message_key=t("atc_menu.request_startup"),
                         data={
                             "pilot_text_func": lambda p: p.pilot_request_startup(),
                             "atc_text_func": lambda p: p.atc_startup_approved(),
@@ -538,8 +539,8 @@ class ATCMenu(Menu):
                 options.append(
                     MenuOption(
                         key="3",
-                        label="Request Startup (no ATIS)",
-                        message_key="MSG_ATC_OPTION_REQUEST_STARTUP_NO_ATIS",
+                        label=t("atc_menu.request_startup_no_atis"),
+                        message_key=t("atc_menu.request_startup_no_atis"),
                         data={
                             "pilot_text_func": lambda p: p.pilot_request_startup_no_atis(),
                             "atc_text_func": lambda p: p.atc_startup_denied_no_atis(),
@@ -551,14 +552,14 @@ class ATCMenu(Menu):
             options = [
                 MenuOption(
                     key="1",
-                    label="Listen to ATIS",
-                    message_key="MSG_ATC_OPTION_REQUEST_ATIS",
+                    label=t("atc_menu.listen_atis"),
+                    message_key=t("atc_menu.listen_atis"),
                     data={"is_atis_request": True},
                 ),
                 MenuOption(
                     key="2",
-                    label="Request Taxi",
-                    message_key="MSG_ATC_OPTION_REQUEST_TAXI",
+                    label=t("atc_menu.request_taxi"),
+                    message_key=t("atc_menu.request_taxi"),
                     data={
                         "pilot_text_func": lambda p: p.pilot_request_taxi(),
                         "atc_text_func": lambda p: p.atc_taxi_clearance("Alpha"),
@@ -567,8 +568,8 @@ class ATCMenu(Menu):
                 ),
                 MenuOption(
                     key="3",
-                    label="Announce Taxi (CTAF)",
-                    message_key="MSG_ATC_OPTION_ANNOUNCE_TAXI",
+                    label=t("atc_menu.announce_taxi"),
+                    message_key=t("atc_menu.announce_taxi"),
                     data={
                         "pilot_text_func": lambda p: (
                             f"{p.context.airport_name} Traffic, "
@@ -585,8 +586,8 @@ class ATCMenu(Menu):
             options = [
                 MenuOption(
                     key="1",
-                    label="Ready for Departure",
-                    message_key="MSG_ATC_OPTION_READY_DEPARTURE",
+                    label=t("atc_menu.ready_departure"),
+                    message_key=t("atc_menu.ready_departure"),
                     data={
                         "pilot_text_func": lambda p: p.pilot_ready_for_departure(),
                         "atc_text_func": lambda p: p.atc_cleared_takeoff(),
@@ -595,8 +596,8 @@ class ATCMenu(Menu):
                 ),
                 MenuOption(
                     key="2",
-                    label="Request Takeoff",
-                    message_key="MSG_ATC_OPTION_REQUEST_TAKEOFF",
+                    label=t("atc_menu.request_takeoff"),
+                    message_key=t("atc_menu.request_takeoff"),
                     data={
                         "pilot_text_func": lambda p: p.pilot_request_takeoff(),
                         "atc_text_func": lambda p: p.atc_cleared_takeoff(),
@@ -605,8 +606,8 @@ class ATCMenu(Menu):
                 ),
                 MenuOption(
                     key="3",
-                    label="Announce Departure (CTAF)",
-                    message_key="MSG_ATC_OPTION_ANNOUNCE_DEPARTURE",
+                    label=t("atc_menu.announce_departure"),
+                    message_key=t("atc_menu.announce_departure"),
                     data={
                         "pilot_text_func": lambda p: (
                             f"{p.context.airport_name} Traffic, "
@@ -624,8 +625,8 @@ class ATCMenu(Menu):
             options = [
                 MenuOption(
                     key="1",
-                    label="Report Ready",
-                    message_key="MSG_ATC_OPTION_READY_DEPARTURE",
+                    label=t("atc_menu.report_ready"),
+                    message_key=t("atc_menu.report_ready"),
                     data={
                         "pilot_text_func": lambda p: p.pilot_request_takeoff(),
                         "atc_text_func": lambda p: p.atc_cleared_takeoff(),
@@ -633,8 +634,8 @@ class ATCMenu(Menu):
                 ),
                 MenuOption(
                     key="2",
-                    label="Announce Takeoff (CTAF)",
-                    message_key="MSG_ATC_OPTION_ANNOUNCE_TAKEOFF",
+                    label=t("atc_menu.announce_takeoff"),
+                    message_key=t("atc_menu.announce_takeoff"),
                     data={
                         "pilot_text_func": lambda p: (
                             f"{p.context.airport_name} Traffic, "
@@ -651,8 +652,8 @@ class ATCMenu(Menu):
             options = [
                 MenuOption(
                     key="1",
-                    label="Contact Departure",
-                    message_key="MSG_ATC_OPTION_CHECKIN_DEPARTURE",
+                    label=t("atc_menu.checkin_departure"),
+                    message_key=t("atc_menu.checkin_departure"),
                     data={
                         "pilot_text_func": lambda p: p.pilot_departure_checkin(),
                         "atc_text_func": lambda p: p.atc_radar_contact(),
@@ -660,8 +661,8 @@ class ATCMenu(Menu):
                 ),
                 MenuOption(
                     key="2",
-                    label="Request Frequency Change",
-                    message_key="MSG_ATC_OPTION_FREQ_CHANGE",
+                    label=t("atc_menu.request_freq_change"),
+                    message_key=t("atc_menu.request_freq_change"),
                     data={
                         "pilot_text_func": lambda p: (
                             f"{p.context.airport_name} Tower, "
@@ -673,8 +674,8 @@ class ATCMenu(Menu):
                 ),
                 MenuOption(
                     key="3",
-                    label="Announce Departure (CTAF)",
-                    message_key="MSG_ATC_OPTION_ANNOUNCE_DEPARTURE_CTAF",
+                    label=t("atc_menu.announce_departure"),
+                    message_key=t("atc_menu.announce_departure"),
                     data={
                         "pilot_text_func": lambda p: (
                             f"{p.context.airport_name} Traffic, "
@@ -692,8 +693,8 @@ class ATCMenu(Menu):
             options = [
                 MenuOption(
                     key="1",
-                    label="Request Flight Following",
-                    message_key="MSG_ATC_OPTION_REQUEST_FLIGHT_FOLLOWING",
+                    label=t("atc_menu.request_flight_following"),
+                    message_key=t("atc_menu.request_flight_following"),
                     data={
                         "pilot_text_func": lambda p: (
                             f"NorCal Approach, {p._full_pilot_callsign()}, request flight following"
@@ -708,8 +709,8 @@ class ATCMenu(Menu):
                 ),
                 MenuOption(
                     key="2",
-                    label="Position Report",
-                    message_key="MSG_ATC_OPTION_REPORT_POSITION",
+                    label=t("atc_menu.position_report"),
+                    message_key=t("atc_menu.position_report"),
                     data={
                         "pilot_text_func": lambda p: (
                             f"NorCal Approach, "
@@ -721,8 +722,8 @@ class ATCMenu(Menu):
                 ),
                 MenuOption(
                     key="3",
-                    label="Request Higher Altitude",
-                    message_key="MSG_ATC_OPTION_REQUEST_HIGHER",
+                    label=t("atc_menu.request_higher"),
+                    message_key=t("atc_menu.request_higher"),
                     data={
                         "pilot_text_func": lambda p: (
                             f"NorCal Approach, {p._abbreviated_callsign()}, request higher"

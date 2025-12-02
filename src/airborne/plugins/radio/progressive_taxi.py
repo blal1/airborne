@@ -211,7 +211,6 @@ class ProgressiveTaxiManager:
                     "aircraft_id": clearance.aircraft_id,
                     "controller": "ground",
                     "message": segment.instruction,
-                    "message_key": self._get_message_key(segment),
                     "hold_short": segment.hold_short,
                     "is_clearance": True,
                 },
@@ -244,7 +243,6 @@ class ProgressiveTaxiManager:
                     "aircraft_id": clearance.aircraft_id,
                     "controller": "ground",
                     "message": instruction,
-                    "message_key": "MSG_GROUND_CONTACT_TOWER",
                     "is_clearance": True,
                 },
                 priority=MessagePriority.HIGH,
@@ -254,22 +252,6 @@ class ProgressiveTaxiManager:
         clearance.is_complete = True
 
         logger.info("Final instruction issued to %s: %s", clearance.aircraft_id, instruction)
-
-    def _get_message_key(self, segment: TaxiSegment) -> str:
-        """Get pre-recorded message key for segment.
-
-        Args:
-            segment: Taxi segment.
-
-        Returns:
-            Message key for TTS playback.
-        """
-        if segment.hold_short:
-            return "MSG_GROUND_TAXI_HOLD_SHORT"
-        elif segment.is_runway_crossing:
-            return "MSG_GROUND_CROSS_RUNWAY"
-        else:
-            return "MSG_GROUND_TAXI_VIA"
 
     def _handle_position_update(self, message: Message) -> None:
         """Handle aircraft position updates.
