@@ -526,7 +526,7 @@ class InputManager:  # pylint: disable=too-many-instance-attributes
                 return
 
             self.context_manager = InputContextManager(
-                config_dir, self.message_queue, aircraft_id=aircraft_id
+                config_dir, self.message_queue, aircraft_id=aircraft_id, event_bus=self.event_bus
             )
             logger.info(
                 "Context-aware input system initialized (%d contexts loaded, aircraft=%s)",

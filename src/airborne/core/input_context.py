@@ -23,10 +23,13 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pygame
 import yaml
+
+if TYPE_CHECKING:
+    from airborne.core.event_bus import EventBus
 
 from airborne.core.logging_system import get_logger
 from airborne.core.messaging import Message, MessagePriority, MessageQueue
@@ -117,6 +120,7 @@ class InputContextManager:
         config_dir: Path,
         message_queue: MessageQueue,
         aircraft_id: str | None = None,
+        event_bus: "EventBus | None" = None,
     ):
         """Initialize input context manager.
 
@@ -126,10 +130,12 @@ class InputContextManager:
             aircraft_id: Aircraft identifier for loading user keybindings.
                 If provided, user overrides from ~/.airborne/keybindings/
                 will be applied on top of default YAML bindings.
+            event_bus: Optional event bus for publishing InputActionEvents.
         """
         self.config_dir = config_dir
         self.message_queue = message_queue
         self.aircraft_id = aircraft_id
+        self.event_bus = event_bus
         self.contexts: dict[str, InputContextConfig] = {}
         self.context_stack: list[str] = [InputContext.FLIGHT_MODE]
         self.action_handlers: dict[str, Callable] = {}
@@ -411,6 +417,12 @@ class InputContextManager:
                 return
             except Exception as e:
                 logger.error(f"Action handler '{action}' failed: {e}")
+
+        # Publish InputActionEvent to event bus (for main.py handlers)
+        if self.event_bus:
+            from airborne.core.input import InputActionEvent
+
+            self.event_bus.publish(InputActionEvent(action=action))
 
         # Publish as message for plugins to handle
         self.message_queue.publish(
