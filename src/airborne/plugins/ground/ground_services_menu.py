@@ -17,6 +17,7 @@ Typical usage example:
 
 from typing import Any
 
+from airborne.core.i18n import t
 from airborne.core.logging_system import get_logger
 from airborne.core.messaging import Message, MessagePriority, MessageQueue
 from airborne.plugins.ground.ground_services import ServiceType
@@ -85,13 +86,13 @@ class GroundServicesMenu(Menu):
         # Check if we're at parking
         if not self._is_at_parking:
             logger.info("Ground services menu not available: not at parking")
-            self._speak("MSG_GROUND_NOT_AT_PARKING")
+            self._speak(t("ground_menu.not_at_parking"))
             return False
 
         # Check if services are available
         if not self._available_services:
             logger.info("Ground services menu not available: no services available")
-            self._speak("MSG_GROUND_NO_SERVICES")
+            self._speak(t("ground_menu.no_services"))
             return False
 
         # Call base class open()
@@ -178,28 +179,28 @@ class GroundServicesMenu(Menu):
         # Define all possible services and their menu options
         service_configs = {
             ServiceType.REFUEL: {
-                "label": "Request Refueling",
-                "message_key": "MSG_GROUND_OPTION_REFUEL",
+                "label": t("ground_menu.option_refuel"),
+                "message_key": t("ground_menu.option_refuel"),
             },
             ServiceType.PUSHBACK: {
-                "label": "Request Pushback",
-                "message_key": "MSG_GROUND_OPTION_PUSHBACK",
+                "label": t("ground_menu.option_pushback"),
+                "message_key": t("ground_menu.option_pushback"),
             },
             ServiceType.BOARDING: {
-                "label": "Request Boarding",
-                "message_key": "MSG_GROUND_OPTION_BOARDING",
+                "label": t("ground_menu.option_boarding"),
+                "message_key": t("ground_menu.option_boarding"),
             },
             ServiceType.DEBOARDING: {
-                "label": "Request Deboarding",
-                "message_key": "MSG_GROUND_OPTION_DEBOARDING",
+                "label": t("ground_menu.option_deboarding"),
+                "message_key": t("ground_menu.option_deboarding"),
             },
             ServiceType.GPU: {
-                "label": "Request Ground Power",
-                "message_key": "MSG_GROUND_OPTION_GPU",
+                "label": t("ground_menu.option_gpu"),
+                "message_key": t("ground_menu.option_gpu"),
             },
             ServiceType.CATERING: {
-                "label": "Request Catering",
-                "message_key": "MSG_GROUND_OPTION_CATERING",
+                "label": t("ground_menu.option_catering"),
+                "message_key": t("ground_menu.option_catering"),
             },
         }
 
@@ -231,28 +232,28 @@ class GroundServicesMenu(Menu):
         self._request_service(service_type)
 
     def _get_menu_opened_message(self) -> str:
-        """Get TTS message key for menu opened.
+        """Get translated text for menu opened.
 
         Returns:
-            Message key string.
+            Translated menu opened message.
         """
-        return "MSG_GROUND_MENU_OPENED"
+        return t("ground_menu.opened")
 
     def _get_menu_closed_message(self) -> str:
-        """Get TTS message key for menu closed.
+        """Get translated text for menu closed.
 
         Returns:
-            Message key string.
+            Translated menu closed message.
         """
-        return "MSG_GROUND_MENU_CLOSED"
+        return t("ground_menu.closed")
 
     def _get_invalid_option_message(self) -> str:
-        """Get TTS message key for invalid option.
+        """Get translated text for invalid option.
 
         Returns:
-            Message key string.
+            Translated invalid option message.
         """
-        return "MSG_GROUND_INVALID_OPTION"
+        return t("ground_menu.invalid_option")
 
     def _is_available(self, context: Any) -> bool:
         """Check if ground services menu is available.
@@ -333,6 +334,6 @@ class GroundServicesMenu(Menu):
             )
         )
 
-        self._speak("MSG_GROUND_SERVICE_CANCELLED")
+        self._speak(t("ground_menu.service_cancelled"))
         self._active_service = None
         # State will return to CLOSED automatically

@@ -22,6 +22,7 @@ import random
 import time
 from enum import Enum
 
+from airborne.core.i18n import t
 from airborne.core.messaging import Message, MessageQueue
 from airborne.plugins.ground.ground_services import (
     GroundService,
@@ -170,7 +171,7 @@ class RefuelingService(GroundService):
         self._publish_status_update()
 
         # Publish audio message: "Fuel truck dispatched"
-        self._publish_audio_message_key("MSG_REFUEL_ACKNOWLEDGED", voice="refuel")
+        self._speak(t("ground_services.refuel_acknowledged"))
 
         logger.info(
             "Refueling started: %s, %.1f gallons, rate=%.2f gal/sec, ETA=%.1fs",
@@ -233,7 +234,7 @@ class RefuelingService(GroundService):
         self.phase_start_time = time.time()
 
         # Publish audio message
-        self._publish_audio_message_key("MSG_REFUEL_STARTING", voice="refuel")
+        self._speak(t("ground_services.refuel_starting"))
 
         logger.info("Refueling: truck arrived, connecting hoses")
 
@@ -243,7 +244,7 @@ class RefuelingService(GroundService):
         self.phase_start_time = time.time()
 
         # Publish audio message
-        self._publish_audio_message_key("MSG_REFUEL_IN_PROGRESS", voice="refuel")
+        self._speak(t("ground_services.refuel_in_progress"))
 
         logger.info("Refueling: started pumping fuel")
 
@@ -252,40 +253,17 @@ class RefuelingService(GroundService):
         self.refueling_phase = RefuelingPhase.COMPLETE
 
         # Publish audio message
-        self._publish_audio_message_key("MSG_REFUEL_COMPLETE", voice="refuel")
+        self._speak(t("ground_services.refuel_complete"))
 
         logger.info("Refueling: complete, %.1f gallons added", self.fuel_added)
 
-    def _publish_audio_message(self, text: str) -> None:
-        """Publish audio message for TTS (legacy method).
+    def _speak(self, text: str) -> None:
+        """Speak text via TTS.
 
         Args:
-            text: Message text to speak
+            text: Text to speak
         """
-        if not self.message_queue or not self.request:
-            return
-
-        self.message_queue.publish(
-            Message(
-                sender="refueling_service",
-                recipients=["audio"],
-                topic="ground.audio.speak",
-                data={
-                    "text": text,
-                    "voice": "ground",  # Ground crew voice
-                    "priority": "normal",
-                },
-            )
-        )
-
-    def _publish_audio_message_key(self, message_key: str, voice: str = "refuel") -> None:
-        """Publish pre-recorded audio message.
-
-        Args:
-            message_key: Message key (e.g., "MSG_REFUEL_ACKNOWLEDGED")
-            voice: Voice type (refuel, tug, boarding, ops)
-        """
-        if not self.message_queue or not self.request:
+        if not self.message_queue or not self.request or not text:
             return
 
         from airborne.core.messaging import MessagePriority, MessageTopic
@@ -293,13 +271,9 @@ class RefuelingService(GroundService):
         self.message_queue.publish(
             Message(
                 sender="refueling_service",
-                recipients=["audio"],
+                recipients=["*"],
                 topic=MessageTopic.TTS_SPEAK,
-                data={
-                    "message_key": message_key,
-                    "voice": voice,
-                    "interrupt": True,
-                },
+                data={"text": text, "priority": "high", "interrupt": True},
                 priority=MessagePriority.HIGH,
             )
         )

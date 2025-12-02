@@ -22,6 +22,7 @@ import math
 import time
 from enum import Enum
 
+from airborne.core.i18n import t
 from airborne.core.messaging import Message, MessageQueue
 from airborne.physics.vectors import Vector3
 from airborne.plugins.ground.ground_services import (
@@ -233,7 +234,7 @@ class PushbackService(GroundService):
         self._publish_status_update()
 
         # Publish audio message
-        self._publish_audio_message_key("MSG_PUSHBACK_ACKNOWLEDGED", voice="tug")
+        self._speak(t("ground_services.pushback_acknowledged"))
 
         logger.info(
             "Pushback started: %s, direction=%s, heading=%.0f°, distance=%.0fm",
@@ -298,7 +299,7 @@ class PushbackService(GroundService):
         self.phase_start_time = time.time()
 
         # Publish audio message
-        self._publish_audio_message_key("MSG_PUSHBACK_STARTING", voice="tug")
+        self._speak(t("ground_services.pushback_starting"))
 
         logger.info("Pushback: started pushing back")
 
@@ -330,7 +331,7 @@ class PushbackService(GroundService):
             )
 
         # Publish audio message
-        self._publish_audio_message_key("MSG_PUSHBACK_COMPLETE", voice="tug")
+        self._speak(t("ground_services.pushback_complete"))
 
         logger.info("Pushback: complete")
 
@@ -384,36 +385,13 @@ class PushbackService(GroundService):
             self.start_position.z + (self.target_position.z - self.start_position.z) * progress,
         )
 
-    def _publish_audio_message(self, text: str) -> None:
-        """Publish audio message for TTS (legacy method).
+    def _speak(self, text: str) -> None:
+        """Speak text via TTS.
 
         Args:
-            text: Message text to speak
+            text: Text to speak
         """
-        if not self.message_queue or not self.request:
-            return
-
-        self.message_queue.publish(
-            Message(
-                sender="pushback_service",
-                recipients=["audio"],
-                topic="ground.audio.speak",
-                data={
-                    "text": text,
-                    "voice": "ground",  # Ground crew voice
-                    "priority": "normal",
-                },
-            )
-        )
-
-    def _publish_audio_message_key(self, message_key: str, voice: str = "tug") -> None:
-        """Publish pre-recorded audio message.
-
-        Args:
-            message_key: Message key (e.g., "MSG_PUSHBACK_ACKNOWLEDGED")
-            voice: Voice type (tug, refuel, boarding, ops)
-        """
-        if not self.message_queue or not self.request:
+        if not self.message_queue or not self.request or not text:
             return
 
         from airborne.core.messaging import MessagePriority, MessageTopic
@@ -421,13 +399,9 @@ class PushbackService(GroundService):
         self.message_queue.publish(
             Message(
                 sender="pushback_service",
-                recipients=["audio"],
+                recipients=["*"],
                 topic=MessageTopic.TTS_SPEAK,
-                data={
-                    "message_key": message_key,
-                    "voice": voice,
-                    "interrupt": True,
-                },
+                data={"text": text, "priority": "high", "interrupt": True},
                 priority=MessagePriority.HIGH,
             )
         )

@@ -7,6 +7,7 @@ realistic timing and audio feedback.
 import logging
 import time
 
+from airborne.core.i18n import t
 from airborne.core.messaging import Message, MessageQueue
 from airborne.plugins.ground.ground_services import (
     GroundService,
@@ -59,7 +60,7 @@ class BoardingService(GroundService):
         self.passengers_boarded = 0
 
         self._publish_status_update()
-        self._publish_audio_message_key("MSG_BOARDING_ACKNOWLEDGED", voice="boarding")
+        self._speak(t("ground_services.boarding_acknowledged"))
 
         logger.info(
             "Boarding started: %s, %d passengers, duration=%.1fs",
@@ -90,13 +91,13 @@ class BoardingService(GroundService):
         progress = self.get_progress()
         if progress >= self.last_progress_announcement + 0.25 and progress < 1.0:
             self.last_progress_announcement = int(progress / 0.25) * 0.25
-            self._publish_audio_message_key("MSG_BOARDING_IN_PROGRESS", voice="boarding")
+            self._speak(t("ground_services.boarding_in_progress"))
 
         # Check if complete
         if self.passengers_boarded >= self.passenger_count:
             self.status = ServiceStatus.COMPLETE
             self._publish_status_update()
-            self._publish_audio_message_key("MSG_BOARDING_COMPLETE", voice="boarding")
+            self._speak(t("ground_services.boarding_complete"))
             logger.info("Boarding complete: %d passengers", self.passengers_boarded)
 
     def get_progress(self) -> float:
@@ -105,22 +106,9 @@ class BoardingService(GroundService):
             return 0.0 if self.status == ServiceStatus.IDLE else 1.0
         return min(1.0, self.passengers_boarded / self.passenger_count)
 
-    def _publish_audio_message(self, text: str) -> None:
-        """Publish audio message (legacy method)."""
-        if not self.message_queue or not self.request:
-            return
-        self.message_queue.publish(
-            Message(
-                sender="boarding_service",
-                recipients=["audio"],
-                topic="ground.audio.speak",
-                data={"text": text, "voice": "ground", "priority": "normal"},
-            )
-        )
-
-    def _publish_audio_message_key(self, message_key: str, voice: str = "boarding") -> None:
-        """Publish pre-recorded audio message."""
-        if not self.message_queue or not self.request:
+    def _speak(self, text: str) -> None:
+        """Speak text via TTS."""
+        if not self.message_queue or not self.request or not text:
             return
 
         from airborne.core.messaging import MessagePriority, MessageTopic
@@ -128,13 +116,9 @@ class BoardingService(GroundService):
         self.message_queue.publish(
             Message(
                 sender="boarding_service",
-                recipients=["audio"],
+                recipients=["*"],
                 topic=MessageTopic.TTS_SPEAK,
-                data={
-                    "message_key": message_key,
-                    "voice": voice,
-                    "interrupt": True,
-                },
+                data={"text": text, "priority": "high", "interrupt": True},
                 priority=MessagePriority.HIGH,
             )
         )
@@ -169,7 +153,7 @@ class DeboardingService(GroundService):
         self.passengers_deboarded = 0
 
         self._publish_status_update()
-        self._publish_audio_message_key("MSG_DEBOARDING_ACKNOWLEDGED", voice="boarding")
+        self._speak(t("ground_services.deboarding_acknowledged"))
 
         logger.info(
             "Deboarding started: %s, %d passengers",
@@ -199,7 +183,7 @@ class DeboardingService(GroundService):
         if self.passengers_deboarded >= self.passenger_count:
             self.status = ServiceStatus.COMPLETE
             self._publish_status_update()
-            self._publish_audio_message_key("MSG_DEBOARDING_COMPLETE", voice="boarding")
+            self._speak(t("ground_services.deboarding_complete"))
             logger.info("Deboarding complete: %d passengers", self.passengers_deboarded)
 
     def get_progress(self) -> float:
@@ -208,22 +192,9 @@ class DeboardingService(GroundService):
             return 0.0 if self.status == ServiceStatus.IDLE else 1.0
         return min(1.0, self.passengers_deboarded / self.passenger_count)
 
-    def _publish_audio_message(self, text: str) -> None:
-        """Publish audio message (legacy method)."""
-        if not self.message_queue or not self.request:
-            return
-        self.message_queue.publish(
-            Message(
-                sender="deboarding_service",
-                recipients=["audio"],
-                topic="ground.audio.speak",
-                data={"text": text, "voice": "ground", "priority": "normal"},
-            )
-        )
-
-    def _publish_audio_message_key(self, message_key: str, voice: str = "boarding") -> None:
-        """Publish pre-recorded audio message."""
-        if not self.message_queue or not self.request:
+    def _speak(self, text: str) -> None:
+        """Speak text via TTS."""
+        if not self.message_queue or not self.request or not text:
             return
 
         from airborne.core.messaging import MessagePriority, MessageTopic
@@ -231,13 +202,9 @@ class DeboardingService(GroundService):
         self.message_queue.publish(
             Message(
                 sender="deboarding_service",
-                recipients=["audio"],
+                recipients=["*"],
                 topic=MessageTopic.TTS_SPEAK,
-                data={
-                    "message_key": message_key,
-                    "voice": voice,
-                    "interrupt": True,
-                },
+                data={"text": text, "priority": "high", "interrupt": True},
                 priority=MessagePriority.HIGH,
             )
         )
