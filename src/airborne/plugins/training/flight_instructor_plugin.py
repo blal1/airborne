@@ -13,6 +13,7 @@ Typical usage:
 
 from typing import Any
 
+from airborne.core.i18n import t
 from airborne.core.input import InputActionEvent
 from airborne.core.logging_system import get_logger
 from airborne.core.messaging import Message, MessagePriority, MessageTopic
@@ -165,14 +166,14 @@ class FlightInstructorPlugin(IPlugin):
         if not self.enabled:
             self.enabled = True
             logger.info("Flight instructor enabled")
-            self._speak("MSG_INSTRUCTOR_ENABLED")
+            self._speak(t("instructor.enabled"))
 
     def _disable_instructor(self) -> None:
         """Disable the flight instructor."""
         if self.enabled:
             self.enabled = False
             logger.info("Flight instructor disabled")
-            self._speak("MSG_INSTRUCTOR_DISABLED")
+            self._speak(t("instructor.disabled"))
 
     def _provide_assessment(self) -> None:
         """Provide on-demand flight performance assessment (F9)."""
@@ -180,7 +181,7 @@ class FlightInstructorPlugin(IPlugin):
             # Enable temporarily for assessment
             logger.info("Providing one-time assessment")
 
-        self._speak("MSG_INSTRUCTOR_ASSESSMENT")
+        self._speak(t("instructor.assessment"))
         # TODO: Analyze recent flight data and provide detailed feedback
 
     def _speak(self, message_id: str, priority: MessagePriority = MessagePriority.NORMAL) -> None:
@@ -240,13 +241,13 @@ class FlightInstructorPlugin(IPlugin):
 
         # Check for excessive pitch up (too steep)
         if self.pitch_angle > self.post_takeoff_pitch_max:
-            self._speak("MSG_INSTRUCTOR_PITCH_TOO_HIGH", MessagePriority.HIGH)
+            self._speak(t("instructor.pitch_too_high"), MessagePriority.HIGH)
             self.pitch_feedback_timer = self.feedback_cooldown
             logger.debug(f"Pitch too high: {self.pitch_angle:.1f}°")
 
         # Check for insufficient pitch (nose too low)
         elif self.pitch_angle < self.post_takeoff_pitch_min:
-            self._speak("MSG_INSTRUCTOR_PITCH_TOO_LOW", MessagePriority.HIGH)
+            self._speak(t("instructor.pitch_too_low"), MessagePriority.HIGH)
             self.pitch_feedback_timer = self.feedback_cooldown
             logger.debug(f"Pitch too low: {self.pitch_angle:.1f}°")
 
@@ -255,7 +256,7 @@ class FlightInstructorPlugin(IPlugin):
         if self.stall_feedback_timer > 0:
             return  # Cooldown active
 
-        self._speak("MSG_INSTRUCTOR_STALL_WARNING", MessagePriority.CRITICAL)
+        self._speak(t("instructor.stall_warning"), MessagePriority.CRITICAL)
         self.stall_feedback_timer = self.feedback_cooldown
         logger.debug("Stall warning active, providing guidance")
 
@@ -266,13 +267,13 @@ class FlightInstructorPlugin(IPlugin):
 
         # Check for dangerously low airspeed
         if self.airspeed < self.stall_warning_speed + 10.0:
-            self._speak("MSG_INSTRUCTOR_AIRSPEED_LOW", MessagePriority.HIGH)
+            self._speak(t("instructor.airspeed_low"), MessagePriority.HIGH)
             self.airspeed_feedback_timer = self.feedback_cooldown
             logger.debug(f"Airspeed too low: {self.airspeed:.1f} kts")
 
         # Check for excessive airspeed
         elif self.airspeed > self.cruise_speed_max:
-            self._speak("MSG_INSTRUCTOR_AIRSPEED_HIGH", MessagePriority.HIGH)
+            self._speak(t("instructor.airspeed_high"), MessagePriority.HIGH)
             self.airspeed_feedback_timer = self.feedback_cooldown
             logger.debug(f"Airspeed too high: {self.airspeed:.1f} kts")
 

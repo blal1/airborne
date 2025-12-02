@@ -16,6 +16,7 @@ from typing import Any
 
 import yaml
 
+from airborne.core.i18n import t
 from airborne.core.logging_system import get_logger
 from airborne.core.messaging import Message, MessagePriority, MessageTopic
 from airborne.core.plugin import IPlugin, PluginContext, PluginMetadata, PluginType
@@ -527,14 +528,9 @@ class ControlPanelPlugin(IPlugin):
             )
         )
 
-        # Announce button press using MSG_* format
-        # Build message keys like MSG_PRIMER_PUMP, MSG_PRIMER_PUMP_PRESSED
-        control_key_base = control.id.upper().replace("_SWITCH", "").replace("_LEVER", "")
-        control_key_base = control_key_base.replace("_BUTTON", "").replace("_VALVE", "")
-        control_msg_key = f"MSG_{control_key_base}"
-        control_state_msg_key = f"{control_msg_key}_PRESSED"
-
-        self._speak_sequence([control_msg_key, control_state_msg_key])
+        # Announce button press using translations
+        control_name = t(f"controls.{control.id}")
+        self._speak(control_name)
 
         # Send button press message
         if control.target_plugin and control.message_topic:
@@ -587,29 +583,10 @@ class ControlPanelPlugin(IPlugin):
         """Announce current panel via TTS."""
         panel = self.get_current_panel()
         if panel:
-            # Use pre-recorded panel announcement messages
-            from airborne.audio.tts.speech_messages import (
-                MSG_PANEL_ENGINE_CONTROLS,
-                MSG_PANEL_FLIGHT_CONTROLS,
-                MSG_PANEL_INSTRUMENT_PANEL,
-                MSG_PANEL_OVERHEAD_PANEL,
-                MSG_PANEL_PEDESTAL,
-            )
-
-            panel_name_to_msg = {
-                "Instrument Panel": MSG_PANEL_INSTRUMENT_PANEL,
-                "Pedestal": MSG_PANEL_PEDESTAL,
-                "Engine Controls": MSG_PANEL_ENGINE_CONTROLS,
-                "Overhead Panel": MSG_PANEL_OVERHEAD_PANEL,
-                "Flight Controls": MSG_PANEL_FLIGHT_CONTROLS,
-            }
-
-            msg_id = panel_name_to_msg.get(panel.name)
-            if msg_id:
-                self._speak(msg_id)
-            else:
-                # Fallback to dynamic speech if no pre-recorded message
-                self._speak(f"Panel: {panel.name}")
+            # Convert panel name to translation key (e.g., "Instrument Panel" -> "instrument_panel")
+            panel_key = panel.name.lower().replace(" ", "_")
+            panel_text = t(f"panels.{panel_key}")
+            self._speak(panel_text)
 
     def _announce_control(self) -> None:
         """Announce current control via TTS."""
@@ -619,38 +596,42 @@ class ControlPanelPlugin(IPlugin):
             self._announce_control_state(control, state)
 
     def _announce_control_state(self, control: PanelControl, state: str) -> None:
-        """Announce control and its state using pre-recorded messages.
+        """Announce control and its state using translated text.
 
         Args:
             control: The control to announce.
             state: The current state value.
         """
-        # Build message keys for pre-recorded announcements
-        # Convert control ID to message key base (e.g., "master_switch" -> "MSG_MASTER_SWITCH")
-        control_key_base = control.id.upper().replace("_SWITCH", "").replace("_LEVER", "")
-        control_key_base = control_key_base.replace("_BUTTON", "").replace("_VALVE", "")
-        control_msg_key = f"MSG_{control_key_base}"
+        # Get translated control name
+        control_name = t(f"controls.{control.id}")
 
-        # For continuous controls (sliders), only announce the control name without state
-        # since the numeric values change continuously and we don't have MP3s for all values
+        # For continuous controls (sliders), only announce the control name
         if control.is_continuous():
-            logger.debug(f"Announcing continuous control: {control.id} -> [{control_msg_key}]")
-            self._speak(control_msg_key)
+            logger.debug(f"Announcing continuous control: {control.id}")
+            self._speak(control_name)
             return
 
-        # Convert state to message key (e.g., "ON" -> "MSG_MASTER_SWITCH_ON")
         # Handle boolean values (True/False -> ON/OFF)
-        state_str = ("ON" if state else "OFF") if isinstance(state, bool) else str(state)
-        state_normalized = state_str.upper().replace(" ", "_").replace("%", "")
-        control_state_msg_key = f"{control_msg_key}_{state_normalized}"
+        state_str = ("on" if state else "off") if isinstance(state, bool) else str(state).lower()
 
-        # Always use pre-recorded messages - no fallback to dynamic text
-        # The TTS provider will log warnings if keys don't exist
-        # If messages are missing, they need to be generated with scripts/generate_speech.py
-        logger.debug(
-            f"Announcing control: {control.id} -> [{control_msg_key}, {control_state_msg_key}]"
-        )
-        self._speak_sequence([control_msg_key, control_state_msg_key])
+        # Try to get a specific state translation (e.g., controls.magneto_both)
+        # First try control-specific state key (e.g., controls.mixture_rich)
+        control_base = control.id.replace("_switch", "").replace("_lever", "")
+        control_base = control_base.replace("_button", "").replace("_valve", "").replace("_wheel", "")
+        state_key = f"controls.{control_base}_{state_str.replace(' ', '_')}"
+        state_text = t(state_key)
+
+        # If no specific translation found (returns the key), use generic on/off
+        if state_text == state_key:
+            state_text = t(f"controls.{state_str}")
+            # If still not found, just use the raw state
+            if state_text == f"controls.{state_str}":
+                state_text = state_str
+
+        # Speak control name and state
+        announcement = f"{control_name} {state_text}"
+        logger.debug(f"Announcing control: {control.id} -> '{announcement}'")
+        self._speak(announcement)
 
     def _speak(self, text: str) -> None:
         """Speak text via TTS.
@@ -679,38 +660,6 @@ class ControlPanelPlugin(IPlugin):
                 recipients=["tts_provider"],
                 topic=MessageTopic.TTS_SPEAK,
                 data={"text": text, "priority": "normal"},
-                priority=MessagePriority.NORMAL,
-            )
-        )
-
-    def _speak_sequence(self, message_keys: list[str]) -> None:
-        """Speak a sequence of pre-recorded message keys.
-
-        Args:
-            message_keys: List of message keys to speak in sequence.
-        """
-        if not self.context:
-            return
-
-        # Interrupt any ongoing cockpit speech before speaking
-        self.context.message_queue.publish(
-            Message(
-                sender="control_panel_plugin",
-                recipients=["tts_provider"],
-                topic=MessageTopic.TTS_INTERRUPT,
-                data={},
-                priority=MessagePriority.HIGH,
-            )
-        )
-
-        # Send the list of message keys to the TTS provider
-        # The audio provider's speak() method handles lists of keys
-        self.context.message_queue.publish(
-            Message(
-                sender="control_panel_plugin",
-                recipients=["tts_provider"],
-                topic=MessageTopic.TTS_SPEAK,
-                data={"text": message_keys, "priority": "normal"},
                 priority=MessagePriority.NORMAL,
             )
         )

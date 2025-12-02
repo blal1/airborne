@@ -15,6 +15,7 @@ import time
 from dataclasses import dataclass
 from enum import Enum
 
+from airborne.core.i18n import t
 from airborne.core.messaging import Message, MessagePriority, MessageQueue, MessageTopic
 
 logger = logging.getLogger(__name__)
@@ -343,8 +344,7 @@ class GroundTrafficManager:
                     data={
                         "aircraft_id": holding_aircraft.aircraft_id,
                         "controller": "ground",
-                        "message": f"{holding_aircraft.callsign}, hold short, traffic crossing",
-                        "message_key": "MSG_GROUND_HOLD_SHORT_TRAFFIC",
+                        "message": f"{holding_aircraft.callsign}, {t('taxi.hold_short_traffic')}",
                     },
                     priority=MessagePriority.HIGH,
                 )
