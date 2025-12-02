@@ -187,6 +187,21 @@ cockpit:
   trim_right: "droite"
   trim_neutral: "neutre"
 
+# Control actions
+actions:
+  gear_up: "Train rentré"
+  gear_down: "Train sorti"
+  flaps_extending: "Volets en sortie"
+  flaps_retracting: "Volets en rentrée"
+  throttle_increased: "Gaz augmentés"
+  throttle_decreased: "Gaz réduits"
+  throttle_full: "Plein gaz"
+  throttle_idle: "Gaz ralenti"
+  brakes_on: "Freins"
+  parking_brake_set: "Frein de parking serré"
+  parking_brake_released: "Frein de parking relâché"
+  paused: "Pause"
+
 # Ground navigation
 ground:
   on_taxiway: "Sur le taxiway {id}"

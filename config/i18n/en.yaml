@@ -187,6 +187,21 @@ cockpit:
   trim_right: "right"
   trim_neutral: "neutral"
 
+# Control actions
+actions:
+  gear_up: "Gear up"
+  gear_down: "Gear down"
+  flaps_extending: "Flaps extending"
+  flaps_retracting: "Flaps retracting"
+  throttle_increased: "Throttle increased"
+  throttle_decreased: "Throttle decreased"
+  throttle_full: "Full throttle"
+  throttle_idle: "Throttle idle"
+  brakes_on: "Brakes on"
+  parking_brake_set: "Parking brake set"
+  parking_brake_released: "Parking brake released"
+  paused: "Paused"
+
 # Ground navigation
 ground:
   on_taxiway: "On taxiway {id}"

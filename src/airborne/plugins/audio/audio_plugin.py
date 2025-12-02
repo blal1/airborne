@@ -1153,26 +1153,25 @@ class AudioPlugin(IPlugin):
             message = t("cockpit.rudder_trim", value=trim_dir)
 
         else:
-            # Map actions to TTS announcements
+            # Map actions to TTS announcements (using translations)
             # Skip gear_toggle announcement for fixed gear aircraft
             action_messages = {}
             if not self._fixed_gear:
-                action_messages["gear_toggle"] = "Gear " + (
-                    "down" if self._last_gear_state > 0.5 else "up"
-                )
+                gear_key = "actions.gear_down" if self._last_gear_state > 0.5 else "actions.gear_up"
+                action_messages["gear_toggle"] = t(gear_key)
 
             action_messages.update(
                 {
-                    "flaps_down": "Flaps extending",
-                    "flaps_up": "Flaps retracting",
-                    "throttle_increase": "Throttle increased",
-                    "throttle_decrease": "Throttle decreased",
-                    "throttle_full": "Full throttle",
-                    "throttle_idle": "Throttle idle",
-                    "brakes_on": "Brakes on",
-                    "parking_brake_set": "Parking brake set",
-                    "parking_brake_release": "Parking brake released",
-                    "pause": "Paused",
+                    "flaps_down": t("actions.flaps_extending"),
+                    "flaps_up": t("actions.flaps_retracting"),
+                    "throttle_increase": t("actions.throttle_increased"),
+                    "throttle_decrease": t("actions.throttle_decreased"),
+                    "throttle_full": t("actions.throttle_full"),
+                    "throttle_idle": t("actions.throttle_idle"),
+                    "brakes_on": t("actions.brakes_on"),
+                    "parking_brake_set": t("actions.parking_brake_set"),
+                    "parking_brake_release": t("actions.parking_brake_released"),
+                    "pause": t("actions.paused"),
                     "tts_next": "Next",
                 }
             )
@@ -1184,9 +1183,6 @@ class AudioPlugin(IPlugin):
             return
 
         from airborne.audio.tts.base import TTSPriority
-
-        # Convert message to message key
-        message_key = self._get_message_key(message, event.action)
 
         # Determine priority: instrument readouts should interrupt previous readouts
         is_instrument_readout = event.action in (
@@ -1205,15 +1201,9 @@ class AudioPlugin(IPlugin):
         # Interrupt previous speech for instrument readouts
         interrupt = is_instrument_readout
 
-        # Handle both str and list[str] cases
-        if isinstance(message_key, list):
-            # Log the list of keys for debugging
-            logger.info(f"Speaking: {' '.join(message_key)} ({message})")
-            # Pass the list directly to TTS provider for composable playback
-            self.tts_provider.speak(message_key, priority=priority, interrupt=interrupt)  # type: ignore[arg-type]
-        else:
-            logger.info(f"Speaking: {message_key} ({message})")
-            self.tts_provider.speak(message_key, priority=priority, interrupt=interrupt)
+        # Speak translated text directly (all messages now use t() function)
+        logger.info(f"Speaking translated: {message}")
+        self.tts_provider.speak(message, priority=priority, interrupt=interrupt)
 
     def _get_message_key(self, message: str, action: str) -> str | list[str]:
         """Convert human-readable message to message key.
