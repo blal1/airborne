@@ -1,35 +1,22 @@
-"""Audio file-based TTS provider implementation with optional system TTS fallback.
+"""TTS provider implementation using realtime system TTS.
 
-This module provides a TTS implementation that can use either:
-1. Pre-recorded audio files (self-voiced mode, default)
-2. Real-time system TTS synthesis via shared TTSService (system mode)
-
-The mode can be configured via:
-- CLI argument: --tts=system or --tts=self-voiced
-- Config: tts_mode in initialization config
-
-In system mode, TTS generation is handled by the shared TTSService facade,
-which manages a single asyncio event loop and TTSServiceClient for all TTS.
-
-Messages are mapped to audio files using YAML configuration files in config/speech.yaml.
+This module provides TTS via the shared TTSService facade,
+which manages a single asyncio event loop and TTSServiceClient.
 
 Typical usage example:
     from airborne.audio.tts.audio_provider import AudioSpeechProvider
-    from airborne.audio.tts.speech_messages import MSG_STARTUP
+    from airborne.core.i18n import t
 
     tts = AudioSpeechProvider()
-    tts.initialize({"language": "en", "audio_engine": engine, "tts_mode": "system"})
-    tts.speak(MSG_STARTUP)
+    tts.initialize({"language": "en", "audio_engine": engine, "tts_service": service})
+    tts.speak(t("cockpit.altitude_readout", value=3500))
 """
 
 import contextlib
 import threading
 from collections import deque
 from collections.abc import Callable
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
-
-import yaml
 
 try:
     import pyfmodex
@@ -71,17 +58,16 @@ class SpeechItem:
 
 
 class AudioSpeechProvider(ITTSProvider):
-    """Audio file-based TTS provider.
+    """Realtime TTS provider using system text-to-speech.
 
-    Uses pre-recorded audio files (OGG format) with YAML-based configuration.
-    Messages are identified by keys (e.g., MSG_STARTUP) and mapped to audio files
-    via config/speech_{language}.yaml.
+    Uses pyttsx3 via TTSService to generate speech in realtime.
+    Text is passed directly to speak() - use t() for translations.
 
     Examples:
-        >>> from airborne.audio.tts.speech_messages import MSG_STARTUP
+        >>> from airborne.core.i18n import t
         >>> tts = AudioSpeechProvider()
-        >>> tts.initialize({"language": "en", "audio_engine": engine})
-        >>> tts.speak(MSG_STARTUP)
+        >>> tts.initialize({"language": "en", "audio_engine": engine, "tts_service": service})
+        >>> tts.speak(t("system.startup"))
         >>> tts.shutdown()
     """
 
@@ -94,13 +80,7 @@ class AudioSpeechProvider(ITTSProvider):
         self._lock = threading.Lock()
         self._stop_requested = False
         self._shutdown_requested = False
-        self._speech_dir = Path("data/speech")
-        self._config_dir = Path("config")
         self._language = "en"
-        self._file_extension = "wav"
-        self._message_map: dict[str, dict[str, str]] = {}  # key -> {text, voice}
-        self._voice_dirs: dict[str, Path] = {}  # voice -> directory path
-        self._voice_configs: dict[str, dict[str, Any]] = {}  # voice -> full config
 
         # Audio engine reference (will be injected)
         self._audio_engine: Any = None
@@ -111,12 +91,11 @@ class AudioSpeechProvider(ITTSProvider):
         self._playing = False
         self._callback_lock = threading.Lock()  # Protect callback access
 
-        # System TTS mode (pyttsx3)
-        self._tts_mode: str = "self-voiced"  # "self-voiced" or "system"
-        self._realtime_tts: dict[str, RealtimeTTS] = {}  # Per-voice TTS instances
-
         # Shared TTSService (injected from main.py)
         self._tts_service: TTSService | None = None
+
+        # RealtimeTTS instances for ATC/radio speech
+        self._realtime_tts_cache: dict[str, RealtimeTTS] = {}
 
     def initialize(self, config: dict[str, Any]) -> None:
         """Initialize audio speech provider.
@@ -124,100 +103,71 @@ class AudioSpeechProvider(ITTSProvider):
         Args:
             config: Configuration with keys:
                 - language: Language code (default: "en")
-                - speech_dir: Path to speech files directory (default: "data/speech")
-                - config_dir: Path to config directory (default: "config")
                 - audio_engine: Reference to audio engine (required)
-                - tts_mode: "self-voiced" (pre-recorded) or "system" (pyttsx3)
-                - tts_service: Shared TTSService instance (for system mode)
+                - tts_service: Shared TTSService instance (required)
         """
         if self._initialized:
             logger.warning("AudioSpeechProvider already initialized")
             return
 
         self._language = config.get("language", "en")
-        speech_dir = config.get("speech_dir", "data/speech")
-        self._config_dir = Path(config.get("config_dir", "config"))
-        self._speech_dir = Path(speech_dir) / self._language
         self._audio_engine = config.get("audio_engine")
-        self._tts_mode = config.get("tts_mode", "self-voiced")
 
         if not self._audio_engine:
             logger.error("No audio engine provided to AudioSpeechProvider")
             return
 
-        # Load unified speech configuration YAML
-        config_file = self._config_dir / "speech.yaml"
-        if not config_file.exists():
-            # Fall back to old format
-            config_file = self._config_dir / f"speech_{self._language}.yaml"
-            if not config_file.exists():
-                logger.error(f"Speech config not found: {config_file}")
-                return
-            # Load old format
-            try:
-                with open(config_file, encoding="utf-8") as f:
-                    speech_config = yaml.safe_load(f)
-                self._file_extension = speech_config.get("file_extension", "wav")
-                # Convert old format to new format
-                old_messages = speech_config.get("messages", {})
-                self._message_map = {key: {"text": key, "voice": "cockpit"} for key in old_messages}
-                self._voice_dirs = {"cockpit": self._speech_dir}
-                logger.info("Loaded %d speech messages (old format)", len(self._message_map))
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                logger.error(f"Error loading speech config: {e}")
-                return
+        # Get shared TTSService from config
+        self._tts_service = config.get("tts_service")
+        if not self._tts_service:
+            logger.warning("No TTSService provided, TTS will be disabled")
+        elif not self._tts_service.is_running:
+            logger.warning("TTSService not running, TTS will be disabled")
         else:
-            # Load new unified format
-            try:
-                with open(config_file, encoding="utf-8") as f:
-                    speech_config = yaml.safe_load(f)
-
-                # Build voice directory map and voice configs
-                voices = speech_config.get("voices", {})
-                for voice_name, voice_config in voices.items():
-                    output_dir = voice_config.get("output_dir", voice_name)
-                    self._voice_dirs[voice_name] = self._speech_dir / output_dir
-                    self._voice_configs[voice_name] = voice_config
-
-                # Load messages
-                self._message_map = speech_config.get("messages", {})
-                self._file_extension = "wav"  # New format uses WAV to avoid MP3 decoder latency
-
-                logger.info(
-                    "Loaded %d speech messages from %s (%d voices)",
-                    len(self._message_map),
-                    config_file,
-                    len(self._voice_dirs),
-                )
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                logger.error(f"Error loading speech config: {e}")
-                return
-
-        # Apply user's saved TTS settings to override speech.yaml defaults
-        # This ensures menu voice selections are applied when game starts
-        self._apply_user_voice_settings()
-
-        # Create speech directory if it doesn't exist
-        self._speech_dir.mkdir(parents=True, exist_ok=True)
-
-        # Get shared TTSService from config (for system mode)
-        if self._tts_mode == "system":
-            self._tts_service = config.get("tts_service")
-            if not self._tts_service:
-                logger.warning("No TTSService provided, system TTS will be disabled")
-            elif not self._tts_service.is_running:
-                logger.warning("TTSService not running, system TTS will be disabled")
-            else:
-                logger.info("Using shared TTSService for system TTS mode")
+            logger.info("Using shared TTSService for TTS")
 
         self._initialized = True
         logger.info(
-            "AudioSpeechProvider initialized: language=%s, dir=%s, format=%s, mode=%s",
+            "AudioSpeechProvider initialized: language=%s",
             self._language,
-            self._speech_dir,
-            self._file_extension,
-            self._tts_mode,
         )
+
+    def _get_realtime_tts(self, voice_category: str = "cockpit") -> RealtimeTTS | None:
+        """Get a RealtimeTTS instance for generating audio bytes.
+
+        This method is used by ATCAudioManager and RadioPlugin for generating
+        dynamic ATC/radio speech with radio effects.
+
+        Args:
+            voice_category: Voice category (cockpit, tower, pilot, atis, etc.).
+
+        Returns:
+            RealtimeTTS instance configured for the voice, or None if not available.
+        """
+        if not self._initialized:
+            return None
+
+        # Get voice settings for this category
+        from airborne.settings import get_tts_settings
+
+        tts_settings = get_tts_settings()
+        voice_settings = tts_settings.get_voice(voice_category)
+        voice_name = voice_settings.voice_name
+        speech_rate = voice_settings.rate
+
+        # Cache key based on voice settings
+        cache_key = f"{voice_category}_{voice_name}_{speech_rate}"
+
+        if cache_key not in self._realtime_tts_cache:
+            self._realtime_tts_cache[cache_key] = RealtimeTTS(
+                rate=speech_rate,
+                voice_name=voice_name,
+            )
+            logger.info(
+                f"Created RealtimeTTS for {voice_category}: voice={voice_name}, rate={speech_rate}"
+            )
+
+        return self._realtime_tts_cache[cache_key]
 
     def shutdown(self) -> None:
         """Shutdown audio speech provider."""
@@ -227,6 +177,11 @@ class AudioSpeechProvider(ITTSProvider):
         self.stop()
         self.clear_queue()
 
+        # Clean up RealtimeTTS cache
+        for tts in self._realtime_tts_cache.values():
+            tts.cleanup()
+        self._realtime_tts_cache.clear()
+
         # Note: TTSService lifecycle is managed by main.py, not here
         self._tts_service = None
 
@@ -235,390 +190,15 @@ class AudioSpeechProvider(ITTSProvider):
 
     def speak(
         self,
-        message_key: str | list[str],
-        priority: TTSPriority = TTSPriority.NORMAL,
-        interrupt: bool = False,
-        callback: Callable[[], None] | None = None,
-    ) -> None:
-        """Speak message by playing corresponding audio file(s).
-
-        Args:
-            message_key: Message key or list of keys to play in sequence
-                        (e.g., MSG_STARTUP or ["MSG_DIGIT_1", "MSG_DIGIT_2", "MSG_DIGIT_0"]).
-            priority: Priority level.
-            interrupt: If True, stop current speech.
-            callback: Optional callback when done.
-        """
-        if not self._initialized:
-            return
-
-        # Convert single key to list
-        if isinstance(message_key, str):
-            if not message_key.strip():
-                return
-            message_keys = [message_key]
-        else:
-            message_keys = message_key
-
-        if not message_keys:
-            return
-
-        # Stop current speech if interrupt or critical
-        if interrupt or priority == TTSPriority.CRITICAL:
-            self.stop()
-
-        # Use system TTS mode (pyttsx3) if configured
-        if self._tts_mode == "system":
-            self._speak_system(message_keys, priority, interrupt, callback)
-            return
-
-        # Resolve all file paths and preload sounds
-        sound_objects = []
-        for key in message_keys:
-            message_config = self._message_map.get(key)
-
-            # If not in config, try to find file directly in voice directories
-            if not message_config:
-                found = False
-                # Check if key specifies voice directory (e.g., "cockpit/number_42_autogen")
-                if "/" in key:
-                    voice_name, filename_base = key.split("/", 1)
-                    voice_dir = self._voice_dirs.get(voice_name)
-                    if voice_dir:
-                        # Try primary extension first, then fallback to ogg
-                        filepath = voice_dir / f"{filename_base}.{self._file_extension}"
-                        if filepath.exists():
-                            found = True
-                        elif self._file_extension != "ogg":
-                            # Fallback to .ogg (many autogen files are ogg)
-                            filepath = voice_dir / f"{filename_base}.ogg"
-                            if filepath.exists():
-                                found = True
-                        if not found:
-                            logger.warning(f"Speech file not found: {filepath}")
-                            continue
-                    else:
-                        logger.warning(f"Unknown voice: {voice_name}")
-                        continue
-                else:
-                    # Try common voice directories: pilot, cockpit
-                    # Prefer cockpit for instrument readouts
-                    for voice_name in ["cockpit", "pilot"]:
-                        voice_dir = self._voice_dirs.get(voice_name)
-                        if voice_dir:
-                            # Try primary extension first
-                            filepath = voice_dir / f"{key}.{self._file_extension}"
-                            if filepath.exists():
-                                found = True
-                                break
-                            # Fallback to .ogg
-                            if self._file_extension != "ogg":
-                                filepath = voice_dir / f"{key}.ogg"
-                                if filepath.exists():
-                                    found = True
-                                    break
-
-                    if not found:
-                        logger.warning(f"Message key not found: {key}")
-                        continue
-            else:
-                # Get voice type and resolve directory from config
-                voice = message_config.get("voice", "cockpit")
-                voice_dir = self._voice_dirs.get(voice, self._speech_dir)
-
-                # Build filename (use filename field from config, fallback to key name)
-                filename_base = message_config.get("filename", key)
-                filepath = voice_dir / f"{filename_base}.{self._file_extension}"
-
-                # Fallback to .ogg if primary extension not found
-                if not filepath.exists() and self._file_extension != "ogg":
-                    filepath = voice_dir / f"{filename_base}.ogg"
-
-                if not filepath.exists():
-                    logger.warning(f"Speech file not found: {filepath}")
-                    continue
-
-            # Preload sound to avoid delays during playback
-            if self._audio_engine:
-                try:
-                    sound = self._audio_engine.load_sound(str(filepath))
-                    sound_objects.append(sound)
-                except Exception as e:  # pylint: disable=broad-exception-caught
-                    logger.error(f"Error preloading sound {filepath}: {e}")
-                    continue
-
-        if not sound_objects:
-            logger.error(f"No valid speech files found for keys: {message_keys}")
-            return
-
-        # Add preloaded sounds to playback queue
-        # If interrupt, clear existing queue
-        if interrupt or priority == TTSPriority.CRITICAL:
-            self._playback_queue.clear()
-            self._playing = False
-            if self._current_source_id is not None and self._audio_engine:
-                with contextlib.suppress(Exception):
-                    self._audio_engine.stop_source(self._current_source_id)
-            self._current_source_id = None
-
-        # Add new sounds to queue
-        self._playback_queue.extend(sound_objects)
-
-        self._state = TTSState.SPEAKING
-        logger.info(f"Queued speech sequence: {message_keys} ({len(sound_objects)} files)")
-
-        # Start playback if not already playing
-        if not self._playing:
-            self._play_next_in_sequence()
-
-    def _speak_system(
-        self,
-        message_keys: list[str],
-        priority: TTSPriority,
-        interrupt: bool,
-        callback: Callable[[], None] | None = None,
-    ) -> None:
-        """Speak using system TTS via shared TTSService.
-
-        Converts message keys to text and generates speech via the TTSService
-        facade, which handles all async/threading internally.
-
-        Args:
-            message_keys: List of message keys to speak.
-            priority: Priority level.
-            interrupt: If True, stop current speech.
-            callback: Optional callback when done.
-        """
-        if not self._tts_service or not self._tts_service.is_running:
-            logger.warning("TTSService not available for system TTS")
-            return
-
-        # Build text from message keys
-        texts: list[str] = []
-        voice_name = "cockpit"  # Default voice
-
-        for key in message_keys:
-            message_config = self._message_map.get(key)
-            if message_config:
-                # Use text from config
-                text = message_config.get("text", key)
-                voice_name = message_config.get("voice", "cockpit")
-                texts.append(text)
-            else:
-                # Try to extract meaning from key
-                # Handle patterns like "cockpit/number_42_autogen" or "MSG_WORD_KNOTS"
-                if "/" in key:
-                    voice_name, filename = key.split("/", 1)
-                    # Parse autogen number keys like "number_42_autogen"
-                    if filename.startswith("number_") and "_autogen" in filename:
-                        num_str = filename.replace("number_", "").replace("_autogen", "")
-                        texts.append(num_str)
-                    else:
-                        texts.append(filename.replace("_", " "))
-                elif key.startswith("MSG_WORD_"):
-                    # Extract word from MSG_WORD_X pattern
-                    word = key.replace("MSG_WORD_", "").replace("_", " ").lower()
-                    texts.append(word)
-                elif key.startswith("MSG_DIGIT_"):
-                    # Extract digit
-                    digit = key.replace("MSG_DIGIT_", "")
-                    texts.append(digit)
-                elif key.startswith("MSG_"):
-                    # Generic MSG_ pattern - convert underscores to spaces
-                    text = key.replace("MSG_", "").replace("_", " ").lower()
-                    texts.append(text)
-                else:
-                    texts.append(key.replace("_", " "))
-
-        if not texts:
-            logger.warning(f"No text found for keys: {message_keys}")
-            return
-
-        # Join texts into single phrase
-        full_text = " ".join(texts)
-        logger.info(f"System TTS speaking: '{full_text}' (voice={voice_name})")
-
-        # Map local priority to service priority
-        service_priority = ServicePriority.NORMAL
-        if priority == TTSPriority.CRITICAL:
-            service_priority = ServicePriority.CRITICAL
-        elif priority == TTSPriority.HIGH:
-            service_priority = ServicePriority.HIGH
-        elif priority == TTSPriority.LOW:
-            service_priority = ServicePriority.LOW
-
-        # Queue via TTSService with callback for audio playback
-        def on_audio_ready(audio_bytes: bytes) -> None:
-            """Handle audio when ready - queue for playback."""
-            try:
-                sound = self._audio_engine.load_sound_from_bytes(audio_bytes, f"tts_{voice_name}")
-                if sound:
-                    self._playback_queue.append(sound)
-                    self._state = TTSState.SPEAKING
-                    if not self._playing:
-                        self._play_next_in_sequence()
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                logger.error(f"Error loading TTS audio: {e}")
-
-        self._tts_service.speak(
-            text=full_text,
-            voice=voice_name,
-            priority=service_priority,
-            interrupt=interrupt,
-            on_audio=on_audio_ready,
-        )
-
-    def _apply_user_voice_settings(self) -> None:
-        """Apply user's saved TTS voice settings to override speech.yaml defaults.
-
-        Loads voice preferences from ~/.airborne/settings.json and updates
-        _voice_configs to use user-selected voices and rates.
-
-        This maps user settings categories to speech.yaml voice types:
-        - cockpit -> cockpit, pilot (uses cockpit settings)
-        - tower -> tower
-        - ground -> ground
-        - approach -> approach
-        - atis -> atis
-        - atc -> atc (fallback for other ATC voices)
-        """
-        try:
-            from airborne.settings import get_tts_settings
-
-            tts_settings = get_tts_settings()
-
-            # Map user settings categories to speech.yaml voice names
-            # Some voice types in speech.yaml don't have direct user settings,
-            # so we use related categories as fallbacks
-            category_mapping = {
-                "cockpit": "cockpit",
-                "pilot": "cockpit",  # Pilot uses cockpit settings
-                "tower": "tower",
-                "ground": "ground",
-                "approach": "approach",
-                "atis": "atis",
-                "steward": "ui",  # Steward uses UI voice
-                "refuel": "ground",  # Ground service voices use ground settings
-                "tug": "ground",
-                "boarding": "ground",
-                "ops": "ground",
-                "instructor": "cockpit",  # Instructor uses cockpit settings
-            }
-
-            updated_count = 0
-            for voice_type, config in self._voice_configs.items():
-                # Get the user settings category for this voice type
-                settings_category = category_mapping.get(voice_type, "atc")
-                user_voice = tts_settings.get_voice(settings_category)
-
-                # Update the pyttsx3 config with user's voice preference
-                if "pyttsx3" not in config:
-                    config["pyttsx3"] = {}
-
-                old_voice = config["pyttsx3"].get("voice_name", "unknown")
-                old_rate = config["pyttsx3"].get("rate", 180)
-
-                config["pyttsx3"]["voice_name"] = user_voice.voice_name
-                config["pyttsx3"]["rate"] = user_voice.rate
-
-                # Also update top-level voice_name for consistency
-                config["voice_name"] = user_voice.voice_name
-                config["rate"] = user_voice.rate
-
-                if old_voice != user_voice.voice_name or old_rate != user_voice.rate:
-                    logger.debug(
-                        "Voice '%s': %s@%d -> %s@%d (from %s settings)",
-                        voice_type,
-                        old_voice,
-                        old_rate,
-                        user_voice.voice_name,
-                        user_voice.rate,
-                        settings_category,
-                    )
-                    updated_count += 1
-
-            logger.info(
-                "Applied user TTS settings: %d voices updated, language=%s",
-                updated_count,
-                tts_settings.language,
-            )
-
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            logger.warning("Failed to apply user voice settings: %s", e)
-
-    def _get_realtime_tts(self, voice_name: str) -> RealtimeTTS | None:
-        """Get or create RealtimeTTS instance for a voice.
-
-        Args:
-            voice_name: Voice name (pilot, cockpit, tower, etc.)
-
-        Returns:
-            RealtimeTTS instance or None if creation fails.
-        """
-        if voice_name not in self._realtime_tts:
-            # Get voice config
-            voice_config = self._voice_configs.get(voice_name, {})
-            pyttsx3_config = voice_config.get("pyttsx3", {})
-
-            # Create RealtimeTTS with voice-specific settings
-            try:
-                self._realtime_tts[voice_name] = RealtimeTTS(
-                    rate=pyttsx3_config.get("rate", 180),
-                    voice_name=pyttsx3_config.get("voice_name"),
-                    cache_enabled=True,
-                )
-                logger.info(f"Created RealtimeTTS for voice '{voice_name}': {pyttsx3_config}")
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                logger.error(f"Failed to create RealtimeTTS for voice {voice_name}: {e}")
-                return None
-
-        return self._realtime_tts[voice_name]
-
-    def set_context(self, context: str) -> None:
-        """Set the flight context for TTS pre-generation prioritization.
-
-        Tells the shared TTSService what context the sim is in so it can
-        prioritize pre-generating the most likely needed TTS items.
-
-        Args:
-            context: Flight context ("menu", "ground", "airborne").
-        """
-        if self._tts_mode != "system":
-            return
-
-        if not self._tts_service or not self._tts_service.is_running:
-            logger.warning("TTSService not available for set_context")
-            return
-
-        # Build voice configs dict from our voice_configs
-        voices: dict[str, dict[str, Any]] = {}
-        for voice_name, voice_config in self._voice_configs.items():
-            pyttsx3_config = voice_config.get("pyttsx3", {})
-            voices[voice_name] = {
-                "rate": pyttsx3_config.get("rate", 180),
-                "voice_name": pyttsx3_config.get("voice_name"),
-            }
-
-        # Delegate to shared TTSService
-        self._tts_service.set_context(context, voices)
-        logger.info(f"Sent context change to TTSService: {context}")
-
-    def speak_text(
-        self,
         text: str,
-        voice: str = "tower",
         priority: TTSPriority = TTSPriority.NORMAL,
         interrupt: bool = False,
         callback: Callable[[], None] | None = None,
     ) -> None:
-        """Speak raw text directly using system TTS.
-
-        This method is for speaking arbitrary text (like ATIS broadcasts) that
-        isn't pre-recorded. Only works in system TTS mode.
+        """Speak text using TTS.
 
         Args:
-            text: Raw text to speak.
-            voice: Voice name (tower, cockpit, pilot, etc.).
+            text: Text to speak.
             priority: Priority level.
             interrupt: If True, stop current speech.
             callback: Optional callback when done.
@@ -629,20 +209,46 @@ class AudioSpeechProvider(ITTSProvider):
         if not text or not text.strip():
             return
 
-        # In self-voiced mode, we can't speak arbitrary text
-        if self._tts_mode != "system":
-            logger.warning("speak_text() only works in system TTS mode")
-            return
-
-        if not self._tts_service or not self._tts_service.is_running:
-            logger.warning("TTSService not available for speak_text")
-            return
-
-        # Stop current speech if interrupt
+        # Stop current speech if interrupt or critical
         if interrupt or priority == TTSPriority.CRITICAL:
             self.stop()
 
-        logger.info(f"System TTS speaking text: '{text[:50]}...' (voice={voice})")
+        self._speak_system(text, priority, interrupt, callback)
+
+    def _speak_system(
+        self,
+        text: str,
+        priority: TTSPriority,
+        interrupt: bool,
+        callback: Callable[[], None] | None = None,
+        voice_category: str = "cockpit",
+    ) -> None:
+        """Speak text using system TTS via shared TTSService.
+
+        Args:
+            text: Text to speak (should already be translated).
+            priority: Priority level.
+            interrupt: If True, stop current speech.
+            callback: Optional callback when done.
+            voice_category: Voice category (cockpit, tower, etc.).
+        """
+        if not self._tts_service or not self._tts_service.is_running:
+            logger.warning("TTSService not available")
+            return
+
+        # Get current voice settings from user preferences
+        from airborne.settings import get_tts_settings
+
+        tts_settings = get_tts_settings()
+        current_language = tts_settings.language
+        voice_settings = tts_settings.get_voice(voice_category)
+        platform_voice_name = voice_settings.voice_name
+        speech_rate = voice_settings.rate
+
+        logger.info(
+            f"TTS speaking: '{text}' (voice={voice_category}, "
+            f"platform_voice={platform_voice_name}, lang={current_language})"
+        )
 
         # Map local priority to service priority
         service_priority = ServicePriority.NORMAL
@@ -657,7 +263,9 @@ class AudioSpeechProvider(ITTSProvider):
         def on_audio_ready(audio_bytes: bytes) -> None:
             """Handle audio when ready - queue for playback."""
             try:
-                sound = self._audio_engine.load_sound_from_bytes(audio_bytes, f"tts_{voice}")
+                sound = self._audio_engine.load_sound_from_bytes(
+                    audio_bytes, f"tts_{voice_category}"
+                )
                 if sound:
                     self._playback_queue.append(sound)
                     self._state = TTSState.SPEAKING
@@ -668,31 +276,56 @@ class AudioSpeechProvider(ITTSProvider):
 
         self._tts_service.speak(
             text=text,
-            voice=voice,
+            voice=voice_category,
             priority=service_priority,
             interrupt=interrupt,
             on_audio=on_audio_ready,
+            voice_name=platform_voice_name,
+            rate=speech_rate,
+            language=current_language,
         )
 
-    def _unused_speak_text_blocking(
+    def set_context(self, context: str) -> None:
+        """Set the flight context for TTS pre-generation prioritization.
+
+        Tells the shared TTSService what context the sim is in so it can
+        prioritize pre-generating the most likely needed TTS items.
+
+        Args:
+            context: Flight context ("menu", "ground", "airborne").
+        """
+        if not self._tts_service or not self._tts_service.is_running:
+            logger.warning("TTSService not available for set_context")
+            return
+
+        # Delegate to shared TTSService
+        self._tts_service.set_context(context, {})
+        logger.info(f"Sent context change to TTSService: {context}")
+
+    def speak_text(
         self,
         text: str,
         voice: str = "tower",
+        priority: TTSPriority = TTSPriority.NORMAL,
+        interrupt: bool = False,
+        callback: Callable[[], None] | None = None,
     ) -> None:
-        """UNUSED - Old blocking implementation kept for reference.
+        """Speak raw text directly using TTS with a specific voice.
 
-        Load and play through FMOD - this was the blocking code.
+        Args:
+            text: Text to speak.
+            voice: Voice category (tower, cockpit, atis, etc.).
+            priority: Priority level.
+            interrupt: If True, stop current speech.
+            callback: Optional callback when done.
         """
-        audio_bytes: bytes | None = None  # Would be from blocking call
-        try:
-            sound = self._audio_engine.load_sound_from_bytes(audio_bytes, f"tts_{voice}")  # type: ignore
-            if sound:
-                self._playback_queue.append(sound)
-                self._state = TTSState.SPEAKING
-                if not self._playing:
-                    self._play_next_in_sequence()
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            logger.error(f"Error playing system TTS audio: {e}")
+        if not self._initialized or not text or not text.strip():
+            return
+
+        if interrupt or priority == TTSPriority.CRITICAL:
+            self.stop()
+
+        self._speak_system(text, priority, interrupt, callback, voice_category=voice)
 
     def stop(self) -> None:
         """Stop current speech immediately."""

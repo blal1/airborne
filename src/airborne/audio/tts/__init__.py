@@ -1,16 +1,16 @@
 """TTS (Text-to-Speech) subsystem.
 
-Provides unified TTS with support for:
-- Self-voiced: Pre-generated audio chunks (authentic ATC phraseology)
-- System: Real-time pyttsx3 synthesis (fluent cross-platform speech)
+Provides real-time TTS via pyttsx3 for fluent cross-platform speech.
+
+The main TTS functionality is in:
+- audio_provider.py: High-level TTS provider interface
+- tts_service.py: Background TTS generation service with caching
 
 Usage:
-    from airborne.audio.tts import TTSManager, TTSBackend
+    from airborne.core.i18n import t
+    from airborne.audio.tts.audio_provider import AudioSpeechProvider
 
-    tts = TTSManager(audio_engine, backend="system")
-    tts.speak("Cleared for takeoff", voice="tower")
+    tts = AudioSpeechProvider()
+    tts.initialize({"language": "en", "audio_engine": engine, "tts_service": service})
+    tts.speak(t("system.startup"))
 """
-
-from airborne.audio.tts.tts_manager import TTSBackend, TTSManager, VoiceConfig
-
-__all__ = ["TTSManager", "TTSBackend", "VoiceConfig"]

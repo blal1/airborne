@@ -72,6 +72,10 @@ class TTSRequest:
     text: str = field(compare=False)
     voice: str = field(compare=False)
     priority: TTSPriority = field(compare=False)
+    # Optional explicit voice parameters (for language changes)
+    voice_name: str | None = field(compare=False, default=None)
+    rate: int = field(compare=False, default=180)
+    language: str | None = field(compare=False, default=None)
 
     @classmethod
     def create(
@@ -81,6 +85,9 @@ class TTSRequest:
         voice: str,
         priority: TTSPriority,
         sequence: int,
+        voice_name: str | None = None,
+        rate: int = 180,
+        language: str | None = None,
     ) -> TTSRequest:
         """Create a request with proper sort key.
 
@@ -90,6 +97,9 @@ class TTSRequest:
             voice: Voice name.
             priority: Request priority.
             sequence: Monotonic sequence number for FIFO within same priority.
+            voice_name: Platform-specific voice name (e.g., "Samantha", "Amélie").
+            rate: Speech rate in words per minute.
+            language: Language code (e.g., "en", "fr").
 
         Returns:
             TTSRequest instance.
@@ -102,6 +112,9 @@ class TTSRequest:
             text=text,
             voice=voice,
             priority=priority,
+            voice_name=voice_name,
+            rate=rate,
+            language=language,
         )
 
 
@@ -296,16 +309,23 @@ class TTSService:
         priority: TTSPriority = TTSPriority.NORMAL,
         interrupt: bool = False,
         on_audio: Callable[[bytes], None] | None = None,
+        voice_name: str | None = None,
+        rate: int = 180,
+        language: str | None = None,
     ) -> str:
         """Queue text for speech synthesis.
 
         Args:
             text: Text to synthesize.
-            voice: Voice name (cockpit, tower, atis, etc.).
+            voice: Voice category name (cockpit, tower, atis, etc.).
             priority: Generation and delivery priority.
             interrupt: If True, flush lower priority pending requests.
             on_audio: Called with WAV bytes when ready (on main thread).
                       If None, audio is generated but discarded (pre-caching).
+            voice_name: Platform-specific voice name (e.g., "Samantha", "Amélie").
+                        If provided, overrides the voice category lookup.
+            rate: Speech rate in words per minute.
+            language: Language code (e.g., "en", "fr") for voice selection.
 
         Returns:
             Request ID for tracking (can be ignored).
@@ -337,11 +357,14 @@ class TTSService:
                 voice=voice,
                 priority=priority,
                 sequence=self._request_sequence,
+                voice_name=voice_name,
+                rate=rate,
+                language=language,
             )
             heapq.heappush(self._request_queue, request)
             self._request_sequence += 1
 
-        logger.debug("TTSService queued: %s (priority=%s)", text[:30], priority.name)
+        logger.debug("TTSService queued: %s (priority=%s, voice_name=%s)", text[:30], priority.name, voice_name)
         return request_id
 
     def set_context(
@@ -501,6 +524,9 @@ class TTSService:
                         audio = await self._client.generate(
                             text=request.text,
                             voice=request.voice,
+                            rate=request.rate,
+                            voice_name=request.voice_name,
+                            language=request.language,
                         )
 
                         if audio:
