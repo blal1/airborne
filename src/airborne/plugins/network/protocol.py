@@ -9,6 +9,12 @@ Message Types:
 - action: Discrete actions (gear, flaps, etc.) from client
 - config: Client configuration (e.g., telemetry rate)
 - status: Server status messages
+
+ATC V2 Message Types (for future remote ASR/NLU):
+- atc_transcribe_request: Audio data for remote ASR transcription
+- atc_transcribe_response: Transcription result from remote ASR
+- atc_nlu_request: Text for remote NLU intent extraction
+- atc_nlu_response: Intent extraction result from remote NLU
 """
 
 import json
@@ -27,6 +33,12 @@ class MessageType(Enum):
     CONFIG = "config"
     STATUS = "status"
     ERROR = "error"
+
+    # ATC V2 remote provider message types (for future use)
+    ATC_TRANSCRIBE_REQUEST = "atc_transcribe_request"
+    ATC_TRANSCRIBE_RESPONSE = "atc_transcribe_response"
+    ATC_NLU_REQUEST = "atc_nlu_request"
+    ATC_NLU_RESPONSE = "atc_nlu_response"
 
 
 @dataclass
@@ -328,3 +340,158 @@ VALID_ACTIONS = {
     # System
     "pause",
 }
+
+
+# =============================================================================
+# ATC V2 Message Types (for future remote ASR/NLU providers)
+# =============================================================================
+
+
+@dataclass
+class ATCTranscribeRequest:
+    """Request for remote ASR transcription.
+
+    Sent from client to remote ATC server for speech-to-text processing.
+
+    Attributes:
+        audio_base64: Base64-encoded PCM audio data (16-bit mono, 16kHz).
+        sample_rate: Audio sample rate in Hz.
+        request_id: Unique request identifier for correlation.
+    """
+
+    audio_base64: str
+    sample_rate: int = 16000
+    request_id: str = ""
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "ATCTranscribeRequest":
+        """Create from dictionary."""
+        return cls(
+            audio_base64=data.get("audio_base64", ""),
+            sample_rate=data.get("sample_rate", 16000),
+            request_id=data.get("request_id", ""),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dictionary for JSON serialization."""
+        return asdict(self)
+
+
+@dataclass
+class ATCTranscribeResponse:
+    """Response from remote ASR transcription.
+
+    Sent from remote ATC server to client with transcription result.
+
+    Attributes:
+        text: Transcribed text.
+        confidence: Transcription confidence score (0.0 to 1.0).
+        request_id: Correlation ID matching the request.
+        error: Error message if transcription failed.
+    """
+
+    text: str = ""
+    confidence: float = 0.0
+    request_id: str = ""
+    error: str = ""
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "ATCTranscribeResponse":
+        """Create from dictionary."""
+        return cls(
+            text=data.get("text", ""),
+            confidence=data.get("confidence", 0.0),
+            request_id=data.get("request_id", ""),
+            error=data.get("error", ""),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dictionary for JSON serialization."""
+        return asdict(self)
+
+
+@dataclass
+class ATCNLURequest:
+    """Request for remote NLU intent extraction.
+
+    Sent from client to remote ATC server for natural language understanding.
+
+    Attributes:
+        text: Transcribed pilot speech.
+        context: Optional flight context (phase, position, frequencies).
+        request_id: Unique request identifier for correlation.
+    """
+
+    text: str
+    context: dict[str, Any] = field(default_factory=dict)
+    request_id: str = ""
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "ATCNLURequest":
+        """Create from dictionary."""
+        return cls(
+            text=data.get("text", ""),
+            context=data.get("context", {}),
+            request_id=data.get("request_id", ""),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dictionary for JSON serialization."""
+        return asdict(self)
+
+
+@dataclass
+class ATCNLUResponse:
+    """Response from remote NLU intent extraction.
+
+    Sent from remote ATC server to client with extracted intent.
+
+    Attributes:
+        intent_type: Extracted intent type (e.g., "request_taxi").
+        confidence: Extraction confidence score (0.0 to 1.0).
+        callsign: Extracted aircraft callsign.
+        runway: Extracted runway designator.
+        taxiway: Extracted taxiway designator.
+        altitude: Extracted altitude in feet.
+        heading: Extracted heading in degrees.
+        frequency: Extracted radio frequency.
+        position: Extracted position report.
+        destination: Extracted destination.
+        request_id: Correlation ID matching the request.
+        error: Error message if extraction failed.
+    """
+
+    intent_type: str = "unknown"
+    confidence: float = 0.0
+    callsign: str | None = None
+    runway: str | None = None
+    taxiway: str | None = None
+    altitude: int | None = None
+    heading: int | None = None
+    frequency: str | None = None
+    position: str | None = None
+    destination: str | None = None
+    request_id: str = ""
+    error: str = ""
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "ATCNLUResponse":
+        """Create from dictionary."""
+        return cls(
+            intent_type=data.get("intent_type", "unknown"),
+            confidence=data.get("confidence", 0.0),
+            callsign=data.get("callsign"),
+            runway=data.get("runway"),
+            taxiway=data.get("taxiway"),
+            altitude=data.get("altitude"),
+            heading=data.get("heading"),
+            frequency=data.get("frequency"),
+            position=data.get("position"),
+            destination=data.get("destination"),
+            request_id=data.get("request_id", ""),
+            error=data.get("error", ""),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dictionary for JSON serialization."""
+        return asdict(self)
