@@ -897,8 +897,10 @@ class RadioPlugin(IPlugin):
         Args:
             message: Text input message with optional text data.
         """
-        if not self.atc_v2_controller or not self.atc_v2_controller.is_enabled():
-            logger.warning("ATC V2 not available for text input")
+        # Check if V2 settings are enabled (even if initialization failed)
+        v2_settings = get_atc_v2_settings()
+        if not v2_settings.enabled:
+            logger.warning("ATC V2 is disabled in settings")
             return
 
         data = message.data
@@ -906,10 +908,10 @@ class RadioPlugin(IPlugin):
 
         if text:
             # Text provided directly in message
-            if self.atc_v2_controller.process_text_input(text):
+            if self.atc_v2_controller and self.atc_v2_controller.process_text_input(text):
                 logger.info(f"ATC V2 processing text: {text}")
         else:
-            # Show text input dialog
+            # Show text input dialog (works even if V2 not fully initialized)
             self._show_atc_v2_text_dialog()
 
     def _show_atc_v2_text_dialog(self) -> None:
@@ -918,9 +920,11 @@ class RadioPlugin(IPlugin):
             # Already visible
             return
 
+        from airborne.core.i18n import t
+
         # Create dialog
         self._atc_v2_text_dialog = TextInputDialog(
-            label="ATC Command",
+            label=t("widget.dialog.atc_command"),
             on_submit=self._on_atc_v2_text_submit,
             on_cancel=self._on_atc_v2_text_cancel,
             use_phonetic=False,  # Use real letters for text input

@@ -611,6 +611,27 @@ atc:
   at: "à"
   on: "sur"
 
+# Text input widget
+widget:
+  text_input:
+    type_to_search: "Tapez pour rechercher"
+    type_to_enter: "Tapez votre message, puis appuyez sur Entrée"
+    beginning: "Début"
+    end: "Fin"
+    selected: "Sélectionné"
+    entered: "Entré"
+    back_to_input: "Retour à la saisie"
+    cleared: "Effacé"
+    deleted: "Supprimé"
+    max_length: "Longueur maximale atteinte"
+    no_matches: "Aucun résultat"
+    one_match: "1 résultat"
+    matches: "résultats"
+    use_arrows: "Utilisez les flèches pour parcourir"
+    of: "sur"
+  dialog:
+    atc_command: "Commande ATC"
+
 # Language names (displayed in target language)
 languages:
   en: "Anglais"

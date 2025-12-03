@@ -611,6 +611,27 @@ atc:
   at: "at"
   on: "on"
 
+# Text input widget
+widget:
+  text_input:
+    type_to_search: "Type to search"
+    type_to_enter: "Type your message, then press Enter"
+    beginning: "Beginning"
+    end: "End"
+    selected: "Selected"
+    entered: "Entered"
+    back_to_input: "Back to text input"
+    cleared: "Cleared"
+    deleted: "Deleted"
+    max_length: "Maximum length reached"
+    no_matches: "No matches"
+    one_match: "1 match"
+    matches: "matches"
+    use_arrows: "Use arrows to browse"
+    of: "of"
+  dialog:
+    atc_command: "ATC Command"
+
 # Language names (in the target language)
 languages:
   en: "English"

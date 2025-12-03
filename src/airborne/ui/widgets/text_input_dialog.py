@@ -23,6 +23,7 @@ try:
 except ImportError:
     pygame = None  # type: ignore[assignment]
 
+from airborne.core.i18n import t
 from airborne.ui.widgets.text_input import TextInputWidget
 
 logger = logging.getLogger(__name__)
@@ -101,7 +102,7 @@ class TextInputDialog:
         self.is_visible = True
 
         if self._speak_callback:
-            self._speak_callback(f"{self._label}. Type your message, then press Enter.")
+            self._speak_callback(f"{self._label}. {t('widget.text_input.type_to_enter')}")
 
     def hide(self) -> None:
         """Hide the dialog."""

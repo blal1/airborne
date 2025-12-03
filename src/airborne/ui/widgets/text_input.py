@@ -46,6 +46,7 @@ try:
 except ImportError:
     pygame = None  # type: ignore[assignment]
 
+from airborne.core.i18n import t
 from airborne.ui.widgets.base import Widget, WidgetState
 
 logger = logging.getLogger(__name__)
@@ -129,9 +130,9 @@ class TextInputWidget(Widget):
         super().activate()
         self.state = WidgetState.EDITING
         if self._selected_value:
-            self._speak(f"{self.label}: {self._selected_value}. Type to change.")
+            self._speak(f"{self.label}: {self._selected_value}")
         else:
-            self._speak(f"{self.label}. Type to search.")
+            self._speak(f"{self.label}. {t('widget.text_input.type_to_search')}")
 
     def handle_key(self, key: int, unicode: str, mods: int = 0) -> bool:
         """Handle key input.
@@ -206,7 +207,7 @@ class TextInputWidget(Widget):
             if self._cursor_pos > 0:
                 self._play_click("knob")
                 self._cursor_pos = 0
-                self._speak("Beginning")
+                self._speak(t("widget.text_input.beginning"))
             return True
 
         # End - go to end
@@ -214,7 +215,7 @@ class TextInputWidget(Widget):
             if self._cursor_pos < len(self._query):
                 self._play_click("knob")
                 self._cursor_pos = len(self._query)
-                self._speak("End")
+                self._speak(t("widget.text_input.end"))
             return True
 
         # Enter - select current suggestion or submit query
@@ -224,12 +225,12 @@ class TextInputWidget(Widget):
                 # Select the highlighted suggestion
                 selected = self._suggestions[self._selected_index]
                 self._selected_value = selected.value
-                self._speak(f"Selected: {selected.display}")
+                self._speak(f"{t('widget.text_input.selected')}: {selected.display}")
                 self._emit_submit()
             elif self._query:
                 # No suggestion selected, submit the raw query
                 self._selected_value = self._query
-                self._speak(f"Entered: {self._query}")
+                self._speak(f"{t('widget.text_input.entered')}: {self._query}")
                 self._emit_submit()
             return True
 
@@ -239,14 +240,14 @@ class TextInputWidget(Widget):
             if self.enable_completion and self._selected_index >= 0:
                 # Just go back to text input mode
                 self._selected_index = -1
-                self._speak("Back to text input")
+                self._speak(t("widget.text_input.back_to_input"))
             else:
                 # Clear the query
                 self._query = ""
                 self._cursor_pos = 0
                 self._suggestions = []
                 self._selected_value = None
-                self._speak("Cleared")
+                self._speak(t("widget.text_input.cleared"))
                 self._emit_change()
             return True
 
@@ -257,7 +258,7 @@ class TextInputWidget(Widget):
                 self._query = self._query[:self._cursor_pos - 1] + self._query[self._cursor_pos:]
                 self._cursor_pos -= 1
                 self._play_click("knob")
-                self._speak(f"Deleted {self._spell_char(deleted)}")
+                self._speak(f"{t('widget.text_input.deleted')} {self._spell_char(deleted)}")
                 self._update_suggestions()
                 self._emit_change()
             return True
@@ -268,7 +269,7 @@ class TextInputWidget(Widget):
                 deleted = self._query[self._cursor_pos]
                 self._query = self._query[:self._cursor_pos] + self._query[self._cursor_pos + 1:]
                 self._play_click("knob")
-                self._speak(f"Deleted {self._spell_char(deleted)}")
+                self._speak(f"{t('widget.text_input.deleted')} {self._spell_char(deleted)}")
                 self._update_suggestions()
                 self._emit_change()
             return True
@@ -293,7 +294,7 @@ class TextInputWidget(Widget):
                 self._update_suggestions()
                 self._emit_change()
             else:
-                self._speak("Maximum length reached")
+                self._speak(t("widget.text_input.max_length"))
             return True
 
         return False
@@ -349,7 +350,7 @@ class TextInputWidget(Widget):
             char = self._query[self._cursor_pos]
             self._speak(self._spell_char(char))
         else:
-            self._speak("End")
+            self._speak(t("widget.text_input.end"))
 
     def _update_suggestions(self) -> None:
         """Update suggestions based on current query."""
@@ -372,12 +373,12 @@ class TextInputWidget(Widget):
             # Announce number of results
             count = len(self._suggestions)
             if count == 0:
-                self._speak("No matches")
+                self._speak(t("widget.text_input.no_matches"))
             elif count == 1:
-                self._speak(f"1 match: {self._suggestions[0].display}")
+                self._speak(f"{t('widget.text_input.one_match')}: {self._suggestions[0].display}")
                 self._selected_index = 0
             else:
-                self._speak(f"{count} matches. Use arrows to browse.")
+                self._speak(f"{count} {t('widget.text_input.matches')}. {t('widget.text_input.use_arrows')}")
                 self._selected_index = 0
 
         except Exception as e:
@@ -390,7 +391,7 @@ class TextInputWidget(Widget):
             suggestion = self._suggestions[self._selected_index]
             position = self._selected_index + 1
             total = len(self._suggestions)
-            self._speak(f"{position} of {total}: {suggestion.display}")
+            self._speak(f"{position} {t('widget.text_input.of')} {total}: {suggestion.display}")
 
     def get_value(self) -> str | None:
         """Get selected value.
