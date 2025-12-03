@@ -572,14 +572,14 @@ class AirportSubMenu(AudioMenu):
         self._widget: Any = None
 
     def open(self) -> None:
-        """Open and create autocomplete widget."""
+        """Open and create text input widget."""
         from airborne.airports.airport_index import get_airport_index
-        from airborne.ui.widgets.autocomplete import AutocompleteWidget
+        from airborne.ui.widgets.text_input import TextInputWidget
 
         self.is_open = True
 
-        # Create autocomplete widget
-        self._widget = AutocompleteWidget(
+        # Create text input widget with autocomplete
+        self._widget = TextInputWidget(
             widget_id="airport",
             label=self.title,
             search_func=self._search_airports,

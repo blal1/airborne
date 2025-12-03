@@ -33,6 +33,7 @@ from airborne.plugins.radio.phraseology import PhraseMaker
 from airborne.plugins.radio.readback import ATCReadbackSystem
 from airborne.services.atc.intent_processor import FlightContext
 from airborne.settings import get_atc_v2_settings
+from airborne.ui.widgets.text_input_dialog import TextInputDialog
 
 logger = get_logger(__name__)
 
@@ -75,6 +76,7 @@ class RadioPlugin(IPlugin):
 
         # ATC V2 voice control (optional)
         self.atc_v2_controller: ATCV2Controller | None = None
+        self._atc_v2_text_dialog: TextInputDialog | None = None
 
         # Current state
         self._current_position: Vector3 | None = None
@@ -907,19 +909,72 @@ class RadioPlugin(IPlugin):
             if self.atc_v2_controller.process_text_input(text):
                 logger.info(f"ATC V2 processing text: {text}")
         else:
-            # No text provided - this is just the key press notification
-            # The UI layer should prompt for text and send another message with text
-            logger.debug("ATC V2 text input triggered (awaiting text)")
-            if self.context:
-                self.context.message_queue.publish(
-                    Message(
-                        sender="radio_plugin",
-                        recipients=["*"],
-                        topic="atc.v2_text_input_requested",
-                        data={},
-                        priority=MessagePriority.NORMAL,
-                    )
-                )
+            # Show text input dialog
+            self._show_atc_v2_text_dialog()
+
+    def _show_atc_v2_text_dialog(self) -> None:
+        """Show the ATC V2 text input dialog."""
+        if self._atc_v2_text_dialog and self._atc_v2_text_dialog.is_visible:
+            # Already visible
+            return
+
+        # Create dialog
+        self._atc_v2_text_dialog = TextInputDialog(
+            label="ATC Command",
+            on_submit=self._on_atc_v2_text_submit,
+            on_cancel=self._on_atc_v2_text_cancel,
+            use_phonetic=False,  # Use real letters for text input
+            max_length=200,
+        )
+
+        # Set up audio callbacks
+        if self.context and self.context.tts_service:
+            self._atc_v2_text_dialog.set_audio_callbacks(
+                speak=lambda text: self.context.tts_service.speak(text) if self.context else None,
+                click=None,  # Optional click sounds
+            )
+
+        self._atc_v2_text_dialog.show()
+        logger.info("ATC V2 text input dialog opened")
+
+    def _on_atc_v2_text_submit(self, text: str) -> None:
+        """Handle text input dialog submission.
+
+        Args:
+            text: The entered text.
+        """
+        logger.info(f"ATC V2 text submitted: {text}")
+        if self.atc_v2_controller and text:
+            self.atc_v2_controller.process_text_input(text)
+
+    def _on_atc_v2_text_cancel(self) -> None:
+        """Handle text input dialog cancellation."""
+        logger.debug("ATC V2 text input cancelled")
+
+    def handle_text_input_key(self, key: int, unicode: str, mods: int = 0) -> bool:
+        """Handle key input for text input dialog.
+
+        This should be called from the main loop when the dialog is visible.
+
+        Args:
+            key: pygame key code.
+            unicode: Unicode character.
+            mods: Modifier keys state.
+
+        Returns:
+            True if key was consumed.
+        """
+        if self._atc_v2_text_dialog and self._atc_v2_text_dialog.is_visible:
+            return self._atc_v2_text_dialog.handle_key(key, unicode, mods)
+        return False
+
+    def is_text_input_active(self) -> bool:
+        """Check if text input dialog is active.
+
+        Returns:
+            True if text input dialog is visible.
+        """
+        return bool(self._atc_v2_text_dialog and self._atc_v2_text_dialog.is_visible)
 
     def on_config_changed(self, config: dict[str, Any]) -> None:
         """Handle configuration changes.

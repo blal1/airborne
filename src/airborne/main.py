@@ -795,6 +795,17 @@ class AirBorne:
                 logger.debug("Window resized to %dx%d", event.w, event.h)
                 remaining_events.append(event)
             elif event.type == pygame.KEYDOWN:
+                # Check if radio plugin text input dialog is active
+                if (
+                    hasattr(self, "radio_plugin")
+                    and self.radio_plugin
+                    and self.radio_plugin.is_text_input_active()
+                ):
+                    # Route to text input dialog
+                    mods = pygame.key.get_mods()
+                    if self.radio_plugin.handle_text_input_key(event.key, event.unicode, mods):
+                        continue  # Key consumed by dialog
+
                 # Convert pygame event to InputEvent
                 input_event = InputEvent.from_keyboard(key=event.key, mods=pygame.key.get_mods())
 

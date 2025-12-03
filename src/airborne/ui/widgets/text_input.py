@@ -1,21 +1,44 @@
 """Text input widget for audio-accessible interfaces.
 
-This widget provides text input with:
-- Direct keyboard typing
-- Character-by-character TTS feedback
-- Backspace/delete support
+This widget provides text input with optional autocomplete suggestions:
+- Type to enter text or filter suggestions
+- Up/Down arrows to navigate suggestions (when completion enabled)
+- Left/Right arrows move cursor within text
+- Home/End go to beginning/end of text
+- Ctrl+Left/Right move word by word
 - Enter to submit
+- TTS announces each character or suggestion
 
 Typical usage:
+    # Simple text input (no completion):
     widget = TextInputWidget(
-        widget_id="airport_icao",
+        widget_id="atc_text",
+        label="ATC Message",
+        enable_completion=False,
+        use_phonetic=False,  # Use real letters (a, b, c)
+        on_submit=lambda e: print(f"Text: {e.value}"),
+    )
+
+    # With autocomplete:
+    from airborne.airports.airport_index import get_airport_index
+
+    index = get_airport_index()
+
+    def search_airports(query: str) -> list[tuple[str, str]]:
+        results = index.search(query, limit=5)
+        return [(a.icao, a.display_name()) for a in results]
+
+    widget = TextInputWidget(
+        widget_id="departure",
         label="Departure Airport",
+        search_func=search_airports,
         on_submit=lambda e: print(f"Selected: {e.value}"),
     )
 """
 
 import logging
 from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Any
 
 try:
@@ -28,26 +51,43 @@ from airborne.ui.widgets.base import Widget, WidgetState
 logger = logging.getLogger(__name__)
 
 
-class TextInputWidget(Widget):
-    """Text input widget with audio feedback.
-
-    Supports direct keyboard input with per-character TTS feedback.
-    Press Enter to submit, Escape to cancel.
+@dataclass
+class SuggestionItem:
+    """A suggestion item for autocomplete.
 
     Attributes:
-        value: Current text value.
-        max_length: Maximum allowed input length.
-        uppercase: Whether to force uppercase input.
+        value: The actual value to return when selected.
+        display: Human-readable display text.
+        data: Optional additional data.
+    """
+
+    value: str
+    display: str
+    data: dict[str, Any] | None = None
+
+
+class TextInputWidget(Widget):
+    """Text input widget with optional autocomplete suggestions.
+
+    Provides full-featured text input with cursor navigation,
+    optional autocomplete suggestions, and TTS feedback.
+
+    Attributes:
+        suggestions: Current list of suggestions (when completion enabled).
+        selected_index: Currently highlighted suggestion index.
     """
 
     def __init__(
         self,
         widget_id: str,
         label: str,
-        initial_value: str = "",
-        max_length: int = 50,
+        search_func: Callable[[str], list[tuple[str, str]]] | None = None,
+        min_query_length: int = 1,
+        max_suggestions: int = 10,
         uppercase: bool = False,
-        placeholder: str = "",
+        enable_completion: bool = True,
+        use_phonetic: bool = True,
+        max_length: int = 200,
         on_change: Callable[[Any], None] | None = None,
         on_submit: Callable[[Any], None] | None = None,
     ) -> None:
@@ -56,31 +96,50 @@ class TextInputWidget(Widget):
         Args:
             widget_id: Unique identifier.
             label: Label for TTS announcements.
-            initial_value: Starting text value.
+            search_func: Function that takes query string and returns
+                        list of (value, display) tuples. Optional if
+                        enable_completion is False.
+            min_query_length: Minimum characters before searching.
+            max_suggestions: Maximum suggestions to show.
+            uppercase: Force uppercase input.
+            enable_completion: If False, disables suggestions and up/down nav.
+            use_phonetic: If True, use NATO phonetic alphabet for letter TTS.
+                         If False, use real letters (a, b, c).
             max_length: Maximum input length.
-            uppercase: Force uppercase input (useful for ICAO codes).
-            placeholder: Placeholder text when empty.
-            on_change: Callback when text changes.
-            on_submit: Callback when Enter is pressed.
+            on_change: Callback when selection changes.
+            on_submit: Callback when selection is submitted.
         """
         super().__init__(widget_id, label, on_change, on_submit)
-        self._value = initial_value
-        self.max_length = max_length
+        self._search_func = search_func
+        self.min_query_length = min_query_length
+        self.max_suggestions = max_suggestions
         self.uppercase = uppercase
-        self.placeholder = placeholder
+        self.enable_completion = enable_completion
+        self.use_phonetic = use_phonetic
+        self.max_length = max_length
+
+        self._query = ""
+        self._cursor_pos = 0  # Cursor position within _query
+        self._suggestions: list[SuggestionItem] = []
+        self._selected_index = -1  # -1 means in text input mode
+        self._selected_value: str | None = None  # Final selected value
 
     def activate(self) -> None:
         """Activate and enter edit mode."""
         super().activate()
         self.state = WidgetState.EDITING
-        self._speak(f"{self.label}. Type to enter text.")
+        if self._selected_value:
+            self._speak(f"{self.label}: {self._selected_value}. Type to change.")
+        else:
+            self._speak(f"{self.label}. Type to search.")
 
-    def handle_key(self, key: int, unicode: str) -> bool:
+    def handle_key(self, key: int, unicode: str, mods: int = 0) -> bool:
         """Handle key input.
 
         Args:
             key: pygame key code.
             unicode: Unicode character.
+            mods: Modifier keys state (pygame.key.get_mods()).
 
         Returns:
             True if key was consumed.
@@ -91,55 +150,147 @@ class TextInputWidget(Widget):
         if pygame is None:
             return False
 
-        # Enter - submit
+        # Get modifier state
+        ctrl = mods & pygame.KMOD_CTRL
+
+        # Down arrow - move to suggestions or next suggestion
+        if key == pygame.K_DOWN:
+            if self.enable_completion and self._suggestions:
+                self._play_click("knob")
+                if self._selected_index < len(self._suggestions) - 1:
+                    self._selected_index += 1
+                else:
+                    self._selected_index = 0  # Wrap to top
+                self._announce_current_suggestion()
+            # If completion disabled, do nothing
+            return True
+
+        # Up arrow - move to previous suggestion
+        if key == pygame.K_UP:
+            if self.enable_completion and self._suggestions:
+                self._play_click("knob")
+                if self._selected_index > 0:
+                    self._selected_index -= 1
+                else:
+                    self._selected_index = len(self._suggestions) - 1  # Wrap to bottom
+                self._announce_current_suggestion()
+            # If completion disabled, do nothing
+            return True
+
+        # Left arrow - move cursor left (with Ctrl: word by word)
+        if key == pygame.K_LEFT:
+            if self._cursor_pos > 0:
+                self._play_click("knob")
+                if ctrl:
+                    # Move to start of previous word
+                    self._cursor_pos = self._find_word_start(self._cursor_pos - 1)
+                else:
+                    self._cursor_pos -= 1
+                self._announce_cursor_position()
+            return True
+
+        # Right arrow - move cursor right (with Ctrl: word by word)
+        if key == pygame.K_RIGHT:
+            if self._cursor_pos < len(self._query):
+                self._play_click("knob")
+                if ctrl:
+                    # Move to end of next word
+                    self._cursor_pos = self._find_word_end(self._cursor_pos + 1)
+                else:
+                    self._cursor_pos += 1
+                self._announce_cursor_position()
+            return True
+
+        # Home - go to beginning
+        if key == pygame.K_HOME:
+            if self._cursor_pos > 0:
+                self._play_click("knob")
+                self._cursor_pos = 0
+                self._speak("Beginning")
+            return True
+
+        # End - go to end
+        if key == pygame.K_END:
+            if self._cursor_pos < len(self._query):
+                self._play_click("knob")
+                self._cursor_pos = len(self._query)
+                self._speak("End")
+            return True
+
+        # Enter - select current suggestion or submit query
         if key == pygame.K_RETURN:
             self._play_click("button")
-            if self._value:
-                self._speak(f"Entered: {self._value}")
-            self._emit_submit()
+            if self.enable_completion and self._selected_index >= 0 and self._selected_index < len(self._suggestions):
+                # Select the highlighted suggestion
+                selected = self._suggestions[self._selected_index]
+                self._selected_value = selected.value
+                self._speak(f"Selected: {selected.display}")
+                self._emit_submit()
+            elif self._query:
+                # No suggestion selected, submit the raw query
+                self._selected_value = self._query
+                self._speak(f"Entered: {self._query}")
+                self._emit_submit()
             return True
 
-        # Escape - cancel (clear and announce)
+        # Escape - clear and go back to text input
         if key == pygame.K_ESCAPE:
             self._play_click("switch")
-            old_value = self._value
-            self._value = ""
-            if old_value:
+            if self.enable_completion and self._selected_index >= 0:
+                # Just go back to text input mode
+                self._selected_index = -1
+                self._speak("Back to text input")
+            else:
+                # Clear the query
+                self._query = ""
+                self._cursor_pos = 0
+                self._suggestions = []
+                self._selected_value = None
                 self._speak("Cleared")
-            self._emit_change()
+                self._emit_change()
             return True
 
-        # Backspace - delete last character
+        # Backspace - delete character before cursor
         if key == pygame.K_BACKSPACE:
-            if self._value:
-                deleted = self._value[-1]
-                self._value = self._value[:-1]
+            if self._cursor_pos > 0:
+                deleted = self._query[self._cursor_pos - 1]
+                self._query = self._query[:self._cursor_pos - 1] + self._query[self._cursor_pos:]
+                self._cursor_pos -= 1
                 self._play_click("knob")
                 self._speak(f"Deleted {self._spell_char(deleted)}")
+                self._update_suggestions()
                 self._emit_change()
             return True
 
-        # Delete - same as backspace
+        # Delete - delete character at cursor
         if key == pygame.K_DELETE:
-            if self._value:
-                deleted = self._value[-1]
-                self._value = self._value[:-1]
+            if self._cursor_pos < len(self._query):
+                deleted = self._query[self._cursor_pos]
+                self._query = self._query[:self._cursor_pos] + self._query[self._cursor_pos + 1:]
                 self._play_click("knob")
                 self._speak(f"Deleted {self._spell_char(deleted)}")
+                self._update_suggestions()
                 self._emit_change()
             return True
 
-        # Arrow keys - ignore (let parent handle navigation)
-        if key in (pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT):
-            return False
+        # Tab - autocomplete with first suggestion (only if completion enabled)
+        if key == pygame.K_TAB:
+            if self.enable_completion and self._suggestions:
+                self._play_click("knob")
+                self._selected_index = 0
+                self._announce_current_suggestion()
+            return True
 
-        # Printable character
+        # Printable character - insert at cursor position
         if unicode and len(unicode) == 1 and unicode.isprintable():
-            if len(self._value) < self.max_length:
+            if len(self._query) < self.max_length:
                 char = unicode.upper() if self.uppercase else unicode
-                self._value += char
+                self._query = self._query[:self._cursor_pos] + char + self._query[self._cursor_pos:]
+                self._cursor_pos += 1
+                self._selected_index = -1  # Go back to text input mode
                 self._play_click("knob")
                 self._speak(self._spell_char(char))
+                self._update_suggestions()
                 self._emit_change()
             else:
                 self._speak("Maximum length reached")
@@ -147,39 +298,165 @@ class TextInputWidget(Widget):
 
         return False
 
-    def get_value(self) -> str:
-        """Get current text value.
-
-        Returns:
-            Current text string.
-        """
-        return self._value
-
-    def set_value(self, value: Any) -> None:
-        """Set text value.
+    def _find_word_start(self, pos: int) -> int:
+        """Find the start of the word at or before position.
 
         Args:
-            value: New text value.
+            pos: Starting position.
+
+        Returns:
+            Position of word start.
+        """
+        if pos <= 0:
+            return 0
+
+        # Skip any trailing spaces
+        while pos > 0 and self._query[pos] == " ":
+            pos -= 1
+
+        # Find start of current word
+        while pos > 0 and self._query[pos - 1] != " ":
+            pos -= 1
+
+        return pos
+
+    def _find_word_end(self, pos: int) -> int:
+        """Find the end of the word at or after position.
+
+        Args:
+            pos: Starting position.
+
+        Returns:
+            Position after word end.
+        """
+        length = len(self._query)
+        if pos >= length:
+            return length
+
+        # Skip any leading spaces
+        while pos < length and self._query[pos] == " ":
+            pos += 1
+
+        # Find end of current word
+        while pos < length and self._query[pos] != " ":
+            pos += 1
+
+        return pos
+
+    def _announce_cursor_position(self) -> None:
+        """Announce the character at cursor position."""
+        if self._cursor_pos < len(self._query):
+            char = self._query[self._cursor_pos]
+            self._speak(self._spell_char(char))
+        else:
+            self._speak("End")
+
+    def _update_suggestions(self) -> None:
+        """Update suggestions based on current query."""
+        # Skip if completion is disabled
+        if not self.enable_completion or not self._search_func:
+            self._suggestions = []
+            return
+
+        if len(self._query) < self.min_query_length:
+            self._suggestions = []
+            return
+
+        try:
+            results = self._search_func(self._query)
+            self._suggestions = [
+                SuggestionItem(value=value, display=display)
+                for value, display in results[: self.max_suggestions]
+            ]
+
+            # Announce number of results
+            count = len(self._suggestions)
+            if count == 0:
+                self._speak("No matches")
+            elif count == 1:
+                self._speak(f"1 match: {self._suggestions[0].display}")
+                self._selected_index = 0
+            else:
+                self._speak(f"{count} matches. Use arrows to browse.")
+                self._selected_index = 0
+
+        except Exception as e:
+            logger.error("Search failed: %s", e)
+            self._suggestions = []
+
+    def _announce_current_suggestion(self) -> None:
+        """Announce the currently selected suggestion."""
+        if 0 <= self._selected_index < len(self._suggestions):
+            suggestion = self._suggestions[self._selected_index]
+            position = self._selected_index + 1
+            total = len(self._suggestions)
+            self._speak(f"{position} of {total}: {suggestion.display}")
+
+    def get_value(self) -> str | None:
+        """Get selected value.
+
+        Returns:
+            Selected value string or None if nothing selected.
+        """
+        return self._selected_value
+
+    def set_value(self, value: Any) -> None:
+        """Set the selected value.
+
+        Args:
+            value: Value to set.
         """
         if isinstance(value, str):
-            self._value = value[: self.max_length]
-            if self.uppercase:
-                self._value = self._value.upper()
+            self._selected_value = value
+            self._query = value[:self.max_length]
+            self._cursor_pos = len(self._query)
 
     def get_display_text(self) -> str:
         """Get display text.
 
         Returns:
-            Current value or placeholder.
+            Selected value, query, or empty indicator.
         """
-        if self._value:
-            return self._value
-        return self.placeholder or "empty"
+        if self._selected_value:
+            return self._selected_value
+        if self._query:
+            return self._query
+        return "not set"
+
+    def get_query(self) -> str:
+        """Get current search query.
+
+        Returns:
+            Current query string.
+        """
+        return self._query
+
+    def get_cursor_pos(self) -> int:
+        """Get current cursor position.
+
+        Returns:
+            Cursor position in the query string.
+        """
+        return self._cursor_pos
+
+    def clear(self) -> None:
+        """Clear the input and reset state."""
+        self._query = ""
+        self._cursor_pos = 0
+        self._suggestions = []
+        self._selected_index = -1
+        self._selected_value = None
+
+    def get_suggestions(self) -> list[SuggestionItem]:
+        """Get current suggestions.
+
+        Returns:
+            List of current suggestions.
+        """
+        return self._suggestions.copy()
 
     def _spell_char(self, char: str) -> str:
         """Get TTS-friendly spelling of a character.
-
-        Uses NATO phonetic alphabet for letters.
 
         Args:
             char: Single character.
@@ -187,41 +464,46 @@ class TextInputWidget(Widget):
         Returns:
             Speakable representation.
         """
-        # NATO phonetic alphabet
-        nato = {
-            "A": "Alpha",
-            "B": "Bravo",
-            "C": "Charlie",
-            "D": "Delta",
-            "E": "Echo",
-            "F": "Foxtrot",
-            "G": "Golf",
-            "H": "Hotel",
-            "I": "India",
-            "J": "Juliet",
-            "K": "Kilo",
-            "L": "Lima",
-            "M": "Mike",
-            "N": "November",
-            "O": "Oscar",
-            "P": "Papa",
-            "Q": "Quebec",
-            "R": "Romeo",
-            "S": "Sierra",
-            "T": "Tango",
-            "U": "Uniform",
-            "V": "Victor",
-            "W": "Whiskey",
-            "X": "X-ray",
-            "Y": "Yankee",
-            "Z": "Zulu",
-        }
-
         upper = char.upper()
-        if upper in nato:
-            return nato[upper]
+
+        # Use phonetic alphabet or real letters based on setting
+        if upper.isalpha():
+            if self.use_phonetic:
+                # NATO phonetic alphabet
+                nato = {
+                    "A": "Alpha",
+                    "B": "Bravo",
+                    "C": "Charlie",
+                    "D": "Delta",
+                    "E": "Echo",
+                    "F": "Foxtrot",
+                    "G": "Golf",
+                    "H": "Hotel",
+                    "I": "India",
+                    "J": "Juliet",
+                    "K": "Kilo",
+                    "L": "Lima",
+                    "M": "Mike",
+                    "N": "November",
+                    "O": "Oscar",
+                    "P": "Papa",
+                    "Q": "Quebec",
+                    "R": "Romeo",
+                    "S": "Sierra",
+                    "T": "Tango",
+                    "U": "Uniform",
+                    "V": "Victor",
+                    "W": "Whiskey",
+                    "X": "X-ray",
+                    "Y": "Yankee",
+                    "Z": "Zulu",
+                }
+                return nato.get(upper, char)
+            else:
+                # Use real letter (just return the letter)
+                return upper
+
         if char.isdigit():
-            # Pronounce digits individually
             digit_words = {
                 "0": "Zero",
                 "1": "One",
@@ -232,7 +514,7 @@ class TextInputWidget(Widget):
                 "6": "Six",
                 "7": "Seven",
                 "8": "Eight",
-                "9": "Niner",  # Aviation pronunciation
+                "9": "Niner" if self.use_phonetic else "Nine",
             }
             return digit_words.get(char, char)
         if char == " ":
@@ -241,6 +523,8 @@ class TextInputWidget(Widget):
             return "Dash"
         if char == ".":
             return "Point"
-        if char == "/":
-            return "Slash"
+        if char == ",":
+            return "Comma"
+        if char == "'":
+            return "Apostrophe"
         return char

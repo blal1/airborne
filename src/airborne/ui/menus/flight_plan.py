@@ -24,7 +24,7 @@ except ImportError:
 from airborne.airports.airport_index import AirportInfo, get_airport_index
 from airborne.core.i18n import t
 from airborne.ui.menus.base_menu import AudioMenu, MenuItem
-from airborne.ui.widgets.autocomplete import AutocompleteWidget
+from airborne.ui.widgets.text_input import TextInputWidget
 
 logger = logging.getLogger(__name__)
 
@@ -51,14 +51,14 @@ class AirportInputMenu(AudioMenu):
         super().__init__(title, parent)
         self.field_name = field_name
         self._selected_airport: AirportInfo | None = None
-        self._widget: AutocompleteWidget | None = None
+        self._widget: TextInputWidget | None = None
 
     def open(self) -> None:
         """Open the menu."""
         self.is_open = True
 
-        # Create autocomplete widget
-        self._widget = AutocompleteWidget(
+        # Create text input widget with autocomplete
+        self._widget = TextInputWidget(
             widget_id=f"airport_{self.field_name}",
             label=self.title,
             search_func=self._search_airports,
