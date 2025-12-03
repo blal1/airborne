@@ -140,7 +140,9 @@ class AudioRecorder:
 
         try:
             # Get number of recording devices
-            num_drivers = self._system.record_num_drivers
+            # record_num_drivers returns a Structobject with .drivers and .connected
+            driver_info = self._system.record_num_drivers
+            num_drivers = driver_info.drivers
 
             if num_drivers == 0:
                 logger.warning("No recording devices found")
@@ -216,7 +218,8 @@ class AudioRecorder:
             return devices
 
         try:
-            num_drivers = self._system.record_num_drivers
+            driver_info = self._system.record_num_drivers
+            num_drivers = driver_info.drivers
 
             for i in range(num_drivers):
                 info = self._system.get_record_driver_info(i)

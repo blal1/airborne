@@ -669,6 +669,28 @@ class AirBorne:
                     priority=MessagePriority.HIGH,
                 )
             )
+        # Push-to-talk for ATC voice control
+        elif event.action == "push_to_talk":
+            self.message_queue.publish(
+                Message(
+                    sender="main",
+                    recipients=["radio_plugin"],
+                    topic="input.push_to_talk",
+                    data={"pressed": True},
+                    priority=MessagePriority.HIGH,
+                )
+            )
+        # ATC V2 text input (Shift+Space)
+        elif event.action == "atc_v2_text_input":
+            self.message_queue.publish(
+                Message(
+                    sender="main",
+                    recipients=["radio_plugin"],
+                    topic="input.atc_v2_text_input",
+                    data={},
+                    priority=MessagePriority.HIGH,
+                )
+            )
         # ATC menu selection (number keys 1-9)
         elif event.action.startswith("atc_select_"):
             option = event.action.split("_")[-1]  # Extract number
@@ -782,6 +804,19 @@ class AirBorne:
                 # If not handled, add to remaining events
                 if not handled:
                     remaining_events.append(event)
+            elif event.type == pygame.KEYUP:
+                # Handle PTT release (Space key without modifiers)
+                if event.key == pygame.K_SPACE and not (pygame.key.get_mods() & pygame.KMOD_SHIFT):
+                    self.message_queue.publish(
+                        Message(
+                            sender="main",
+                            recipients=["radio_plugin"],
+                            topic="input.push_to_talk",
+                            data={"pressed": False},
+                            priority=MessagePriority.HIGH,
+                        )
+                    )
+                remaining_events.append(event)
             else:
                 remaining_events.append(event)
 
