@@ -216,6 +216,7 @@ class RadioPlugin(IPlugin):
         context.message_queue.subscribe("input.atc_repeat", self.handle_message)
         context.message_queue.subscribe("aircraft.state", self.handle_message)
         context.message_queue.subscribe("atc.request", self.handle_message)
+        context.message_queue.subscribe("input.atc_v2_text_input", self.handle_message)
 
         # Register components
         if context.plugin_registry:
@@ -273,6 +274,7 @@ class RadioPlugin(IPlugin):
             self.context.message_queue.unsubscribe("input.atc_repeat", self)
             self.context.message_queue.unsubscribe("aircraft.state", self)
             self.context.message_queue.unsubscribe("atc.request", self)
+            self.context.message_queue.unsubscribe("input.atc_v2_text_input", self)
 
         logger.info("Radio plugin shutdown")
 
@@ -305,6 +307,8 @@ class RadioPlugin(IPlugin):
             self._handle_aircraft_state(message)
         elif message.topic == "atc.request":
             self._handle_atc_request(message)
+        elif message.topic == "input.atc_v2_text_input":
+            self._handle_atc_v2_text_input(message)
 
     def _handle_position_update(self, message: Message) -> None:
         """Handle position updates from physics plugin.
@@ -884,6 +888,38 @@ class RadioPlugin(IPlugin):
             self.atc_queue.enqueue(atc_msg)
         else:
             logger.warning(f"Unknown ATC request type: {request_type}")
+
+    def _handle_atc_v2_text_input(self, message: Message) -> None:
+        """Handle ATC V2 text input request (Shift+Space).
+
+        Args:
+            message: Text input message with optional text data.
+        """
+        if not self.atc_v2_controller or not self.atc_v2_controller.is_enabled():
+            logger.warning("ATC V2 not available for text input")
+            return
+
+        data = message.data
+        text = data.get("text", "")
+
+        if text:
+            # Text provided directly in message
+            if self.atc_v2_controller.process_text_input(text):
+                logger.info(f"ATC V2 processing text: {text}")
+        else:
+            # No text provided - this is just the key press notification
+            # The UI layer should prompt for text and send another message with text
+            logger.debug("ATC V2 text input triggered (awaiting text)")
+            if self.context:
+                self.context.message_queue.publish(
+                    Message(
+                        sender="radio_plugin",
+                        recipients=["*"],
+                        topic="atc.v2_text_input_requested",
+                        data={},
+                        priority=MessagePriority.NORMAL,
+                    )
+                )
 
     def on_config_changed(self, config: dict[str, Any]) -> None:
         """Handle configuration changes.

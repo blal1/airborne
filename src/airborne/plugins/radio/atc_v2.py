@@ -335,6 +335,98 @@ class ATCV2Controller:
             logger.info(f"PTT released - processing {len(audio_data)} bytes")
             return True
 
+    def process_text_input(self, text: str) -> bool:
+        """Process text input directly (bypasses ASR).
+
+        This allows typed input to be processed by NLU without
+        going through speech recognition. Useful for testing
+        and accessibility.
+
+        Args:
+            text: The text to process (simulated pilot speech).
+
+        Returns:
+            True if processing started.
+        """
+        with self._lock:
+            if not self._initialized:
+                logger.warning("V2 not initialized for text input")
+                return False
+
+            if self._state != V2State.IDLE:
+                logger.debug(f"Cannot process text in state: {self._state}")
+                return False
+
+            if not text or not text.strip():
+                logger.warning("Empty text input")
+                return False
+
+            # Start async processing with text (skip ASR)
+            self._set_state(V2State.UNDERSTANDING)
+            self._processing_thread = threading.Thread(
+                target=self._process_text_async,
+                args=(text.strip(),),
+                daemon=True,
+            )
+            self._processing_thread.start()
+
+            logger.info(f"Text input - processing: '{text}'")
+            return True
+
+    def _process_text_async(self, text: str) -> None:
+        """Process text input asynchronously (runs in thread).
+
+        Args:
+            text: The text to process.
+        """
+        try:
+            # Notify transcription callback (even though it's typed)
+            if self._on_transcription:
+                self._on_transcription(text)
+
+            logger.info(f"Text input: '{text}'")
+
+            # Extract intent via NLU
+            if not self._nlu_provider or not self._nlu_provider.is_available():
+                logger.error("NLU provider not available")
+                self._handle_error("Intent recognition not available")
+                return
+
+            intent = self._nlu_provider.extract_intent(text)
+
+            if self._on_intent:
+                self._on_intent(intent)
+
+            logger.info(
+                f"Intent: {intent.intent_type.value} "
+                f"(confidence={intent.confidence:.2f})"
+            )
+
+            # Process intent and generate response
+            self._set_state(V2State.RESPONDING)
+
+            if not self._intent_processor:
+                self._handle_error("Intent processor not available")
+                return
+
+            response = self._intent_processor.process_intent(
+                intent, self._flight_context
+            )
+
+            if response:
+                if self._on_response:
+                    self._on_response(response)
+
+                # Speak response via TTS
+                self._speak_response(response)
+            else:
+                # No response needed (e.g., acknowledgement)
+                self._set_state(V2State.IDLE)
+
+        except Exception as e:
+            logger.error(f"Error processing text input: {e}")
+            self._handle_error(str(e))
+
     def _process_audio_async(self) -> None:
         """Process recorded audio asynchronously (runs in thread)."""
         try:
