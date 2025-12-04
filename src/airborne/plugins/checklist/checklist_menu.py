@@ -144,9 +144,7 @@ class ChecklistMenu(Menu):
             checklist = self._checklist_plugin.get_checklist(checklist_id)
             if checklist:
                 # Get translated name for display and TTS
-                translated_name = self._get_translated_checklist_name(
-                    checklist.id, checklist.name
-                )
+                translated_name = self._get_translated_checklist_name(checklist.id, checklist.name)
                 option = MenuOption(
                     key=str(idx),
                     label=translated_name,

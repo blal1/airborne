@@ -55,7 +55,6 @@ INTENT_TO_REQUEST_MAP: dict[ATCIntentType, ATCRequestType | None] = {
     ATCIntentType.REPORT_READY_FOR_TAXI: ATCRequestType.REQUEST_STARTUP,
     ATCIntentType.REQUEST_TAXI_TO_RUNWAY: ATCRequestType.REQUEST_TAXI,
     ATCIntentType.REQUEST_TAXI_TO_PARKING: ATCRequestType.REQUEST_PARKING,
-
     # Tower operations
     ATCIntentType.READY_FOR_DEPARTURE: ATCRequestType.READY_DEPARTURE,
     ATCIntentType.REQUEST_TAKEOFF: ATCRequestType.REQUEST_TAKEOFF,
@@ -67,23 +66,19 @@ INTENT_TO_REQUEST_MAP: dict[ATCIntentType, ATCRequestType | None] = {
     ATCIntentType.REQUEST_GO_AROUND: ATCRequestType.GO_AROUND,
     ATCIntentType.REQUEST_TOUCH_AND_GO: ATCRequestType.REQUEST_LANDING,
     ATCIntentType.REPORT_CLEAR_OF_RUNWAY: ATCRequestType.REPORT_CLEAR,
-
     # Departure operations
     ATCIntentType.REQUEST_DEPARTURE_FREQUENCY: ATCRequestType.CHECKIN_DEPARTURE,
     ATCIntentType.REPORT_AIRBORNE: ATCRequestType.CHECKIN_DEPARTURE,
     ATCIntentType.REQUEST_FLIGHT_FOLLOWING: ATCRequestType.REQUEST_FLIGHT_FOLLOWING,
-
     # Approach operations
     ATCIntentType.REQUEST_APPROACH: ATCRequestType.REQUEST_APPROACH,
     ATCIntentType.REQUEST_ILS_APPROACH: ATCRequestType.REQUEST_APPROACH,
     ATCIntentType.REQUEST_VISUAL_APPROACH: ATCRequestType.REQUEST_APPROACH,
     ATCIntentType.REPORT_FIELD_IN_SIGHT: ATCRequestType.REPORT_POSITION,
-
     # Center/en-route operations
     ATCIntentType.REQUEST_ALTITUDE_CHANGE: ATCRequestType.REPORT_ALTITUDE,
     ATCIntentType.REQUEST_DIRECT: ATCRequestType.REPORT_POSITION,
     ATCIntentType.REPORT_POSITION: ATCRequestType.REPORT_POSITION,
-
     # Acknowledgements (no request needed)
     ATCIntentType.READBACK: None,
     ATCIntentType.ROGER: None,
@@ -91,7 +86,6 @@ INTENT_TO_REQUEST_MAP: dict[ATCIntentType, ATCRequestType | None] = {
     ATCIntentType.NEGATIVE: None,
     ATCIntentType.SAY_AGAIN: None,
     ATCIntentType.STANDBY: None,
-
     # Unknown
     ATCIntentType.UNKNOWN: None,
 }
@@ -140,8 +134,7 @@ class IntentProcessor:
             context = FlightContext()
 
         logger.info(
-            f"Processing intent: {intent.intent_type.value} "
-            f"(confidence={intent.confidence:.2f})"
+            f"Processing intent: {intent.intent_type.value} (confidence={intent.confidence:.2f})"
         )
 
         # Handle low confidence or unknown intents
@@ -303,9 +296,7 @@ class IntentProcessor:
                 words=[callsign, "NO_PREVIOUS_INSTRUCTION"],
             )
 
-    def _handle_negative(
-        self, intent: ATCIntent, context: FlightContext
-    ) -> ATCResponse:
+    def _handle_negative(self, intent: ATCIntent, context: FlightContext) -> ATCResponse:
         """Handle pilot's 'negative' / unable response.
 
         Args:

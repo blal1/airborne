@@ -315,7 +315,9 @@ class PhysicsPlugin(IPlugin):
             )
             self.context.message_queue.unsubscribe("parking_brake", self.handle_message)
             self.context.message_queue.unsubscribe("input.parking_brake_set", self.handle_message)
-            self.context.message_queue.unsubscribe("input.parking_brake_release", self.handle_message)
+            self.context.message_queue.unsubscribe(
+                "input.parking_brake_release", self.handle_message
+            )
             self.context.message_queue.unsubscribe(MessageTopic.ENGINE_STATE, self.handle_message)
             self.context.message_queue.unsubscribe("weight_balance.updated", self.handle_message)
             self.context.message_queue.unsubscribe("flight_controls.auto_trim", self.handle_message)

@@ -84,8 +84,7 @@ class LocalASRProvider(IASRProvider):
         """
         if not FASTER_WHISPER_AVAILABLE:
             raise ImportError(
-                "faster-whisper is required for local ASR. "
-                "Install with: uv add faster-whisper"
+                "faster-whisper is required for local ASR. Install with: uv add faster-whisper"
             )
 
         self._model_name = config.get("model", DEFAULT_MODEL)
@@ -94,9 +93,7 @@ class LocalASRProvider(IASRProvider):
 
         # Validate model name
         if self._model_name not in WHISPER_MODELS:
-            logger.warning(
-                f"Unknown model '{self._model_name}', using '{DEFAULT_MODEL}'"
-            )
+            logger.warning(f"Unknown model '{self._model_name}', using '{DEFAULT_MODEL}'")
             self._model_name = DEFAULT_MODEL
 
         logger.info(
@@ -164,9 +161,7 @@ class LocalASRProvider(IASRProvider):
 
                 transcription = " ".join(text_parts).strip()
 
-                logger.info(
-                    f"Transcription ({info.duration:.1f}s audio): '{transcription}'"
-                )
+                logger.info(f"Transcription ({info.duration:.1f}s audio): '{transcription}'")
                 return transcription
 
             finally:

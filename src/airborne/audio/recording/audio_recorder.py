@@ -154,9 +154,7 @@ class AudioRecorder:
                 device_index = 0
 
             if device_index >= num_drivers:
-                logger.warning(
-                    f"Device index {device_index} out of range (max {num_drivers - 1})"
-                )
+                logger.warning(f"Device index {device_index} out of range (max {num_drivers - 1})")
                 device_index = 0
 
             self._device_index = device_index
@@ -187,9 +185,7 @@ class AudioRecorder:
         exinfo.numchannels = CHANNELS
         exinfo.format = pyfmodex.enums.SOUND_FORMAT.PCM16
         exinfo.defaultfrequency = SAMPLE_RATE
-        exinfo.length = (
-            self._buffer_length_samples * CHANNELS * (BITS_PER_SAMPLE // 8)
-        )
+        exinfo.length = self._buffer_length_samples * CHANNELS * (BITS_PER_SAMPLE // 8)
 
         # Create sound for recording
         # OPENUSER = create a user-defined sound

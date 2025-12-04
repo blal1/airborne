@@ -12,7 +12,6 @@ Typical usage example:
     tts.speak(t("cockpit.altitude_readout", value=3500))
 """
 
-import contextlib
 import threading
 from collections import deque
 from collections.abc import Callable

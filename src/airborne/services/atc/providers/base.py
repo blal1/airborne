@@ -105,10 +105,7 @@ class ATCIntent:
         Returns:
             True if intent is recognized with sufficient confidence.
         """
-        return (
-            self.intent_type != ATCIntentType.UNKNOWN
-            and self.confidence >= 0.5
-        )
+        return self.intent_type != ATCIntentType.UNKNOWN and self.confidence >= 0.5
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization.

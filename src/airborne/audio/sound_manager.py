@@ -720,7 +720,9 @@ class SoundManager:
         }
 
         # Get sound path for surface type, default to concrete
-        sound_file = surface_sound_map.get(surface_type.lower(), "data/sounds/environment/concrete.wav")
+        sound_file = surface_sound_map.get(
+            surface_type.lower(), "data/sounds/environment/concrete.wav"
+        )
 
         # Check if surface sound is still playing (might have stopped despite loop=True)
         sound_still_playing = False

@@ -142,8 +142,11 @@ class WeightBalancePlugin(IPlugin):
                     self.wb_system.update_station_weight(seat_name, standard_passenger_weight)
                     passengers_placed += 1
 
-        logger.info("Passengers initialized from scenario: %d (%.0f lbs each)",
-                    passengers_placed, standard_passenger_weight)
+        logger.info(
+            "Passengers initialized from scenario: %d (%.0f lbs each)",
+            passengers_placed,
+            standard_passenger_weight,
+        )
 
     def update(self, dt: float) -> None:
         """Update weight and balance calculations.

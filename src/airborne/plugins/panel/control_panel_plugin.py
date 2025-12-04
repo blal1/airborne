@@ -617,7 +617,9 @@ class ControlPanelPlugin(IPlugin):
         # Try to get a specific state translation (e.g., controls.magneto_both)
         # First try control-specific state key (e.g., controls.mixture_rich)
         control_base = control.id.replace("_switch", "").replace("_lever", "")
-        control_base = control_base.replace("_button", "").replace("_valve", "").replace("_wheel", "")
+        control_base = (
+            control_base.replace("_button", "").replace("_valve", "").replace("_wheel", "")
+        )
         state_key = f"controls.{control_base}_{state_str.replace(' ', '_')}"
         state_text = t(state_key)
 

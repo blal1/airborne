@@ -496,7 +496,9 @@ class OrientationAudioManager:
             return t("ground.approaching_runway", id=feature_phonetic, distance=distance)
         if feature_type == "intersection":
             return t("ground.approaching_intersection", id=feature_phonetic, distance=distance)
-        return t("ground.approaching_feature", type=feature_type, id=feature_phonetic, distance=distance)
+        return t(
+            "ground.approaching_feature", type=feature_type, id=feature_phonetic, distance=distance
+        )
 
     def _announce(self, message: str, priority: MessagePriority = MessagePriority.NORMAL) -> None:
         """Publish TTS announcement message.

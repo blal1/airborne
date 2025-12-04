@@ -226,9 +226,7 @@ class InputContextManager:
             for context_name, overrides in settings.overrides.items():
                 context_cfg = self.contexts.get(context_name)
                 if not context_cfg:
-                    logger.warning(
-                        "User override for unknown context '%s', skipping", context_name
-                    )
+                    logger.warning("User override for unknown context '%s', skipping", context_name)
                     continue
 
                 for override in overrides:

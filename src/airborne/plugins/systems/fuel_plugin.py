@@ -78,7 +78,9 @@ class FuelPlugin(IPlugin):
                     fuel_per_tank = total_fuel / tank_count if tank_count > 0 else total_fuel
                     for tank_name, tank_cfg in fuel_config["tanks"].items():
                         # Clamp to tank capacity
-                        max_quantity = tank_cfg.get("capacity_usable", tank_cfg.get("capacity_total", 26.0))
+                        max_quantity = tank_cfg.get(
+                            "capacity_usable", tank_cfg.get("capacity_total", 26.0)
+                        )
                         tank_cfg["initial_quantity"] = min(fuel_per_tank, max_quantity)
                 logger.info("Fuel initialized from scenario: %.1f gallons total", total_fuel)
 

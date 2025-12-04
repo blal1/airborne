@@ -26,7 +26,7 @@ from airborne.physics.vectors import Vector3
 from airborne.plugins.radio.atc_manager import ATCController, ATCManager, ATCRequest, ATCType
 from airborne.plugins.radio.atc_menu import ATCMenu
 from airborne.plugins.radio.atc_queue import ATCMessageQueue
-from airborne.plugins.radio.atc_v2 import ATCV2Controller, V2State
+from airborne.plugins.radio.atc_v2 import ATCV2Controller
 from airborne.plugins.radio.atis import ATISGenerator, ATISInfo
 from airborne.plugins.radio.frequency_manager import FrequencyManager, RadioType
 from airborne.plugins.radio.phraseology import PhraseMaker
@@ -157,7 +157,9 @@ class RadioPlugin(IPlugin):
             logger.info(
                 "Flight plan from scenario: %s -> %s%s",
                 self._departure_airport,
-                self._arrival_airport or "(circuit training)" if self._circuit_training else self._arrival_airport or "(no destination)",
+                self._arrival_airport or "(circuit training)"
+                if self._circuit_training
+                else self._arrival_airport or "(no destination)",
                 " [circuit training]" if self._circuit_training else "",
             )
 

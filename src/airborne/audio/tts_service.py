@@ -364,7 +364,12 @@ class TTSService:
             heapq.heappush(self._request_queue, request)
             self._request_sequence += 1
 
-        logger.debug("TTSService queued: %s (priority=%s, voice_name=%s)", text[:30], priority.name, voice_name)
+        logger.debug(
+            "TTSService queued: %s (priority=%s, voice_name=%s)",
+            text[:30],
+            priority.name,
+            voice_name,
+        )
         return request_id
 
     def set_context(

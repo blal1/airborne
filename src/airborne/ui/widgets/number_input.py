@@ -179,7 +179,9 @@ class NumberInputWidget(Widget):
                     parsed = int(test_value)
 
                 if parsed > self.max_value:
-                    self._speak(f"Maximum is {int(self.max_value) if not self.allow_decimal else self.max_value}")
+                    self._speak(
+                        f"Maximum is {int(self.max_value) if not self.allow_decimal else self.max_value}"
+                    )
                     return True
             except ValueError:
                 pass

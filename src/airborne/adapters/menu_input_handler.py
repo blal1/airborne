@@ -149,7 +149,10 @@ class ChecklistMenuInputHandler(MenuInputHandler):
         current_state = self._menu.get_state()
         logger.info(
             "ChecklistMenuInputHandler: key=%s, mods=%s, state=%s, is_open=%s",
-            key, mods, current_state, self._menu.is_open()
+            key,
+            mods,
+            current_state,
+            self._menu.is_open(),
         )
 
         # Handle checklist verification in execution mode

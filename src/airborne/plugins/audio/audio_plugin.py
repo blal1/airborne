@@ -523,11 +523,17 @@ class AudioPlugin(IPlugin):
             self.context.message_queue.unsubscribe(MessageTopic.SYSTEM_STATE, self.handle_message)
             self.context.message_queue.unsubscribe("electrical.master_switch", self.handle_message)
             self.context.message_queue.unsubscribe("audio.play_click", self.handle_message)
-            self.context.message_queue.unsubscribe("navigation.entered_taxiway", self.handle_message)
+            self.context.message_queue.unsubscribe(
+                "navigation.entered_taxiway", self.handle_message
+            )
             self.context.message_queue.unsubscribe("navigation.entered_runway", self.handle_message)
-            self.context.message_queue.unsubscribe("navigation.entered_parking", self.handle_message)
+            self.context.message_queue.unsubscribe(
+                "navigation.entered_parking", self.handle_message
+            )
             self.context.message_queue.unsubscribe("navigation.entered_apron", self.handle_message)
-            self.context.message_queue.unsubscribe("navigation.location_changed", self.handle_message)
+            self.context.message_queue.unsubscribe(
+                "navigation.location_changed", self.handle_message
+            )
 
             # Unregister components (only if they were registered)
             if self.context.plugin_registry:
@@ -876,7 +882,9 @@ class AudioPlugin(IPlugin):
             if "surface_type" in data:
                 new_surface = data["surface_type"]
                 if new_surface != self._current_surface_type:
-                    logger.debug(f"Surface type changed: {self._current_surface_type} -> {new_surface}")
+                    logger.debug(
+                        f"Surface type changed: {self._current_surface_type} -> {new_surface}"
+                    )
                     self._current_surface_type = new_surface
 
     def on_config_changed(self, config: dict[str, Any]) -> None:
@@ -1122,7 +1130,9 @@ class AudioPlugin(IPlugin):
             if self._battery_current > 1.0:
                 message = t("cockpit.battery_charging", value=f"{self._battery_current:.1f}")
             elif self._battery_current < -1.0:
-                message = t("cockpit.battery_discharging", value=f"{abs(self._battery_current):.1f}")
+                message = t(
+                    "cockpit.battery_discharging", value=f"{abs(self._battery_current):.1f}"
+                )
             else:
                 message = t("cockpit.battery_stable")
         elif event.action == "read_alternator":

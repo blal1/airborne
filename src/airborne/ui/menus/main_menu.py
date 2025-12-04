@@ -18,7 +18,6 @@ Typical usage:
 import logging
 from collections.abc import Callable
 from functools import partial
-from pathlib import Path
 from typing import Any
 
 import yaml
@@ -63,13 +62,13 @@ class FlightSettingsMenu(AudioMenu):
         self._max_fuel: float = 52.0  # Default for C172 (2 x 26 gallons)
 
         # Submenus for selection
-        self._aircraft_menu: "AircraftSubMenu | None" = None
-        self._from_airport_menu: "AirportSubMenu | None" = None
-        self._to_airport_menu: "AirportSubMenu | None" = None
-        self._passengers_menu: "NumberInputSubMenu | None" = None
-        self._fuel_menu: "NumberInputSubMenu | None" = None
-        self._position_menu: "SelectionSubMenu | None" = None
-        self._state_menu: "SelectionSubMenu | None" = None
+        self._aircraft_menu: AircraftSubMenu | None = None
+        self._from_airport_menu: AirportSubMenu | None = None
+        self._to_airport_menu: AirportSubMenu | None = None
+        self._passengers_menu: NumberInputSubMenu | None = None
+        self._fuel_menu: NumberInputSubMenu | None = None
+        self._position_menu: SelectionSubMenu | None = None
+        self._state_menu: SelectionSubMenu | None = None
 
     def open(self) -> None:
         """Open the menu with updated title."""
@@ -573,7 +572,6 @@ class AirportSubMenu(AudioMenu):
 
     def open(self) -> None:
         """Open and create text input widget."""
-        from airborne.airports.airport_index import get_airport_index
         from airborne.ui.widgets.text_input import TextInputWidget
 
         self.is_open = True
@@ -590,7 +588,9 @@ class AirportSubMenu(AudioMenu):
         )
         self._widget.set_audio_callbacks(
             speak=self._speak_callback,
-            click=lambda path: self._play_sound_callback(path, 0.7) if self._play_sound_callback else None,
+            click=lambda path: self._play_sound_callback(path, 0.7)
+            if self._play_sound_callback
+            else None,
         )
         self._widget.activate()
 
@@ -695,7 +695,9 @@ class NumberInputSubMenu(AudioMenu):
         )
         self._widget.set_audio_callbacks(
             speak=self._speak_callback,
-            click=lambda path: self._play_sound_callback(path, 0.7) if self._play_sound_callback else None,
+            click=lambda path: self._play_sound_callback(path, 0.7)
+            if self._play_sound_callback
+            else None,
         )
         self._widget.activate()
 

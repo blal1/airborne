@@ -17,11 +17,11 @@ Typical usage:
 
 import logging
 import threading
-import time
+from collections.abc import Callable
 from enum import Enum, auto
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
-from airborne.audio.recording.audio_recorder import AudioRecorder, RecordingState
+from airborne.audio.recording.audio_recorder import AudioRecorder
 from airborne.services.atc.atc_handler import ATCHandler, ATCResponse
 from airborne.services.atc.intent_processor import FlightContext, IntentProcessor
 from airborne.services.atc.providers.base import ATCIntent, IASRProvider, INLUProvider
@@ -188,9 +188,11 @@ class ATCV2Controller:
             # Initialize ASR provider
             if settings.asr_provider == PROVIDER_LOCAL:
                 self._asr_provider = LocalASRProvider()
-                self._asr_provider.initialize({
-                    "model": settings.whisper_model,
-                })
+                self._asr_provider.initialize(
+                    {
+                        "model": settings.whisper_model,
+                    }
+                )
             else:
                 logger.warning("Remote ASR provider not implemented")
                 return False
@@ -202,9 +204,11 @@ class ATCV2Controller:
                     return False
 
                 self._nlu_provider = LocalNLUProvider()
-                self._nlu_provider.initialize({
-                    "model_path": settings.llama_model_path,
-                })
+                self._nlu_provider.initialize(
+                    {
+                        "model_path": settings.llama_model_path,
+                    }
+                )
             else:
                 logger.warning("Remote NLU provider not implemented")
                 return False
@@ -397,10 +401,7 @@ class ATCV2Controller:
             if self._on_intent:
                 self._on_intent(intent)
 
-            logger.info(
-                f"Intent: {intent.intent_type.value} "
-                f"(confidence={intent.confidence:.2f})"
-            )
+            logger.info(f"Intent: {intent.intent_type.value} (confidence={intent.confidence:.2f})")
 
             # Process intent and generate response
             self._set_state(V2State.RESPONDING)
@@ -409,9 +410,7 @@ class ATCV2Controller:
                 self._handle_error("Intent processor not available")
                 return
 
-            response = self._intent_processor.process_intent(
-                intent, self._flight_context
-            )
+            response = self._intent_processor.process_intent(intent, self._flight_context)
 
             if response:
                 if self._on_response:
@@ -466,10 +465,7 @@ class ATCV2Controller:
             if self._on_intent:
                 self._on_intent(intent)
 
-            logger.info(
-                f"Intent: {intent.intent_type.value} "
-                f"(confidence={intent.confidence:.2f})"
-            )
+            logger.info(f"Intent: {intent.intent_type.value} (confidence={intent.confidence:.2f})")
 
             # Step 3: Process intent and generate response
             self._set_state(V2State.RESPONDING)
@@ -478,9 +474,7 @@ class ATCV2Controller:
                 self._handle_error("Intent processor not available")
                 return
 
-            response = self._intent_processor.process_intent(
-                intent, self._flight_context
-            )
+            response = self._intent_processor.process_intent(intent, self._flight_context)
 
             if response:
                 if self._on_response:
@@ -530,9 +524,7 @@ class ATCV2Controller:
         self._set_state(V2State.RESPONDING)
 
         if self._intent_processor:
-            response = self._intent_processor._generate_say_again_response(
-                self._flight_context
-            )
+            response = self._intent_processor._generate_say_again_response(self._flight_context)
             if self._on_response:
                 self._on_response(response)
             self._speak_response(response)

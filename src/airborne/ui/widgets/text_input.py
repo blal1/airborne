@@ -221,7 +221,11 @@ class TextInputWidget(Widget):
         # Enter - select current suggestion or submit query
         if key == pygame.K_RETURN:
             self._play_click("button")
-            if self.enable_completion and self._selected_index >= 0 and self._selected_index < len(self._suggestions):
+            if (
+                self.enable_completion
+                and self._selected_index >= 0
+                and self._selected_index < len(self._suggestions)
+            ):
                 # Select the highlighted suggestion
                 selected = self._suggestions[self._selected_index]
                 self._selected_value = selected.value
@@ -255,7 +259,7 @@ class TextInputWidget(Widget):
         if key == pygame.K_BACKSPACE:
             if self._cursor_pos > 0:
                 deleted = self._query[self._cursor_pos - 1]
-                self._query = self._query[:self._cursor_pos - 1] + self._query[self._cursor_pos:]
+                self._query = self._query[: self._cursor_pos - 1] + self._query[self._cursor_pos :]
                 self._cursor_pos -= 1
                 self._play_click("knob")
                 self._speak(f"{t('widget.text_input.deleted')} {self._spell_char(deleted)}")
@@ -267,7 +271,7 @@ class TextInputWidget(Widget):
         if key == pygame.K_DELETE:
             if self._cursor_pos < len(self._query):
                 deleted = self._query[self._cursor_pos]
-                self._query = self._query[:self._cursor_pos] + self._query[self._cursor_pos + 1:]
+                self._query = self._query[: self._cursor_pos] + self._query[self._cursor_pos + 1 :]
                 self._play_click("knob")
                 self._speak(f"{t('widget.text_input.deleted')} {self._spell_char(deleted)}")
                 self._update_suggestions()
@@ -286,7 +290,9 @@ class TextInputWidget(Widget):
         if unicode and len(unicode) == 1 and unicode.isprintable():
             if len(self._query) < self.max_length:
                 char = unicode.upper() if self.uppercase else unicode
-                self._query = self._query[:self._cursor_pos] + char + self._query[self._cursor_pos:]
+                self._query = (
+                    self._query[: self._cursor_pos] + char + self._query[self._cursor_pos :]
+                )
                 self._cursor_pos += 1
                 self._selected_index = -1  # Go back to text input mode
                 self._play_click("knob")
@@ -378,7 +384,9 @@ class TextInputWidget(Widget):
                 self._speak(f"{t('widget.text_input.one_match')}: {self._suggestions[0].display}")
                 self._selected_index = 0
             else:
-                self._speak(f"{count} {t('widget.text_input.matches')}. {t('widget.text_input.use_arrows')}")
+                self._speak(
+                    f"{count} {t('widget.text_input.matches')}. {t('widget.text_input.use_arrows')}"
+                )
                 self._selected_index = 0
 
         except Exception as e:
@@ -409,7 +417,7 @@ class TextInputWidget(Widget):
         """
         if isinstance(value, str):
             self._selected_value = value
-            self._query = value[:self.max_length]
+            self._query = value[: self.max_length]
             self._cursor_pos = len(self._query)
 
     def get_display_text(self) -> str:
