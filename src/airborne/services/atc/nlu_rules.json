@@ -1,0 +1,698 @@
+{
+  "_comment": "NLU pattern rules for fast pre-LLM matching. Checked in order, first match wins. More specific patterns must come before general ones.",
+
+  "rules": [
+    {
+      "intent": "cancel_emergency",
+      "confidence": 1.0,
+      "patterns": {
+        "en": ["cancel emergency", "cancelling emergency", "emergency cancelled"],
+        "fr": ["annule urgence", "urgence annulée", "fin d'urgence"]
+      }
+    },
+    {
+      "intent": "declare_emergency",
+      "confidence": 1.0,
+      "patterns": {
+        "en": ["mayday", "pan pan", "declaring emergency"],
+        "fr": ["mayday", "pan pan", "urgence"]
+      }
+    },
+    {
+      "intent": "minimum_fuel",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["minimum fuel", "low fuel", "fuel minimum"],
+        "fr": ["carburant minimum", "minimum carburant", "autonomie réduite"]
+      }
+    },
+    {
+      "intent": "fuel_emergency",
+      "confidence": 1.0,
+      "patterns": {
+        "en": ["fuel emergency", "emergency fuel"],
+        "fr": ["urgence carburant", "carburant critique"]
+      }
+    },
+
+    {
+      "intent": "wilco",
+      "confidence": 0.95,
+      "exact_match": true,
+      "patterns": {
+        "en": ["wilco", "will comply", "will do"],
+        "fr": ["compris", "bien compris", "c'est compris"]
+      }
+    },
+    {
+      "intent": "roger",
+      "confidence": 0.95,
+      "exact_match": true,
+      "patterns": {
+        "en": ["roger", "copy", "copied"],
+        "fr": ["reçu", "bien reçu", "roger"]
+      }
+    },
+    {
+      "intent": "affirm",
+      "confidence": 0.95,
+      "exact_match": true,
+      "patterns": {
+        "en": ["affirm", "affirmative", "correct", "that's correct"],
+        "fr": ["affirmatif", "affirme", "c'est exact", "exact"]
+      }
+    },
+    {
+      "intent": "negative_traffic",
+      "confidence": 0.95,
+      "_comment": "Must come before 'negative' to match 'négatif trafic' correctly",
+      "patterns": {
+        "en": ["negative contact", "no contact", "looking for traffic", "negative traffic", "searching", "no joy"],
+        "fr": ["pas de contact", "négatif contact", "on cherche", "cherche le trafic", "négatif trafic"]
+      }
+    },
+    {
+      "intent": "negative",
+      "confidence": 0.95,
+      "exact_match": true,
+      "patterns": {
+        "en": ["negative", "that's negative"],
+        "fr": ["négatif", "c'est négatif"]
+      }
+    },
+    {
+      "intent": "unable",
+      "confidence": 0.95,
+      "exact_match": true,
+      "patterns": {
+        "en": ["unable", "cannot comply"],
+        "fr": ["impossible", "ne peut pas"]
+      }
+    },
+    {
+      "intent": "say_again",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["say again", "repeat please", "please repeat"],
+        "fr": ["répétez", "dites à nouveau", "pouvez-vous répéter"]
+      }
+    },
+    {
+      "intent": "standby",
+      "confidence": 0.95,
+      "exact_match": true,
+      "patterns": {
+        "en": ["standby", "standing by"],
+        "fr": ["attendez", "on attend", "standby"]
+      }
+    },
+    {
+      "intent": "go_ahead",
+      "confidence": 0.95,
+      "exact_match": true,
+      "patterns": {
+        "en": ["go ahead"],
+        "fr": ["parlez", "allez-y"]
+      }
+    },
+    {
+      "intent": "correction",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["correction", "disregard", "cancel that"],
+        "fr": ["correction", "ignorez", "annulez"]
+      }
+    },
+    {
+      "intent": "speak_slower",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["speak slower", "say again slowly", "words twice"],
+        "fr": ["parlez plus lentement", "mots deux fois"]
+      }
+    },
+    {
+      "intent": "acknowledge",
+      "confidence": 0.95,
+      "exact_match": true,
+      "patterns": {
+        "en": ["acknowledge", "acknowledged"],
+        "fr": ["accusez réception", "bien reçu"]
+      }
+    },
+    {
+      "intent": "loud_and_clear",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["loud and clear", "five by five", "readability five", "reading you five"],
+        "fr": ["fort et clair", "cinq sur cinq", "lisibilité cinq"]
+      }
+    },
+
+    {
+      "intent": "readback_frequency",
+      "confidence": 0.95,
+      "regex": true,
+      "patterns": {
+        "en": [
+          "(?:tower|departure|approach|ground|center|contact|frequency)\\s+\\d{2,3}[.,]\\d",
+          "\\d{2,3}[.,]\\d{1,3}.*(?:good day|see you|bye)"
+        ],
+        "fr": [
+          "(?:tour|départ|approche|sol|contrôle|contact|fréquence)\\s+\\d{2,3}[.,]\\d",
+          "\\d{2,3}[.,]\\d{1,3}.*(?:au revoir|bonne journée)"
+        ]
+      }
+    },
+    {
+      "intent": "readback_altitude",
+      "confidence": 0.90,
+      "regex": true,
+      "patterns": {
+        "en": [
+          "(?:climb|climbing|descend|descending|maintain|maintaining)\\s+(?:flight level|FL)?\\s*\\d",
+          "(?:climb|descend)\\s+(?:and maintain\\s+)?(?:flight level|FL)?\\s*\\d"
+        ],
+        "fr": [
+          "(?:montée|montant|descente|descendant|maintien|on maintient)\\s+(?:niveau|FL)?\\s*\\d",
+          "(?:montée|descente)\\s+(?:et maintien\\s+)?(?:niveau|FL)?\\s*\\d"
+        ]
+      }
+    },
+    {
+      "intent": "request_heading",
+      "confidence": 0.90,
+      "patterns": {
+        "en": ["request heading", "requesting heading"],
+        "fr": ["demande cap", "demande heading"]
+      }
+    },
+    {
+      "intent": "readback_heading",
+      "confidence": 0.90,
+      "regex": true,
+      "_comment": "Readbacks are instructions received, not requests",
+      "patterns": {
+        "en": [
+          "(?:turn|turning)\\s+(?:left|right)\\s+(?:heading\\s+)?\\d{2,3}",
+          "^(?!.*request).*heading\\s+\\d{2,3}",
+          "(?:left|right)\\s+(?:turn\\s+)?\\d{2,3}"
+        ],
+        "fr": [
+          "(?:virage|tournant)\\s+(?:à gauche|à droite)\\s+(?:cap\\s+)?\\d{2,3}",
+          "^(?!.*demande).*cap\\s+\\d{2,3}",
+          "(?:gauche|droite)\\s+(?:virage\\s+)?\\d{2,3}"
+        ]
+      }
+    },
+    {
+      "intent": "readback_departure",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["cleared for takeoff", "cleared takeoff", "cleared for departure"],
+        "fr": ["autorisé décollage", "autorisé au décollage", "décollage autorisé", "on s'aligne et on décolle", "nous nous alignons et décollons"]
+      }
+    },
+    {
+      "intent": "readback_landing",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["cleared to land", "cleared land", "cleared for landing"],
+        "fr": ["autorisé atterrissage", "autorisé à atterrir", "atterrissage autorisé"]
+      }
+    },
+    {
+      "intent": "readback_taxi",
+      "confidence": 0.90,
+      "regex": true,
+      "_comment": "Readbacks don't have 'request' - just taxi instructions with runway/taxiway",
+      "patterns": {
+        "en": ["^(?!.*request).*taxi(?:ing)?\\s+(?:to\\s+)?runway\\s+\\d+\\s+via", "^(?!.*request).*taxi\\s+via\\s+[a-z]"],
+        "fr": ["^(?!.*demande).*roulage\\s+(?:vers\\s+)?piste\\s+\\d+\\s+via"]
+      }
+    },
+    {
+      "intent": "readback_hold_short",
+      "confidence": 0.95,
+      "regex": true,
+      "_comment": "Must have runway number to be a readback, not a report",
+      "patterns": {
+        "en": ["hold(?:ing)?\\s+short\\s+(?:of\\s+)?runway\\s+\\d+.*,"],
+        "fr": ["maintien\\s+avant\\s+piste\\s+\\d+.*,"]
+      }
+    },
+
+    {
+      "intent": "request_touch_and_go",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["touch and go", "touch-and-go", "touch & go"],
+        "fr": ["posé décollé", "posé-décollé", "toucher décoller", "autorisé toucher", "je touche", "pour un touché"]
+      }
+    },
+    {
+      "intent": "request_go_around",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["go around", "going around", "missed approach"],
+        "fr": ["remise de gaz", "on remet les gaz", "approche interrompue"]
+      }
+    },
+    {
+      "intent": "request_stop_and_go",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["stop and go", "stop-and-go", "request stop and go"],
+        "fr": ["posé arrêt décollé", "posé-arrêt-décollé"]
+      }
+    },
+    {
+      "intent": "request_low_approach",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["low approach", "low pass", "request low approach"],
+        "fr": ["approche basse", "passage bas"]
+      }
+    },
+    {
+      "intent": "continue_approach",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["continue approach", "continuing approach"],
+        "fr": ["continuez approche", "on continue l'approche"]
+      }
+    },
+    {
+      "intent": "request_landing",
+      "confidence": 0.90,
+      "patterns": {
+        "en": ["request landing", "full stop", "inbound for landing", "request full stop"],
+        "fr": ["demande atterrissage", "atterrissage complet", "pour atterrissage", "j'atterris", "on atterrit"]
+      }
+    },
+    {
+      "intent": "request_option",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["request the option", "requesting the option", "for the option"],
+        "fr": ["demande option", "pour option"]
+      }
+    },
+    {
+      "intent": "request_closed_traffic",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["closed traffic", "remain in the pattern", "staying in the pattern"],
+        "fr": ["reste dans le circuit", "restons dans le circuit", "circuit fermé"]
+      }
+    },
+
+    {
+      "intent": "ready_for_departure",
+      "confidence": 0.90,
+      "patterns": {
+        "en": ["ready for departure", "ready to go", "ready for takeoff", "number one", "holding short ready"],
+        "fr": ["prêt au départ", "prêt pour le départ", "prêt à décoller", "numéro un", "rappelez prêt", "on est prêt"]
+      }
+    },
+    {
+      "intent": "request_immediate_takeoff",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["immediate departure", "immediate takeoff", "request immediate"],
+        "fr": ["décollage immédiat", "départ immédiat"]
+      }
+    },
+    {
+      "intent": "request_takeoff",
+      "confidence": 0.85,
+      "patterns": {
+        "en": ["request takeoff", "requesting takeoff"],
+        "fr": ["demande décollage"]
+      }
+    },
+    {
+      "intent": "cancel_takeoff",
+      "confidence": 1.0,
+      "patterns": {
+        "en": ["cancel takeoff", "abort takeoff", "stop immediately", "abort", "cancelling takeoff"],
+        "fr": ["annulez décollage", "stoppez immédiatement", "stop décollage"]
+      }
+    },
+    {
+      "intent": "report_airborne",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["airborne", "we're airborne", "rolling", "taking off"],
+        "fr": ["décollé", "on décolle", "en vol"]
+      }
+    },
+
+    {
+      "intent": "report_field_in_sight",
+      "confidence": 0.95,
+      "_comment": "Must come before holding_short to avoid 'on a le terrain' matching 'on' prefix",
+      "patterns": {
+        "en": ["field in sight", "airport in sight", "runway in sight", "have the field"],
+        "fr": ["terrain en vue", "aéroport en vue", "piste en vue", "on a le terrain", "le terrain en vue"]
+      }
+    },
+    {
+      "intent": "report_holding_short",
+      "confidence": 0.95,
+      "regex": true,
+      "patterns": {
+        "en": ["holding short(?:\\s+of)?(?:\\s+runway)?\\s*\\d?"],
+        "fr": ["maintien avant(?:\\s+piste)?\\s*\\d?", "on maintient avant", "point d'attente", "aire d'attente"]
+      }
+    },
+    {
+      "intent": "report_overhead",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["overhead", "over the field", "overhead the field", "over the airport"],
+        "fr": ["verticale terrain", "verticale aérodrome", "à la verticale", "rappelez verticale"]
+      }
+    },
+
+    {
+      "intent": "report_clear_of_runway",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["clear of runway", "clear of the runway", "off the runway", "runway vacated", "exiting runway"],
+        "fr": ["piste dégagée", "piste libre", "on dégage", "sortie de piste", "on quitte la piste"]
+      }
+    },
+
+    {
+      "intent": "report_crosswind",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["crosswind", "turning crosswind"],
+        "fr": ["vent traversier", "en vent traversier"]
+      }
+    },
+    {
+      "intent": "report_downwind",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["downwind", "turning downwind", "on downwind", "left downwind", "right downwind"],
+        "fr": ["vent arrière", "en vent arrière", "rappelez vent arrière", "vent arrière main gauche", "vent arrière main droite"]
+      }
+    },
+    {
+      "intent": "report_midfield_downwind",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["midfield downwind", "mid-field downwind"],
+        "fr": ["milieu vent arrière", "mi-vent arrière"]
+      }
+    },
+    {
+      "intent": "report_base",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["turning base", "on base", "base leg", "left base", "right base"],
+        "fr": ["étape de base", "en base", "virage en base", "base gauche", "base droite"]
+      }
+    },
+    {
+      "intent": "report_final",
+      "confidence": 0.90,
+      "patterns": {
+        "en": ["on final", "turning final", "final approach", "final runway"],
+        "fr": ["en finale", "finale piste", "virage en finale", "approche finale", "rappelez finale", "rapport finale"]
+      }
+    },
+    {
+      "intent": "report_short_final",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["short final", "short finals"],
+        "fr": ["courte finale", "très courte finale"]
+      }
+    },
+    {
+      "intent": "extend_downwind",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["extend downwind", "extending downwind", "will extend"],
+        "fr": ["prolongez vent arrière", "on prolonge vent arrière"]
+      }
+    },
+    {
+      "intent": "make_short_approach",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["short approach", "make short approach", "making short approach"],
+        "fr": ["approche courte", "courte approche"]
+      }
+    },
+
+    {
+      "intent": "initial_contact",
+      "confidence": 0.90,
+      "regex": true,
+      "patterns": {
+        "en": ["(?:ground|tower|approach|departure|center).*(?:hello|good (?:morning|afternoon|evening|day))"],
+        "fr": ["(?:sol|tour|approche|départ|contrôle).*bonjour"]
+      }
+    },
+    {
+      "intent": "request_taxi",
+      "confidence": 0.90,
+      "patterns": {
+        "en": ["request taxi", "requesting taxi", "ready to taxi", "taxi to"],
+        "fr": ["demande roulage", "prêt au roulage", "roulage vers", "roulons vers", "demandons roulage"]
+      }
+    },
+    {
+      "intent": "request_pushback",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["request pushback", "requesting pushback", "push back"],
+        "fr": ["demande refoulement", "refoulement"]
+      }
+    },
+    {
+      "intent": "line_up_and_wait",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["line up and wait", "lining up", "position and hold"],
+        "fr": ["alignez-vous et attendez", "alignement", "on s'aligne"]
+      }
+    },
+    {
+      "intent": "cross_runway",
+      "confidence": 0.95,
+      "regex": true,
+      "patterns": {
+        "en": ["cross(?:ing)?\\s+runway\\s+\\d"],
+        "fr": ["travers(?:ée)?\\s+piste\\s+\\d", "on traverse la piste"]
+      }
+    },
+    {
+      "intent": "hold_position",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["hold position", "holding position", "stop", "hold"],
+        "fr": ["maintenez position", "stop", "on s'arrête"]
+      }
+    },
+    {
+      "intent": "give_way",
+      "confidence": 0.95,
+      "regex": true,
+      "patterns": {
+        "en": ["give way", "giving way", "follow(?:ing)?\\s+(?:the\\s+)?(?:traffic|aircraft)"],
+        "fr": ["cédez le passage", "on suit le trafic", "derrière le trafic"]
+      }
+    },
+    {
+      "intent": "request_atis",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["request atis", "atis information", "requesting information"],
+        "fr": ["demande atis", "information atis", "demande information"]
+      }
+    },
+    {
+      "intent": "request_clearance",
+      "confidence": 0.90,
+      "patterns": {
+        "en": ["request clearance", "requesting clearance", "ifr clearance", "vfr clearance"],
+        "fr": ["demande clairance", "clairance ifr", "clairance vfr"]
+      }
+    },
+    {
+      "intent": "request_radio_check",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["radio check", "how do you read", "read me"],
+        "fr": ["essai radio", "comment recevez", "contrôle radio"]
+      }
+    },
+    {
+      "intent": "leave_frequency",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["leaving your frequency", "switching", "good day", "see you"],
+        "fr": ["quittez sans rappeler", "on quitte", "bonne journée", "au revoir"]
+      }
+    },
+
+    {
+      "intent": "report_established",
+      "confidence": 0.95,
+      "_comment": "Must come before ILS/approach patterns to catch 'established ILS'",
+      "patterns": {
+        "en": ["established ils", "established on ils", "established on the ils", "established localizer", "established on the localizer", "on the glideslope", "intercepting localizer", "established runway"],
+        "fr": ["établi ils", "établi sur ils", "établi sur le localizer", "établi piste", "intercepté", "établi localizer"]
+      }
+    },
+    {
+      "intent": "request_ils_approach",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["ils approach", "request ils", "ils runway"],
+        "fr": ["approche ils", "demande ils", "ils piste"]
+      }
+    },
+    {
+      "intent": "request_visual_approach",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["visual approach", "request visual"],
+        "fr": ["approche à vue", "demande approche à vue", "approche visuelle"]
+      }
+    },
+    {
+      "intent": "request_rnav_approach",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["rnav approach", "request rnav", "gps approach"],
+        "fr": ["approche rnav", "demande rnav", "approche gps"]
+      }
+    },
+    {
+      "intent": "request_vor_approach",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["vor approach", "request vor"],
+        "fr": ["approche vor", "demande vor"]
+      }
+    },
+
+    {
+      "intent": "report_traffic_in_sight",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["traffic in sight", "tally", "have the traffic", "visual on traffic"],
+        "fr": ["trafic en vue", "on a le trafic", "visuel sur le trafic"]
+      }
+    },
+    {
+      "intent": "traffic_no_factor",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["no factor", "traffic no factor"],
+        "fr": ["pas de facteur", "trafic pas de facteur"]
+      }
+    },
+    {
+      "intent": "radar_contact",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["radar contact", "identified", "radar identified"],
+        "fr": ["contact radar", "identifié", "radar identifié"]
+      }
+    },
+    {
+      "intent": "radar_service_terminated",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["radar service terminated", "radar services terminated", "radar contact lost"],
+        "fr": ["service radar terminé", "fin service radar", "contact radar perdu"]
+      }
+    },
+
+    {
+      "intent": "request_flight_following",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["flight following", "vfr advisories", "request advisories"],
+        "fr": ["suivi de vol", "assistance radar"]
+      }
+    },
+    {
+      "intent": "request_altitude_change",
+      "confidence": 0.85,
+      "patterns": {
+        "en": ["request flight level", "request altitude", "requesting higher", "requesting lower", "request climb", "request descent"],
+        "fr": ["demande niveau", "demande altitude", "demande montée", "demande descente"]
+      }
+    },
+    {
+      "intent": "report_level",
+      "confidence": 0.90,
+      "regex": true,
+      "patterns": {
+        "en": ["level(?:ed)?\\s+(?:at\\s+)?(?:flight level|FL)?\\s*\\d", "maintaining\\s+(?:flight level|FL)?\\s*\\d"],
+        "fr": ["stabilisé\\s+(?:niveau|FL)?\\s*\\d", "niveau atteint", "on maintient\\s+(?:niveau|FL)?\\s*\\d"]
+      }
+    },
+    {
+      "intent": "report_leaving",
+      "confidence": 0.90,
+      "regex": true,
+      "patterns": {
+        "en": ["leaving\\s+\\d.*(?:for|to)", "climbing through\\s+\\d", "descending through\\s+\\d", "passing\\s+\\d"],
+        "fr": ["passant\\s+(?:niveau)?\\s*\\d", "quittant\\s+\\d"]
+      }
+    },
+    {
+      "intent": "report_reaching",
+      "confidence": 0.90,
+      "regex": true,
+      "patterns": {
+        "en": ["reaching\\s+(?:flight level|FL)?\\s*\\d", "approaching\\s+(?:flight level|FL)?\\s*\\d"],
+        "fr": ["atteignant\\s+(?:niveau|FL)?\\s*\\d", "arrivée\\s+(?:niveau|FL)?\\s*\\d"]
+      }
+    },
+    {
+      "intent": "report_position",
+      "confidence": 0.85,
+      "regex": true,
+      "patterns": {
+        "en": ["over\\s+[A-Z]+", "passing\\s+[A-Z]+", "abeam\\s+[A-Z]+", "position\\s+[A-Z]+"],
+        "fr": ["au-dessus\\s+[A-Z]+", "passant\\s+[A-Z]+", "travers\\s+[A-Z]+", "position\\s+[A-Z]+"]
+      }
+    },
+
+    {
+      "intent": "readback_squawk",
+      "confidence": 0.95,
+      "regex": true,
+      "patterns": {
+        "en": ["squawk(?:ing)?\\s+\\d{4}", "transponder\\s+\\d{4}"],
+        "fr": ["transpondeur\\s+\\d{4}", "code\\s+\\d{4}"]
+      }
+    },
+    {
+      "intent": "squawk_ident",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["squawk ident", "ident", "squawking ident"],
+        "fr": ["identifiez-vous", "ident"]
+      }
+    },
+    {
+      "intent": "squawk_vfr",
+      "confidence": 0.95,
+      "patterns": {
+        "en": ["squawk vfr", "squawking vfr"],
+        "fr": ["transpondeur vfr", "code vfr"]
+      }
+    }
+  ]
+}
