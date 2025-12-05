@@ -21,6 +21,7 @@ from airborne.core.logging_system import get_logger
 from airborne.core.messaging import Message, MessagePriority, MessageTopic
 from airborne.core.plugin import IPlugin, PluginContext, PluginMetadata, PluginType
 from airborne.core.resource_path import get_data_path, get_resource_path
+from airborne.plugins.instruments.altimeter import AltimeterManager
 
 logger = get_logger(__name__)
 
@@ -129,6 +130,9 @@ class AudioPlugin(IPlugin):
         # Ground surface type for rolling sounds (updated by position tracker)
         self._current_surface_type = "concrete"  # Default to concrete
 
+        # Altimeter instrument
+        self._altimeter = AltimeterManager()  # Defaults to 29.92 inHg (standard pressure)
+
     def get_metadata(self) -> PluginMetadata:
         """Return plugin metadata.
 
@@ -210,6 +214,21 @@ class AudioPlugin(IPlugin):
                 audio_config=audio_config,
                 tts_config=None,  # Already initialized above
             )
+
+            # Enable 3D spatial audio for cockpit sounds using aircraft-specific preset
+            # Get aircraft type from config (defaults to "cessna_172")
+            aircraft_name = aircraft_config.get("name", "").lower().replace(" ", "_")
+            icao_code = aircraft_config.get("icao_code", "").lower()
+            # Try preset name in order: explicit preset, icao code, aircraft name, default
+            cockpit_preset = audio_config.get("cockpit_preset")
+            if not cockpit_preset:
+                # Convert common ICAO codes to preset names
+                icao_to_preset = {"c172": "cessna_172", "c152": "cessna_152", "pa28": "piper_pa28"}
+                cockpit_preset = icao_to_preset.get(icao_code, icao_code or "cessna_172")
+
+            presets_dir = str(get_resource_path("config/cockpit_presets"))
+            if self.sound_manager.load_cockpit_preset(cockpit_preset, presets_dir):
+                logger.info(f"3D spatial audio enabled for cockpit (preset: {cockpit_preset})")
         else:
             logger.error("Sound manager disabled due to missing audio engine or TTS")
             self.sound_manager = None
@@ -218,6 +237,7 @@ class AudioPlugin(IPlugin):
         if self.audio_engine:
             try:
                 from airborne.audio.atc.atc_audio import ATCAudioManager
+                from airborne.audio.engine.base import Vector3
 
                 config_dir = get_resource_path("config")
                 speech_dir = get_data_path("speech/en")  # ATC uses same speech dir for now
@@ -225,7 +245,17 @@ class AudioPlugin(IPlugin):
                 # Wire up TTS provider for system TTS fallback
                 if self.tts_provider:
                     self.atc_audio_manager.set_tts_provider(self.tts_provider)
-                logger.info("ATC audio manager initialized")
+
+                # Enable 3D radio speaker positioning from preset (or default)
+                radio_pos = Vector3(0.0, 0.15, 0.55)  # Default position
+                if self.sound_manager and self.sound_manager._spatial_manager:
+                    radio_pos = self.sound_manager._spatial_manager.get_radio_speaker_position()
+                self.atc_audio_manager.set_radio_speaker_position(radio_pos)
+
+                logger.info(
+                    f"ATC audio manager initialized with 3D radio speaker at "
+                    f"({radio_pos.x:.2f}, {radio_pos.y:.2f}, {radio_pos.z:.2f})"
+                )
             except Exception as e:
                 logger.warning(f"Failed to initialize ATC audio manager: {e}")
                 self.atc_audio_manager = None
@@ -261,6 +291,19 @@ class AudioPlugin(IPlugin):
         context.message_queue.subscribe("navigation.entered_parking", self.handle_message)
         context.message_queue.subscribe("navigation.entered_apron", self.handle_message)
         context.message_queue.subscribe("navigation.location_changed", self.handle_message)
+
+        # Subscribe to altimeter messages from control panel
+        context.message_queue.subscribe("instruments.read_altimeter", self.handle_message)
+        context.message_queue.subscribe("instruments.altimeter", self.handle_message)
+
+        # Subscribe to altimeter input actions from context system
+        context.message_queue.subscribe("input.altimeter_increase", self.handle_message)
+        context.message_queue.subscribe("input.altimeter_decrease", self.handle_message)
+        context.message_queue.subscribe("input.altimeter_toggle_unit", self.handle_message)
+        context.message_queue.subscribe("input.altimeter_enter_digit", self.handle_message)
+        context.message_queue.subscribe("input.altimeter_confirm_entry", self.handle_message)
+        context.message_queue.subscribe("input.altimeter_clear_entry", self.handle_message)
+        context.message_queue.subscribe("input.altimeter_announce", self.handle_message)
 
         # Subscribe to input action events from event bus for TTS feedback
         if context.event_bus:
@@ -317,7 +360,7 @@ class AudioPlugin(IPlugin):
                     f"Battery sounds configured: on={battery_on}, off={battery_off}, loop={battery_loop}"
                 )
 
-            self.sound_manager.start_wind_sound()
+            # Wind sound starts/stops automatically based on airspeed threshold (20+ knots)
             self._engine_sound_active = False  # Engine sound starts off
             self._last_engine_rpm = 0.0
 
@@ -348,11 +391,14 @@ class AudioPlugin(IPlugin):
         # self._update_stall_warning()
 
         # Update listener position (once per frame is fine)
+        # For cockpit-relative 3D audio, listener stays at origin (0,0,0)
+        # since all cockpit sound positions are defined relative to pilot's head.
+        # Forward/up vectors still provide orientation for directional cues.
         self.sound_manager.update_listener(
-            position=self._listener_position,
+            position=Vector3(0.0, 0.0, 0.0),  # Cockpit-relative origin
             forward=self._listener_forward,
             up=self._listener_up,
-            velocity=self._listener_velocity,
+            velocity=Vector3(0.0, 0.0, 0.0),  # No doppler inside cockpit
         )
 
     def _update_stall_warning(self) -> None:
@@ -670,10 +716,11 @@ class AudioPlugin(IPlugin):
                 if aoa_value is not None:
                     self._angle_of_attack = aoa_value
 
-            # Update wind sound based on airspeed
+            # Update wind sound based on airspeed (only when airborne)
             if "airspeed" in data and self.sound_manager:
                 airspeed = data["airspeed"]
-                self.sound_manager.update_wind_sound(airspeed)
+                on_ground = data.get("on_ground", True)  # Default to on_ground if not provided
+                self.sound_manager.update_wind_sound(airspeed, on_ground)
 
             # Update rolling sound based on ground speed, on_ground status, and surface type
             if "groundspeed" in data and "on_ground" in data and self.sound_manager:
@@ -864,17 +911,18 @@ class AudioPlugin(IPlugin):
             self._last_master_switch = master_on
 
         elif message.topic == "audio.play_click":
-            # Handle click sound request from panel controls
+            # Handle click sound request from panel controls (3D spatialized)
             if self.sound_manager:
                 control_type = message.data.get("control_type", "knob")
+                control_name = message.data.get("control_name")  # For 3D spatial positioning
 
-                # Use different click sounds for different control types
+                # Use spatialized sound methods based on control type
                 if control_type == "switch":
-                    sound_file = str(get_resource_path("assets/sounds/aircraft/click_switch.mp3"))
-                else:  # knob or slider - both use knob click
-                    sound_file = str(get_resource_path("assets/sounds/aircraft/click_knob.mp3"))
-
-                self.sound_manager.play_sound_2d(sound_file, volume=0.8)
+                    self.sound_manager.play_switch_sound(control_name=control_name)
+                elif control_type == "button":
+                    self.sound_manager.play_button_sound(control_name=control_name)
+                else:  # knob or slider
+                    self.sound_manager.play_knob_sound(control_name=control_name)
 
         elif message.topic.startswith("navigation."):
             # Handle navigation location messages for surface type tracking
@@ -886,6 +934,45 @@ class AudioPlugin(IPlugin):
                         f"Surface type changed: {self._current_surface_type} -> {new_surface}"
                     )
                     self._current_surface_type = new_surface
+
+        # Altimeter instrument messages
+        elif message.topic == "instruments.read_altimeter":
+            # Announce current altimeter setting
+            self._announce_altimeter_value()
+
+        elif message.topic == "instruments.altimeter":
+            # Altimeter value changed from panel control (slider)
+            data = message.data
+            if "value" in data:
+                # Value is in inHg * 100 (e.g., 2992 = 29.92 inHg)
+                value_x100 = data["value"]
+                self._altimeter.set_value(value_x100 / 100.0, "inHg")
+                logger.debug(f"Altimeter set from panel: {value_x100 / 100.0:.2f} inHg")
+
+        # Altimeter input actions from context system
+        elif message.topic == "input.altimeter_increase":
+            self._handle_altimeter_increase()
+
+        elif message.topic == "input.altimeter_decrease":
+            self._handle_altimeter_decrease()
+
+        elif message.topic == "input.altimeter_toggle_unit":
+            self._handle_altimeter_toggle_unit()
+
+        elif message.topic == "input.altimeter_enter_digit":
+            # Extract the key that was pressed to get the digit
+            key = message.data.get("key")
+            if key is not None:
+                self._handle_altimeter_digit(key)
+
+        elif message.topic == "input.altimeter_confirm_entry":
+            self._handle_altimeter_confirm()
+
+        elif message.topic == "input.altimeter_clear_entry":
+            self._handle_altimeter_clear()
+
+        elif message.topic == "input.altimeter_announce":
+            self._announce_altimeter_value()
 
     def on_config_changed(self, config: dict[str, Any]) -> None:
         """Handle configuration changes.
@@ -973,10 +1060,12 @@ class AudioPlugin(IPlugin):
                 self.tts_provider.speak(message, priority=TTSPriority.HIGH, interrupt=True)
             return
 
-        # Handle parking brake click sound (then continue to TTS)
+        # Handle parking brake click sound (3D spatialized, then continue to TTS)
         if event.action in ("parking_brake_set", "parking_brake_release") and self.sound_manager:
-            sound_file = str(get_resource_path("assets/sounds/aircraft/click_switch.mp3"))
-            self.sound_manager.play_sound_2d(sound_file, volume=0.8)
+            self.sound_manager.play_switch_sound(
+                switch_on=(event.action == "parking_brake_set"),
+                control_name="parking_brake",
+            )
 
         # Handle throttle released (announce percent)
         if event.action == "throttle_released" and event.value is not None:
@@ -1069,7 +1158,9 @@ class AudioPlugin(IPlugin):
         elif event.action == "read_altitude":
             import math
 
-            altitude_val = 0 if math.isnan(self._altitude) else int(self._altitude)
+            # Use indicated altitude (adjusted for altimeter setting)
+            indicated_alt = self.get_indicated_altitude()
+            altitude_val = 0 if math.isnan(indicated_alt) else int(indicated_alt)
             message = t("cockpit.altitude_readout", value=altitude_val)
         elif event.action == "read_heading":
             import math
@@ -1246,3 +1337,123 @@ class AudioPlugin(IPlugin):
         # Speak translated text directly (all messages now use t() function)
         logger.info(f"Speaking translated: {message}")
         self.tts_provider.speak(message, priority=priority, interrupt=interrupt)
+
+    # ==================== Altimeter Methods ====================
+
+    def _announce_altimeter_value(self) -> None:
+        """Announce current altimeter setting via TTS."""
+        if not self.tts_provider:
+            return
+
+        from airborne.audio.tts.base import TTSPriority
+
+        message = self._altimeter.get_display_string()
+        logger.info(f"Announcing altimeter: {message}")
+        self.tts_provider.speak(message, priority=TTSPriority.HIGH, interrupt=True)
+
+    def _announce_altimeter_adjustment(self, value: float) -> None:
+        """Announce altimeter value after knob adjustment.
+
+        Args:
+            value: New value in current display unit.
+        """
+        if not self.tts_provider:
+            return
+
+        from airborne.audio.tts.base import TTSPriority
+
+        message = f"{int(value)}" if self._altimeter.unit == "hPa" else f"{value:.2f}"
+        self.tts_provider.speak(message, priority=TTSPriority.HIGH, interrupt=True)
+
+    def _handle_altimeter_increase(self) -> None:
+        """Handle altimeter increase action from context system."""
+        new_value = self._altimeter.increase()
+        self._announce_altimeter_adjustment(new_value)
+
+    def _handle_altimeter_decrease(self) -> None:
+        """Handle altimeter decrease action from context system."""
+        new_value = self._altimeter.decrease()
+        self._announce_altimeter_adjustment(new_value)
+
+    def _handle_altimeter_toggle_unit(self) -> None:
+        """Handle altimeter unit toggle action from context system."""
+        from airborne.audio.tts.base import TTSPriority
+
+        new_unit = self._altimeter.toggle_unit()
+        if self.tts_provider:
+            unit_name = t("cockpit.hectopascals") if new_unit == "hPa" else t("cockpit.inches_hg")
+            self.tts_provider.speak(unit_name, priority=TTSPriority.HIGH, interrupt=True)
+
+    def _handle_altimeter_digit(self, key: int) -> None:
+        """Handle digit entry for altimeter from context system.
+
+        Args:
+            key: pygame key code for the digit.
+        """
+        import pygame
+
+        from airborne.audio.tts.base import TTSPriority
+
+        # Map pygame key codes to digit characters
+        digit_map = {
+            pygame.K_0: "0",
+            pygame.K_1: "1",
+            pygame.K_2: "2",
+            pygame.K_3: "3",
+            pygame.K_4: "4",
+            pygame.K_5: "5",
+            pygame.K_6: "6",
+            pygame.K_7: "7",
+            pygame.K_8: "8",
+            pygame.K_9: "9",
+        }
+
+        digit = digit_map.get(key)
+        if digit:
+            self._altimeter.add_digit(digit)
+            if self.tts_provider:
+                self.tts_provider.speak(digit, priority=TTSPriority.HIGH, interrupt=True)
+
+    def _handle_altimeter_confirm(self) -> None:
+        """Handle altimeter entry confirmation from context system."""
+        from airborne.audio.tts.base import TTSPriority
+
+        buffer = self._altimeter.get_input_buffer()
+        if buffer:
+            if self._altimeter.confirm_input():
+                if self.tts_provider:
+                    message = self._altimeter.get_display_string()
+                    self.tts_provider.speak(
+                        t("cockpit.altimeter_set", value=message),
+                        priority=TTSPriority.HIGH,
+                        interrupt=True,
+                    )
+            else:
+                if self.tts_provider:
+                    self.tts_provider.speak(
+                        t("cockpit.altimeter_invalid"),
+                        priority=TTSPriority.HIGH,
+                        interrupt=True,
+                    )
+            self._altimeter.clear_input_buffer()
+
+    def _handle_altimeter_clear(self) -> None:
+        """Handle altimeter input buffer clear from context system."""
+        from airborne.audio.tts.base import TTSPriority
+
+        self._altimeter.clear_input_buffer()
+        if self.tts_provider:
+            self.tts_provider.speak(t("common.cleared"), priority=TTSPriority.NORMAL)
+
+    def get_indicated_altitude(self) -> float:
+        """Get indicated altitude based on current altimeter setting.
+
+        Returns:
+            Indicated altitude in feet.
+        """
+        return self._altimeter.get_indicated_altitude(self._altitude)
+
+    @property
+    def altimeter(self) -> AltimeterManager:
+        """Get the altimeter manager instance."""
+        return self._altimeter

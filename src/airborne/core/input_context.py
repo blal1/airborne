@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from airborne.core.event_bus import EventBus
 
 from airborne.core.logging_system import get_logger
-from airborne.core.messaging import Message, MessagePriority, MessageQueue
+from airborne.core.messaging import Message, MessagePriority, MessageQueue, MessageTopic
 
 logger = get_logger(__name__)
 
@@ -48,6 +48,7 @@ class InputContext(str, Enum):
     RADIO_PANEL = "radio_panel"  # Ctrl+F1 radio controls
     CONTROL_PANEL = "control_panel"  # Ctrl+P panel
     TEXT_ENTRY = "text_entry"  # Typing mode
+    ALTIMETER_SETTING = "altimeter_setting"  # Alt+A altimeter mode
 
 
 @dataclass
@@ -476,14 +477,18 @@ class InputContextManager:
         """
         # Support "announce" action for TTS
         if "announce" in action_config:
+            from airborne.core.i18n import t
+
             msg_key = action_config["announce"]
+            # Translate the message key and send as text
+            text = t(msg_key)
             self.message_queue.publish(
                 Message(
                     sender="input_context_manager",
                     recipients=["*"],
-                    topic="tts.speak",
-                    data={"message_key": msg_key},
-                    priority=MessagePriority.NORMAL,
+                    topic=MessageTopic.TTS_SPEAK,
+                    data={"text": text, "priority": "high"},
+                    priority=MessagePriority.HIGH,
                 )
             )
 

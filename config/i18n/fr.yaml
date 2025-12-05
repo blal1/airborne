@@ -201,6 +201,15 @@ cockpit:
   trim_left: "gauche"
   trim_right: "droite"
   trim_neutral: "neutre"
+  # Altimeter
+  altimeter_inhg: "{value} pouces"
+  altimeter_hpa: "{value} hectopascals"
+  altimeter_mode_enter: "Mode réglage altimètre. Valeur actuelle {value}. Utilisez Majuscule D pour augmenter, Contrôle D pour diminuer, ou tapez les chiffres."
+  altimeter_mode_exit: "Réglage altimètre terminé"
+  altimeter_set: "Altimètre réglé à {value}"
+  altimeter_invalid: "Valeur altimètre invalide"
+  hectopascals: "hectopascals"
+  inches_hg: "pouces de mercure"
 
 # Control actions
 actions:

@@ -272,7 +272,7 @@ class InputConfig:
             pygame.K_i: InputAction.TTS_INTERRUPT,  # I for Interrupt
             # Menu
             pygame.K_TAB: InputAction.MENU_TOGGLE,
-            pygame.K_a: InputAction.MENU_UP,
+            # Note: K_a removed - now used for altimeter in control panel
             pygame.K_z: InputAction.MENU_DOWN,
             pygame.K_RETURN: InputAction.MENU_SELECT,
             pygame.K_ESCAPE: InputAction.MENU_BACK,  # ESC closes menus (Ctrl+Q to quit app)

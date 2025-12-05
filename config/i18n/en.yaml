@@ -201,6 +201,15 @@ cockpit:
   trim_left: "left"
   trim_right: "right"
   trim_neutral: "neutral"
+  # Altimeter
+  altimeter_inhg: "{value} inches"
+  altimeter_hpa: "{value} hectopascals"
+  altimeter_mode_enter: "Altimeter setting mode. Current value {value}. Use Shift D to increase, Control D to decrease, or type digits."
+  altimeter_mode_exit: "Exited altimeter setting"
+  altimeter_set: "Altimeter set to {value}"
+  altimeter_invalid: "Invalid altimeter value"
+  hectopascals: "hectopascals"
+  inches_hg: "inches of mercury"
 
 # Control actions
 actions:

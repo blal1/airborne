@@ -116,6 +116,13 @@ bindings:
     action: toggle_performance_display
     description: "Toggle performance display"
 
+  # Altimeter setting (global)
+  - key: a
+    modifiers: [ALT]
+    action: toggle_altimeter_setting
+    description: "Toggle altimeter setting mode"
+    toggle_context: altimeter_setting
+
   # View/camera controls (global)
   - key: f8
     action: toggle_external_view

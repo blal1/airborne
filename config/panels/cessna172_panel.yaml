@@ -70,6 +70,18 @@ panels:
         message_topic: electrical.landing_light
         description: Landing light
 
+      # Altimeter (Kollsman window knob)
+      - id: altimeter_knob
+        name: Altimeter
+        type: slider
+        min_value: 2750  # 27.50 inHg * 100
+        max_value: 3150  # 31.50 inHg * 100
+        default_value: 2992  # 29.92 inHg (standard pressure)
+        step_size: 1  # 0.01 inHg per step
+        target_plugin: audio_plugin
+        message_topic: instruments.altimeter
+        description: Altimeter barometric pressure setting (Kollsman window)
+
   # Pedestal Panel
   - name: Pedestal
     description: Center pedestal controls

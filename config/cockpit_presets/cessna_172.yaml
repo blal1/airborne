@@ -1,0 +1,291 @@
+# Cessna 172 Cockpit 3D Sound Positions
+# Coordinates relative to pilot's head position (0, 0, 0)
+# X: Right (+) / Left (-)
+# Y: Up (+) / Down (-)
+# Z: Forward (+) / Back (-)
+# Units: meters
+
+aircraft: "cessna_172"
+aircraft_family: "cessna_single_engine"
+base_preset: "default"  # Inherits from default, overrides specific positions
+
+# Listener (pilot head) is at origin
+listener:
+  position: [0.0, 0.0, 0.0]
+
+# Radio speaker - center panel top (above avionics stack)
+radio_speaker:
+  position: [0.0, 0.15, 0.55]  # Center, slightly up, ~55cm forward
+
+# Engine sound sources (multi-source immersion)
+engine:
+  # Primary engine source - front of firewall
+  primary:
+    position: [0.0, -0.1, 2.0]  # Center, slightly down, 2m forward
+    volume_scale: 1.0
+  # Floor/firewall vibration - transmitted through structure
+  vibration:
+    position: [0.0, -0.5, 0.3]  # Below pilot, near feet/pedals
+    volume_scale: 0.4
+  # Cabin resonance - fills the cockpit
+  resonance:
+    position: [0.0, 0.0, 0.0]  # At pilot position (omnidirectional fill)
+    volume_scale: 0.25
+
+# Wind noise sources
+wind:
+  # Primary wind - from windscreen/doors
+  primary:
+    position: [0.0, 0.1, 0.6]  # Center, at windscreen level
+  # Door seal leakage (typical in C172)
+  left_door:
+    position: [-0.6, 0.0, -0.1]  # Left side, beside pilot
+
+# Panel zones for cockpit sounds
+panel_zones:
+  # Left instrument panel (pilot side)
+  left_panel:
+    center: [-0.35, 0.05, 0.5]  # Left of center, panel height, forward
+  # Center instrument panel
+  center_panel:
+    center: [0.0, 0.05, 0.55]
+  # Right instrument panel (copilot side)
+  right_panel:
+    center: [0.35, 0.05, 0.5]
+  # Overhead panel/switches
+  overhead:
+    center: [0.0, 0.4, 0.2]  # Above head, slightly forward
+  # Center console/pedestal (throttle quadrant area)
+  pedestal:
+    center: [0.1, -0.2, 0.3]  # Slightly right, below, between seats
+  # Lower left (circuit breakers, etc)
+  lower_left:
+    center: [-0.4, -0.3, 0.4]
+
+# Individual switch/control positions (C172 specific layout)
+controls:
+  # === LEFT PANEL (Pilot instruments) ===
+  # Master switch - far left panel
+  master_switch:
+    position: [-0.45, 0.0, 0.45]
+    zone: left_panel
+  # Alternator switch - near master
+  alternator_switch:
+    position: [-0.42, 0.0, 0.45]
+    zone: left_panel
+  # Battery switch
+  battery_switch:
+    position: [-0.48, 0.0, 0.45]
+    zone: left_panel
+  # Avionics master
+  avionics_master:
+    position: [-0.38, -0.05, 0.45]
+    zone: left_panel
+  # Alias for panel control ID
+  avionics_master_switch:
+    position: [-0.38, -0.05, 0.45]
+    zone: left_panel
+  # Light switches (nav, beacon, strobe, landing, taxi)
+  nav_lights:
+    position: [-0.35, 0.1, 0.48]
+    zone: left_panel
+  nav_lights_switch:
+    position: [-0.35, 0.1, 0.48]
+    zone: left_panel
+  beacon_light:
+    position: [-0.32, 0.1, 0.48]
+    zone: left_panel
+  beacon_switch:
+    position: [-0.32, 0.1, 0.48]
+    zone: left_panel
+  strobe_light:
+    position: [-0.29, 0.1, 0.48]
+    zone: left_panel
+  strobe_switch:
+    position: [-0.29, 0.1, 0.48]
+    zone: left_panel
+  landing_light:
+    position: [-0.26, 0.1, 0.48]
+    zone: left_panel
+  landing_light_switch:
+    position: [-0.26, 0.1, 0.48]
+    zone: left_panel
+  taxi_light:
+    position: [-0.23, 0.1, 0.48]
+    zone: left_panel
+  taxi_light_switch:
+    position: [-0.23, 0.1, 0.48]
+    zone: left_panel
+  # Pitot heat switch - left panel
+  pitot_heat_switch:
+    position: [-0.20, 0.1, 0.48]
+    zone: left_panel
+  # Fuel pump switch - left panel
+  fuel_pump_switch:
+    position: [-0.40, -0.1, 0.45]
+    zone: left_panel
+
+  # === CENTER PANEL (Shared instruments) ===
+  # Ignition/magneto switch - lower center
+  magneto_switch:
+    position: [0.05, -0.1, 0.5]
+    zone: center_panel
+  # Starter button
+  starter_button:
+    position: [0.1, -0.1, 0.5]
+    zone: center_panel
+
+  # Altimeter (center-right of six-pack instruments)
+  altimeter_knob:
+    position: [0.15, 0.05, 0.52]
+    zone: center_panel
+
+  # === PEDESTAL/THROTTLE QUADRANT ===
+  # Throttle lever
+  throttle:
+    position: [0.1, -0.2, 0.35]
+    zone: pedestal
+  throttle_lever:
+    position: [0.1, -0.2, 0.35]
+    zone: pedestal
+  # Mixture control
+  mixture:
+    position: [0.15, -0.2, 0.35]
+    zone: pedestal
+  mixture_lever:
+    position: [0.15, -0.2, 0.35]
+    zone: pedestal
+  # Carb heat
+  carb_heat:
+    position: [0.2, -0.2, 0.35]
+    zone: pedestal
+  carburetor_heat_lever:
+    position: [0.2, -0.2, 0.35]
+    zone: pedestal
+  # Flaps lever
+  flaps_lever:
+    position: [0.25, -0.25, 0.3]
+    zone: pedestal
+  # Trim wheel
+  trim_wheel:
+    position: [0.2, -0.35, 0.25]
+    zone: pedestal
+  elevator_trim_wheel:
+    position: [0.2, -0.35, 0.25]
+    zone: pedestal
+  # Auto trim switch - near trim wheel
+  auto_trim_switch:
+    position: [0.22, -0.33, 0.27]
+    zone: pedestal
+  # Primer pump - lower center
+  primer_pump:
+    position: [0.0, -0.3, 0.4]
+    zone: pedestal
+
+  # === RADIO STACK (Center, below main instruments) ===
+  # COM1 radio knobs
+  com1_knob:
+    position: [0.0, -0.05, 0.52]
+    zone: center_panel
+  # COM2 radio knobs
+  com2_knob:
+    position: [0.0, -0.1, 0.52]
+    zone: center_panel
+  # NAV1 knobs
+  nav1_knob:
+    position: [0.0, -0.15, 0.52]
+    zone: center_panel
+  # Transponder
+  transponder_knob:
+    position: [0.0, -0.2, 0.52]
+    zone: center_panel
+
+  # === FLIGHT CONTROLS ===
+  # Gear lever (if retractable - C172RG)
+  gear_lever:
+    position: [0.15, -0.3, 0.32]
+    zone: pedestal
+  # Parking brake
+  parking_brake:
+    position: [-0.3, -0.4, 0.3]
+    zone: lower_left
+  parking_brake_lever:
+    position: [-0.3, -0.4, 0.3]
+    zone: lower_left
+  # Fuel selector
+  fuel_selector:
+    position: [0.0, -0.45, 0.25]
+    zone: pedestal
+  fuel_selector_valve:
+    position: [0.0, -0.45, 0.25]
+    zone: pedestal
+  # Fuel shutoff valve - near fuel selector
+  fuel_shutoff_valve:
+    position: [0.05, -0.43, 0.27]
+    zone: pedestal
+
+  # === YOKE BUTTONS ===
+  # PTT button (on yoke)
+  ptt_button:
+    position: [0.0, -0.1, 0.15]  # Close to pilot, where yoke is held
+    zone: center_panel
+  # Trim buttons (on yoke)
+  trim_button:
+    position: [0.02, -0.08, 0.15]
+    zone: center_panel
+
+  # === CIRCUIT BREAKERS (Lower left panel) ===
+  circuit_breaker:
+    position: [-0.4, -0.35, 0.42]
+    zone: lower_left
+
+# Ground contact points for rolling sounds
+wheels:
+  nose_wheel:
+    position: [0.0, -1.2, 1.8]  # Front, below, forward
+  left_main:
+    position: [-1.0, -1.0, -0.3]  # Left wing, below, slightly back
+  right_main:
+    position: [1.0, -1.0, -0.3]  # Right wing, below, slightly back
+
+# Reverb settings for cockpit ambiance
+reverb:
+  # Use FMOD's built-in reverb DSP with small room parameters
+  enabled: true
+  type: "fmod_reverb"  # or "convolution" if IR file available
+
+  # FMOD reverb parameters (small enclosed cabin - tight and short)
+  fmod_params:
+    decay_time: 0.12       # Very short decay (tiny cockpit space)
+    early_delay: 0.003     # 3ms early reflections
+    late_delay: 0.008      # 8ms late reflections
+    hf_reference: 5000.0   # High frequency reference
+    hf_decay_ratio: 0.5    # HF decays faster (absorptive seats/carpet)
+    diffusion: 60.0        # Lower diffusion (hard surfaces)
+    density: 80.0          # Medium density
+    low_shelf_frequency: 250.0
+    low_shelf_gain: 0.0
+    high_cut: 6000.0       # Cut high frequencies (damped space)
+    early_late_mix: 70.0   # More early reflections (small room)
+    wet_level: -12.0       # Lower wet level in dB (more subtle)
+    dry_level: 0.0         # Dry level in dB
+
+  # Convolution reverb (if IR file available)
+  convolution:
+    ir_file: "data/audio/effects/cockpit_ir.wav"
+    wet_level: 0.15        # 15% wet mix
+    dry_level: 0.85        # 85% dry
+
+# Categories of sounds that should have reverb applied
+reverb_categories:
+  - switches
+  - buttons
+  - knobs
+  - mechanical  # gear, flaps mechanical sounds
+
+# Categories that should NOT have reverb (direct sound)
+no_reverb_categories:
+  - radio       # Radio comes from speaker, already processed
+  - engine      # Engine has its own spatial treatment
+  - wind        # Environmental, not cockpit reflections
+  - warnings    # Alerts should be clear and direct

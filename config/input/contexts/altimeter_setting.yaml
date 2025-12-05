@@ -1,0 +1,63 @@
+# Altimeter Setting context
+# Active when altimeter setting mode is entered (Alt+A from Instrument Panel)
+# Allows knob adjustment and direct numeric entry for altimeter setting
+
+context: altimeter_setting
+description: "Altimeter setting mode - adjust barometric pressure"
+priority: 75  # Same as other menus
+
+on_enter:
+  announce: "cockpit.altimeter_mode_enter"
+
+on_exit:
+  announce: "cockpit.altimeter_mode_exit"
+
+bindings:
+  # Knob adjustment
+  - key: d
+    modifiers: [SHIFT]
+    action: altimeter_increase
+    description: "Increase altimeter (+0.01 inHg or +1 hPa)"
+
+  - key: d
+    modifiers: [CTRL]
+    action: altimeter_decrease
+    description: "Decrease altimeter (-0.01 inHg or -1 hPa)"
+
+  # Unit toggle
+  - key: tab
+    action: altimeter_toggle_unit
+    description: "Toggle between inHg and hPa"
+
+  # Direct numeric entry (digits)
+  - keys: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+    action: altimeter_enter_digit
+    description: "Enter digit for direct numeric entry"
+
+  - key: return
+    action: altimeter_confirm_entry
+    description: "Confirm typed value"
+
+  - key: backspace
+    action: altimeter_clear_entry
+    description: "Clear input buffer"
+
+  # Read current value
+  - key: a
+    action: altimeter_announce
+    description: "Announce current altimeter setting"
+
+  # Exit mode
+  - key: escape
+    action: altimeter_exit
+    description: "Exit altimeter setting mode"
+    pop_context: true
+
+# Block flight controls while in altimeter setting mode
+block_actions:
+  - pitch_up
+  - pitch_down
+  - roll_left
+  - roll_right
+  - yaw_left
+  - yaw_right

@@ -1,0 +1,137 @@
+# Default Cockpit 3D Sound Positions
+# Generic single-engine aircraft layout
+# Coordinates relative to pilot's head position (0, 0, 0)
+# X: Right (+) / Left (-)
+# Y: Up (+) / Down (-)
+# Z: Forward (+) / Back (-)
+# Units: meters
+
+aircraft_family: "generic_single_engine"
+
+# Listener (pilot head) is at origin
+listener:
+  position: [0.0, 0.0, 0.0]
+
+# Radio speaker - center panel top
+radio_speaker:
+  position: [0.0, 0.15, 0.5]
+
+# Engine sound sources (multi-source immersion)
+engine:
+  primary:
+    position: [0.0, -0.1, 2.0]
+    volume_scale: 1.0
+  vibration:
+    position: [0.0, -0.5, 0.3]
+    volume_scale: 0.4
+  resonance:
+    position: [0.0, 0.0, 0.0]
+    volume_scale: 0.25
+
+# Wind noise sources
+wind:
+  primary:
+    position: [0.0, 0.1, 0.6]
+  left_door:
+    position: [-0.6, 0.0, -0.1]
+
+# Generic panel zones
+panel_zones:
+  left_panel:
+    center: [-0.35, 0.05, 0.5]
+  center_panel:
+    center: [0.0, 0.05, 0.5]
+  right_panel:
+    center: [0.35, 0.05, 0.5]
+  overhead:
+    center: [0.0, 0.4, 0.2]
+  pedestal:
+    center: [0.1, -0.2, 0.3]
+  lower_left:
+    center: [-0.4, -0.3, 0.4]
+
+# Generic control positions (can be overridden per aircraft)
+controls:
+  # Left panel switches
+  master_switch:
+    position: [-0.4, 0.0, 0.45]
+    zone: left_panel
+
+  # Center panel
+  magneto_switch:
+    position: [0.0, -0.1, 0.5]
+    zone: center_panel
+  starter_button:
+    position: [0.1, -0.1, 0.5]
+    zone: center_panel
+
+  # Pedestal
+  throttle:
+    position: [0.1, -0.2, 0.35]
+    zone: pedestal
+  throttle_lever:
+    position: [0.1, -0.2, 0.35]
+    zone: pedestal
+  mixture:
+    position: [0.15, -0.2, 0.35]
+    zone: pedestal
+  mixture_lever:
+    position: [0.15, -0.2, 0.35]
+    zone: pedestal
+  flaps_lever:
+    position: [0.25, -0.25, 0.3]
+    zone: pedestal
+  trim_wheel:
+    position: [0.2, -0.35, 0.25]
+    zone: pedestal
+
+  # Flight controls
+  parking_brake:
+    position: [-0.3, -0.4, 0.3]
+    zone: lower_left
+  parking_brake_lever:
+    position: [-0.3, -0.4, 0.3]
+    zone: lower_left
+  fuel_selector:
+    position: [0.0, -0.45, 0.25]
+    zone: pedestal
+
+# Wheel positions for rolling sounds
+wheels:
+  nose_wheel:
+    position: [0.0, -1.2, 1.5]
+  left_main:
+    position: [-1.0, -1.0, -0.3]
+  right_main:
+    position: [1.0, -1.0, -0.3]
+
+# Reverb settings
+reverb:
+  enabled: true
+  type: "fmod_reverb"
+  fmod_params:
+    decay_time: 0.12
+    early_delay: 0.003
+    late_delay: 0.008
+    hf_reference: 5000.0
+    hf_decay_ratio: 0.5
+    diffusion: 60.0
+    density: 80.0
+    low_shelf_frequency: 250.0
+    low_shelf_gain: 0.0
+    high_cut: 6000.0
+    early_late_mix: 70.0
+    wet_level: -12.0
+    dry_level: 0.0
+
+reverb_categories:
+  - switches
+  - buttons
+  - knobs
+  - mechanical
+
+no_reverb_categories:
+  - radio
+  - engine
+  - wind
+  - warnings

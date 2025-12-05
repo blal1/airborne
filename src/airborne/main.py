@@ -102,6 +102,10 @@ class AirBorne:
         # Initialize input system (will be updated with aircraft config after loading)
         self.input_manager = InputManager(self.event_bus, message_queue=self.message_queue)
 
+        # Subscribe to context push/pop messages for input context management
+        self.message_queue.subscribe("input.context.push", self._handle_context_push)
+        self.message_queue.subscribe("input.context.pop", self._handle_context_pop)
+
         # Initialize new input handler system
         input_bindings_dir = get_config_path("input_bindings")
         self.input_config = InputConfig.load_from_directory(str(input_bindings_dir))
@@ -603,6 +607,27 @@ class AirBorne:
         logger.info(
             f"Input handler registration complete: {self.input_handler_manager.get_handler_count()} handlers registered"
         )
+
+    def _handle_context_push(self, message: Message) -> None:
+        """Handle input context push request.
+
+        Args:
+            message: Message with context name in data["context"].
+        """
+        context_name = message.data.get("context")
+        if context_name and self.input_manager.context_manager:
+            self.input_manager.context_manager.push_context(context_name)
+            logger.debug(f"Pushed input context: {context_name}")
+
+    def _handle_context_pop(self, message: Message) -> None:
+        """Handle input context pop request.
+
+        Args:
+            message: Message requesting context pop.
+        """
+        if self.input_manager.context_manager:
+            self.input_manager.context_manager.pop_context()
+            logger.debug("Popped input context")
 
     def _handle_input_action(self, event: InputActionEvent) -> None:
         """Handle input action events.

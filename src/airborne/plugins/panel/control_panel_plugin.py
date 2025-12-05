@@ -464,14 +464,17 @@ class ControlPanelPlugin(IPlugin):
         # Update internal state tracking
         self._update_control_state(control.id, control.target_plugin, current_state)
 
-        # Play click sound for switches, knobs, and sliders
+        # Play click sound for switches, knobs, and sliders (with control ID for 3D positioning)
         if control.control_type in (ControlType.SWITCH, ControlType.KNOB, ControlType.SLIDER):
             self.context.message_queue.publish(
                 Message(
                     sender="control_panel_plugin",
                     recipients=["audio_plugin"],
                     topic="audio.play_click",
-                    data={"control_type": control.control_type.value},
+                    data={
+                        "control_type": control.control_type.value,
+                        "control_name": control.id,  # For 3D spatial positioning
+                    },
                     priority=MessagePriority.HIGH,
                 )
             )
@@ -517,13 +520,16 @@ class ControlPanelPlugin(IPlugin):
         if not self.context:
             return
 
-        # Play click sound for button press
+        # Play click sound for button press (with control ID for 3D positioning)
         self.context.message_queue.publish(
             Message(
                 sender="control_panel_plugin",
                 recipients=["audio_plugin"],
                 topic="audio.play_click",
-                data={"control_type": "button"},
+                data={
+                    "control_type": "button",
+                    "control_name": control.id,  # For 3D spatial positioning
+                },
                 priority=MessagePriority.HIGH,
             )
         )
@@ -666,6 +672,38 @@ class ControlPanelPlugin(IPlugin):
             )
         )
 
+    def _announce_altimeter(self) -> None:
+        """Announce current altimeter setting via message to audio plugin."""
+        if not self.context:
+            return
+
+        # Send message to audio plugin to read altimeter
+        self.context.message_queue.publish(
+            Message(
+                sender="control_panel_plugin",
+                recipients=["audio_plugin"],
+                topic="instruments.read_altimeter",
+                data={},
+                priority=MessagePriority.HIGH,
+            )
+        )
+
+    def _enter_altimeter_mode(self) -> None:
+        """Enter altimeter setting mode by pushing input context."""
+        if not self.context:
+            return
+
+        # Push altimeter_setting context onto the input context stack
+        self.context.message_queue.publish(
+            Message(
+                sender="control_panel_plugin",
+                recipients=["*"],
+                topic="input.context.push",
+                data={"context": "altimeter_setting"},
+                priority=MessagePriority.HIGH,
+            )
+        )
+
     def list_panels(self) -> list[str]:
         """List all panel names.
 
@@ -774,7 +812,7 @@ class ControlPanelPlugin(IPlugin):
         if self.current_panel_index == 0:
             control_key_map = {
                 pygame.K_m: "master_switch",
-                pygame.K_a: "avionics_master_switch",
+                pygame.K_v: "avionics_master_switch",  # V for aVionics
                 pygame.K_b: "beacon_switch",
                 pygame.K_n: "nav_lights_switch",
                 pygame.K_s: "strobe_switch",
@@ -786,6 +824,11 @@ class ControlPanelPlugin(IPlugin):
                 control = self.get_control_by_id(control_key_map[key])
                 if control:
                     return self._handle_control_key(control, mod)
+
+            # Altimeter: A = read current value (Alt+A handled by global context)
+            if key == pygame.K_a and not (mod & pygame.KMOD_ALT):
+                self._announce_altimeter()
+                return True
 
         # PEDESTAL (Panel 1)
         elif self.current_panel_index == 1:
