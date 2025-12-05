@@ -1,0 +1,183 @@
+# Robin DR-400 Base Configuration
+# Shared configuration for all DR-400 variants
+# The DR-400 is a French single-engine aircraft with distinctive cranked "Jodel" wing
+
+aircraft:
+  name: "Robin DR-400"  # Override in variants
+  icao_code: "DR40"
+  manufacturer: "Robin Aircraft"
+  fixed_gear: true
+
+  # Flight model configuration - DR-400 specific
+  flight_model: "Simple6DOF"
+  flight_model_config:
+    wing_area_sqft: 146.4       # 13.6 m² wing area
+    weight_lbs: 1874.0          # Varies by variant, override
+    max_thrust_lbs: 120.0       # Varies by variant
+    drag_coefficient: 0.028     # Low drag wooden aircraft
+    lift_coefficient_slope: 0.095
+
+    # Aerodynamic coefficients (NACA 23012 modified airfoil)
+    # The cranked wing provides excellent stall characteristics
+    cl_0: 0.25                  # Zero-AOA lift coefficient
+    cl_alpha: 0.098             # Lift curve slope per degree
+    cl_max: 1.55                # Maximum CL clean (docile stall)
+    stall_aoa_deg: 16.0         # Stall angle - very forgiving
+    cl_flap_delta: 0.45         # CL increase per unit flap
+    cl_max_flaps: 2.0           # Maximum CL with full flaps
+
+    # Stability coefficients - DR-400 is known for docile handling
+    pitch_damping_coefficient: -22.0
+    roll_damping_coefficient: -7.5
+    yaw_damping_coefficient: -5.5
+
+  # Flap configuration - DR-400 has 3 positions
+  flaps:
+    positions:
+      - name: "UP"
+        degrees: 0
+        normalized: 0.0
+      - name: "T/O"
+        degrees: 15
+        normalized: 0.5
+      - name: "FULL"
+        degrees: 60
+        normalized: 1.0
+    default_position: 0
+    max_speed_kts: 91           # Vfe - 169 km/h
+    transition_time_sec: 2.5
+
+  # Propeller configuration - Sensenich fixed-pitch (common for DR-400)
+  propeller:
+    type: "fixed_pitch"
+    diameter_m: 1.88            # 74 inches
+    pitch_ratio: 0.58           # Climb prop
+    efficiency_static: 0.73
+    efficiency_cruise: 0.86
+    cruise_advance_ratio: 0.55
+    static_thrust_multiplier: 5.5
+
+  # Electrical system - 12V
+  electrical:
+    implementation: "simple_12v"
+    battery:
+      voltage_nominal: 12.6
+      capacity_ah: 25.0
+      internal_resistance: 0.06
+    alternator:
+      max_amps: 50.0
+      voltage_regulated: 14.0
+      rpm_threshold: 900
+    loads:
+      master_relay:
+        amps: 0.1
+        essential: true
+        min_voltage: 10.0
+      starter_motor:
+        amps: 120.0
+        essential: true
+        min_voltage: 11.0
+      fuel_pump:
+        amps: 4.0
+        essential: false
+        min_voltage: 10.0
+      avionics:
+        amps: 8.0
+        essential: false
+        min_voltage: 11.5
+      nav_lights:
+        amps: 1.2
+        essential: false
+        min_voltage: 10.0
+      beacon:
+        amps: 1.5
+        essential: false
+        min_voltage: 10.0
+      strobe:
+        amps: 2.5
+        essential: false
+        min_voltage: 10.0
+      landing_light:
+        amps: 6.0
+        essential: false
+        min_voltage: 10.0
+
+  # Fuel system - Wing tanks with gravity feed
+  fuel:
+    implementation: "simple_gravity"
+    fuel_type: "avgas_100ll"
+    lbs_per_gallon: 6.0
+    tanks:
+      left:
+        capacity_total: 13.2    # 50 liters
+        capacity_usable: 12.7
+        initial_quantity: 12.7
+        fuel_type: "avgas_100ll"
+        position: [-4.5, 0.0, -6.5]
+      right:
+        capacity_total: 13.2
+        capacity_usable: 12.7
+        initial_quantity: 12.7
+        fuel_type: "avgas_100ll"
+        position: [-4.5, 0.0, 6.5]
+    selector_positions: [OFF, LEFT, RIGHT, BOTH]
+
+  # Audio configuration - DR-400 specific sounds
+  audio:
+    engine_sounds:
+      start: "assets/sounds/aircraft/dr400/starter.wav"
+      idle: "assets/sounds/aircraft/dr400/engine_internal.wav"
+      shutdown: "assets/sounds/aircraft/dr400/shutdown.wav"
+      pitch_idle: 1.0
+      pitch_full: 1.85
+    click_sounds:
+      switch_on: "assets/sounds/aircraft/dr400/click.wav"
+      switch_off: "assets/sounds/aircraft/dr400/click.wav"
+      button: "assets/sounds/aircraft/dr400/click.wav"
+      knob: "assets/sounds/aircraft/dr400/click.wav"
+    system_sounds:
+      fuel_pump: "assets/sounds/aircraft/dr400/fuel_pump.wav"
+      fuel_alarm: "assets/sounds/aircraft/dr400/fuel_alarm.wav"
+      stall_warning: "assets/sounds/aircraft/dr400/stall.wav"
+      flaps: "assets/sounds/aircraft/dr400/flaps.wav"
+      lever: "assets/sounds/aircraft/dr400/lever.wav"
+
+  # DR-400 specific features
+  special_features:
+    # Cranked "Jodel" wing - inner section has more dihedral
+    cranked_wing:
+      enabled: true
+      inner_dihedral_deg: 14.0
+      outer_dihedral_deg: 5.0
+      break_point_percent: 40   # Where the dihedral changes
+    # Sliding bubble canopy
+    canopy:
+      type: "sliding"
+      states: [closed, open]
+      sound_open: "assets/sounds/aircraft/dr400/lever.wav"
+      sound_close: "assets/sounds/aircraft/dr400/lever.wav"
+    # Castering nosewheel (free-castering, no direct steering)
+    nosewheel:
+      type: "castering"
+      steering: "differential_braking"
+
+  # Initial state
+  initial_state:
+    position:
+      latitude: 47.2583        # France - typical DR-400 location
+      longitude: 5.0978
+      altitude_ft: 0
+    fuel:
+      left_tank_gallons: 12.7
+      right_tank_gallons: 12.7
+    electrical:
+      battery_master: false
+      alternator_switch: false
+    engine:
+      running: false
+      mixture: 0.0
+      throttle: 0.0
+    controls:
+      parking_brake: true
+      gear_down: true
+      canopy: closed

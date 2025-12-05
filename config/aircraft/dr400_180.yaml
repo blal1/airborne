@@ -1,0 +1,121 @@
+# Robin DR-400/180 Regent Configuration
+# High-performance 4-seat variant with Lycoming O-360 engine (180 HP)
+
+_base: dr400_base.yaml
+
+aircraft:
+  name: "Robin DR-400/180 Regent"
+  icao_code: "DR40"
+
+  flight_model_config:
+    weight_lbs: 1543.0          # 700 kg empty weight
+    max_thrust_lbs: 180.0
+
+  # Engine - Lycoming O-360-A1A
+  plugins:
+    - plugin: "simple_piston_engine"
+      instance_id: "engine"
+      config:
+        max_power_hp: 180
+        max_rpm: 2700
+        idle_rpm: 550
+        fuel_consumption_base_gph: 10.0
+        displacement_liters: 5.92
+        cylinders: 4
+        aspiration: "naturally_aspirated"
+        starter_min_voltage: 11.0
+        starter_current_draw: 140.0
+        requires_fuel: true
+        requires_magnetos: true
+
+    - plugin: "simple_electrical_system"
+      instance_id: "electrical"
+      config:
+        battery_voltage: 12.6
+        battery_capacity_ah: 25.0
+        alternator_voltage: 14.0
+        alternator_amps: 60.0
+        base_load_amps: 5.0
+
+    - plugin: "simple_fuel_system"
+      instance_id: "fuel"
+      config:
+        left_tank_capacity: 14.5
+        right_tank_capacity: 14.5
+        unusable_fuel: 0.5
+        fuel_selector: "both"
+
+  # Fuel tanks
+  fuel:
+    tanks:
+      left:
+        capacity_total: 14.5
+        capacity_usable: 14.0
+        initial_quantity: 14.0
+      right:
+        capacity_total: 14.5
+        capacity_usable: 14.0
+        initial_quantity: 14.0
+
+  # Weight and balance - 4-seater, higher MTOW
+  weight_balance:
+    empty_weight: 1543.0        # 700 kg
+    empty_moment: 60900.0
+    max_gross_weight: 2315.0    # 1050 kg MTOW
+    cg_limits:
+      forward: 38.0
+      aft: 47.5
+    stations:
+      fuel:
+        - name: "fuel_main"
+          arm: 42.0
+          max_weight: 174.0
+          initial_weight: 168.0
+      seats:
+        - name: "seat_pilot"
+          arm: 40.0
+          max_weight: 220.0
+          initial_weight: 170.0
+        - name: "seat_copilot"
+          arm: 40.0
+          max_weight: 220.0
+          initial_weight: 0.0
+        - name: "seat_rear_left"
+          arm: 72.0
+          max_weight: 200.0
+          initial_weight: 0.0
+        - name: "seat_rear_right"
+          arm: 72.0
+          max_weight: 200.0
+          initial_weight: 0.0
+      cargo:
+        - name: "baggage"
+          arm: 95.0
+          max_weight: 88.0
+          initial_weight: 0.0
+
+  # Performance - DR-400/180
+  performance:
+    reference_weight_lbs: 2315.0
+    wing_area_sqft: 146.4
+    max_power_hp: 180.0
+    cl_max_clean: 1.55
+    cl_max_landing: 2.0
+    vspeeds_reference:
+      V_S: 55                   # 102 km/h stall clean
+      V_SO: 49                  # 91 km/h stall landing
+      V_R: 62                   # 115 km/h rotation
+      V_X: 68                   # 126 km/h best angle
+      V_Y: 81                   # 150 km/h best rate
+    takeoff_reference:
+      ground_roll_ft: 820       # 250m
+      distance_50ft: 1476       # 450m
+      climb_rate_fpm: 835       # 4.25 m/s
+    cruise:
+      speed_kts: 135            # 250 km/h at 75%
+      fuel_gph: 10.0
+
+  # Checklists reference
+  checklists:
+    en: "dr400_180"
+    fr: "dr400_180_fr"

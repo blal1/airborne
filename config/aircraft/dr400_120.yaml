@@ -1,0 +1,98 @@
+# Robin DR-400/120 Dauphin Configuration
+# 2-seat trainer variant with Lycoming O-235 engine (120 HP)
+
+_base: dr400_base.yaml
+
+aircraft:
+  name: "Robin DR-400/120 Dauphin"
+  icao_code: "DR40"
+
+  flight_model_config:
+    weight_lbs: 1433.0          # 650 kg empty weight
+    max_thrust_lbs: 120.0
+
+  # Engine - Lycoming O-235-L2A
+  plugins:
+    - plugin: "simple_piston_engine"
+      instance_id: "engine"
+      config:
+        max_power_hp: 120
+        max_rpm: 2800
+        idle_rpm: 550
+        fuel_consumption_base_gph: 6.5
+        displacement_liters: 3.85
+        cylinders: 4
+        aspiration: "naturally_aspirated"
+        starter_min_voltage: 11.0
+        starter_current_draw: 120.0
+        requires_fuel: true
+        requires_magnetos: true
+
+    - plugin: "simple_electrical_system"
+      instance_id: "electrical"
+      config:
+        battery_voltage: 12.6
+        battery_capacity_ah: 25.0
+        alternator_voltage: 14.0
+        alternator_amps: 50.0
+        base_load_amps: 4.0
+
+    - plugin: "simple_fuel_system"
+      instance_id: "fuel"
+      config:
+        left_tank_capacity: 13.2
+        right_tank_capacity: 13.2
+        unusable_fuel: 0.5
+        fuel_selector: "both"
+
+  # Weight and balance - 2-seater
+  weight_balance:
+    empty_weight: 1433.0        # 650 kg
+    empty_moment: 56600.0
+    max_gross_weight: 1764.0    # 800 kg MTOW
+    cg_limits:
+      forward: 38.0             # inches from datum
+      aft: 46.0
+    stations:
+      fuel:
+        - name: "fuel_main"
+          arm: 42.0
+          max_weight: 159.0     # 100L total
+          initial_weight: 159.0
+      seats:
+        - name: "seat_pilot"
+          arm: 40.0
+          max_weight: 200.0
+          initial_weight: 170.0
+        - name: "seat_copilot"
+          arm: 40.0
+          max_weight: 200.0
+          initial_weight: 0.0
+      cargo:
+        - name: "baggage"
+          arm: 65.0
+          max_weight: 44.0      # 20 kg max
+          initial_weight: 0.0
+
+  # Performance - DR-400/120
+  performance:
+    reference_weight_lbs: 1764.0
+    wing_area_sqft: 146.4
+    max_power_hp: 120.0
+    cl_max_clean: 1.55
+    cl_max_landing: 2.0
+    vspeeds_reference:
+      V_S: 49                   # 90 km/h stall clean
+      V_SO: 43                  # 80 km/h stall landing
+      V_R: 54                   # 100 km/h rotation
+      V_X: 59                   # 110 km/h best angle
+      V_Y: 70                   # 130 km/h best rate
+    takeoff_reference:
+      ground_roll_ft: 1148      # 350m
+      distance_50ft: 1804       # 550m
+      climb_rate_fpm: 590       # 3 m/s
+
+  # Checklists reference
+  checklists:
+    en: "dr400_120"
+    fr: "dr400_120_fr"
