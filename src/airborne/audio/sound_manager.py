@@ -514,17 +514,21 @@ class SoundManager:
         except FileNotFoundError:
             logger.warning(f"Wind sound not found: {path}")
 
-    def update_wind_sound(self, airspeed: float) -> None:
+    def update_wind_sound(self, airspeed: float, on_ground: bool = True) -> None:
         """Update wind sound based on airspeed.
 
         Args:
             airspeed: Airspeed in knots.
+            on_ground: Whether aircraft is on the ground (reduces wind volume).
         """
         if not self._audio_engine or self._wind_source_id is None:
             return
 
         # Map airspeed to volume (0 at 0 knots, 1.0 at 100+ knots)
         volume = min(airspeed / 100.0, 1.0)
+        # Reduce wind volume on ground (cockpit more enclosed)
+        if on_ground:
+            volume *= 0.3
         # Map airspeed to pitch (0.8 at low speed, 1.5 at high speed)
         pitch = 0.8 + (min(airspeed / 200.0, 1.0) * 0.7)
 
