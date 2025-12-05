@@ -223,7 +223,7 @@ class AudioPlugin(IPlugin):
             cockpit_preset = audio_config.get("cockpit_preset")
             if not cockpit_preset:
                 # Convert common ICAO codes to preset names
-                icao_to_preset = {"c172": "cessna_172", "c152": "cessna_152", "pa28": "piper_pa28"}
+                icao_to_preset = {"c172": "cessna_172", "c152": "cessna_152", "pa28": "piper_pa28", "dr40": "dr400"}
                 cockpit_preset = icao_to_preset.get(icao_code, icao_code or "cessna_172")
 
             presets_dir = str(get_resource_path("config/cockpit_presets"))

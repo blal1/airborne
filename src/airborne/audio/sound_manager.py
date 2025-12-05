@@ -15,6 +15,7 @@ Typical usage example:
 from typing import Any
 
 from airborne.audio.engine.base import IAudioEngine, Sound, Vector3
+from airborne.audio.spatial.cockpit_spatial import CockpitSpatialManager
 from airborne.audio.tts.base import ITTSProvider, TTSPriority
 from airborne.core.logging_system import get_logger
 from airborne.core.resource_path import get_resource_path
@@ -75,6 +76,9 @@ class SoundManager:
         self._battery_sequence_active = False
         self._battery_sequence_callback: Any = None  # Callback when battery is truly ON
 
+        # Cockpit spatial audio manager
+        self._spatial_manager: CockpitSpatialManager | None = None
+
     def initialize(
         self,
         audio_engine: IAudioEngine,
@@ -103,6 +107,25 @@ class SoundManager:
             self._tts_provider.initialize(tts_config)
 
         logger.info("Sound manager initialized")
+
+    def load_cockpit_preset(self, preset_name: str, presets_dir: str) -> bool:
+        """Load cockpit spatial audio preset.
+
+        Args:
+            preset_name: Name of the preset (e.g., "cessna_172", "dr400").
+            presets_dir: Directory containing preset YAML files.
+
+        Returns:
+            True if loaded successfully, False otherwise.
+        """
+        self._spatial_manager = CockpitSpatialManager()
+        if self._spatial_manager.load_preset(preset_name, presets_dir):
+            logger.info(f"Loaded cockpit spatial preset: {preset_name}")
+            return True
+        else:
+            logger.warning(f"Failed to load cockpit preset: {preset_name}")
+            self._spatial_manager = None
+            return False
 
     def shutdown(self) -> None:
         """Shutdown all audio systems."""
