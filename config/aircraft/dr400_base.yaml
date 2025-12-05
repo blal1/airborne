@@ -123,11 +123,14 @@ aircraft:
     selector_positions: [OFF, LEFT, RIGHT, BOTH]
 
   # Audio configuration - DR-400 specific sounds
+  # Using X-Plane sounds (higher quality) for engine/prop/flaps
+  # FlightGear sounds for starter, shutdown, clicks, and system sounds
   audio:
     engine_sounds:
       start: "assets/sounds/aircraft/dr400/starter.wav"
-      idle: "assets/sounds/aircraft/dr400/engine_internal.wav"
+      idle: "assets/sounds/aircraft/dr400/xplane_engine.wav"      # X-Plane (better quality)
       shutdown: "assets/sounds/aircraft/dr400/shutdown.wav"
+      prop: "assets/sounds/aircraft/dr400/xplane_prop.wav"        # X-Plane prop sound
       pitch_idle: 1.0
       pitch_full: 1.85
     click_sounds:
@@ -139,7 +142,8 @@ aircraft:
       fuel_pump: "assets/sounds/aircraft/dr400/fuel_pump.wav"
       fuel_alarm: "assets/sounds/aircraft/dr400/fuel_alarm.wav"
       stall_warning: "assets/sounds/aircraft/dr400/stall.wav"
-      flaps: "assets/sounds/aircraft/dr400/flaps.wav"
+      flaps: "assets/sounds/aircraft/dr400/xplane_flaps.wav"      # X-Plane (better quality)
+      avionics: "assets/sounds/aircraft/dr400/xplane_avionics.wav" # X-Plane avionics hum
       lever: "assets/sounds/aircraft/dr400/lever.wav"
 
   # DR-400 specific features
