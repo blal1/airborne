@@ -1,0 +1,85 @@
+# Robin DR-400 Checklist Avant Decollage (Francais)
+# Point fixe et verification avant decollage selon manuel Robin
+# Terminologie DGAC/aero-club francais
+
+id: dr400_before_takeoff_fr
+name: Avant Decollage
+description: Checklist avant decollage pour Robin DR-400
+
+items:
+  - challenge: Frein de parc
+    response: SERRE
+    verify_condition: null
+
+  - challenge: Verriere
+    response: FERMEE ET VERROUILLEE
+    verify_condition: canopy == CLOSED
+
+  - challenge: Sieges et harnais
+    response: ATTACHES
+    verify_condition: null
+
+  - challenge: Commandes de vol
+    response: LIBRES ET DANS LE BON SENS
+    verify_condition: null
+
+  - challenge: Instruments de vol
+    response: VERIFIES
+    verify_condition: null
+
+  - challenge: Selecteur carburant
+    response: LES DEUX
+    verify_condition: fuel.selector == BOTH
+
+  - challenge: Quantite carburant
+    response: SUFFISANTE
+    verify_condition: null
+
+  - challenge: Melange
+    response: PLEIN RICHE
+    verify_condition: engine.mixture >= 0.9
+
+  - challenge: Gaz
+    response: 1800 TR/MIN
+    verify_condition: null
+
+  - challenge: Magnetos
+    response: VERIFIEES (chute max 175 tr/min)
+    verify_condition: null
+
+  - challenge: Rechauffage carburateur
+    response: VERIFIE
+    verify_condition: null
+
+  - challenge: Parametres moteur
+    response: DANS LE VERT
+    verify_condition: null
+
+  - challenge: Gaz
+    response: RALENTI VERIFIE
+    verify_condition: null
+
+  - challenge: Volets
+    response: POSITION DECOLLAGE
+    verify_condition: null
+    note: "Position T/O (15 degres) si piste courte"
+
+  - challenge: Compensateur
+    response: REGLE POUR DECOLLAGE
+    verify_condition: null
+
+  - challenge: Altimetre
+    response: CALE
+    verify_condition: null
+
+  - challenge: Transpondeur
+    response: REGLE
+    verify_condition: null
+
+  - challenge: Feux
+    response: SELON BESOIN
+    verify_condition: null
+
+  - challenge: Portes et verriere
+    response: VERROUILLEES
+    verify_condition: canopy == CLOSED

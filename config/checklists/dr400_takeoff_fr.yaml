@@ -1,0 +1,43 @@
+# Robin DR-400 Checklist Decollage (Francais)
+# Procedures de decollage selon manuel Robin
+# Terminologie DGAC/aero-club francais
+
+id: dr400_takeoff_fr
+name: Decollage
+description: Checklist decollage pour Robin DR-400
+
+items:
+  - challenge: Volets
+    response: POSITION SELECTIONNEE
+    verify_condition: null
+    note: "UP normal, T/O si piste courte"
+
+  - challenge: Freins
+    response: LACHES
+    verify_condition: null
+
+  - challenge: Gaz
+    response: PLEIN GAZ
+    verify_condition: engine.throttle >= 0.95
+
+  - challenge: Parametres moteur
+    response: VERIFIES
+    verify_condition: null
+
+  - challenge: Badin
+    response: ACTIF
+    verify_condition: null
+
+  - challenge: Rotation
+    response: A Vr
+    verify_condition: null
+    note: "DR-400/120: 100 km/h, /140B: 110 km/h, /180: 115 km/h"
+
+  - challenge: Vitesse de montee
+    response: ETABLIR Vy
+    verify_condition: null
+    note: "DR-400/120: 130 km/h, /140B: 140 km/h, /180: 150 km/h"
+
+  - challenge: Volets
+    response: RENTRER AU-DESSUS 100 M SOL
+    verify_condition: null

@@ -1,0 +1,28 @@
+# Robin DR-400 Checklist Apres Atterrissage (Francais)
+# Procedures apres atterrissage selon manuel Robin
+# Terminologie DGAC/aero-club francais
+
+id: dr400_after_landing_fr
+name: Apres Atterrissage
+description: Checklist apres atterrissage pour Robin DR-400
+
+items:
+  - challenge: Volets
+    response: RENTRES
+    verify_condition: null
+
+  - challenge: Rechauffage carburateur
+    response: FROID
+    verify_condition: null
+
+  - challenge: Transpondeur
+    response: VEILLE
+    verify_condition: null
+
+  - challenge: Feux
+    response: SELON BESOIN
+    verify_condition: null
+
+  - challenge: Rechauffage pitot
+    response: ARRET
+    verify_condition: null

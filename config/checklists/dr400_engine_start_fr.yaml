@@ -1,0 +1,65 @@
+# Robin DR-400 Checklist Mise en Route (Francais)
+# Procedures de demarrage moteur selon manuel Robin
+# Terminologie DGAC/aero-club francais
+
+id: dr400_engine_start_fr
+name: Mise en Route
+description: Checklist demarrage moteur pour Robin DR-400
+
+items:
+  - challenge: Frein de parc
+    response: SERRE
+    verify_condition: null
+
+  - challenge: Selecteur carburant
+    response: LES DEUX
+    verify_condition: fuel.selector == BOTH
+
+  - challenge: Melange
+    response: PLEIN RICHE
+    verify_condition: engine.mixture >= 0.9
+
+  - challenge: Rechauffage carburateur
+    response: FROID
+    verify_condition: null
+
+  - challenge: Manette des gaz
+    response: OUVERTE 1 CM
+    verify_condition: engine.throttle > 0.0
+
+  - challenge: Maitre batterie
+    response: MARCHE
+    verify_condition: electrical.master == ON
+
+  - challenge: Pompe electrique
+    response: MARCHE
+    verify_condition: null
+
+  - challenge: Pompe a main (primer)
+    response: SELON BESOIN
+    verify_condition: null
+    note: "Froid: 3-5 coups, Chaud: 0-2 coups"
+
+  - challenge: Pompe electrique
+    response: ARRET
+    verify_condition: null
+
+  - challenge: Zone helice
+    response: DEGAGEE
+    verify_condition: null
+
+  - challenge: Magnetos
+    response: LES DEUX
+    verify_condition: null
+
+  - challenge: Demarreur
+    response: ACTIONNER
+    verify_condition: engine.running == true
+
+  - challenge: Pression huile
+    response: DANS LE VERT
+    verify_condition: null
+
+  - challenge: Alternateur
+    response: MARCHE
+    verify_condition: null

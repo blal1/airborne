@@ -1,0 +1,56 @@
+# Robin DR-400 Checklist Arret Moteur (Francais)
+# Procedures d'arret moteur selon manuel Robin
+# Terminologie DGAC/aero-club francais
+
+id: dr400_shutdown_fr
+name: Arret Moteur
+description: Checklist arret moteur pour Robin DR-400
+
+items:
+  - challenge: Frein de parc
+    response: SERRE
+    verify_condition: null
+
+  - challenge: Gaz
+    response: RALENTI
+    verify_condition: engine.throttle < 0.1
+
+  - challenge: Equipements electriques
+    response: ARRET
+    verify_condition: null
+
+  - challenge: Maitre avionique
+    response: ARRET
+    verify_condition: electrical.avionics_master == OFF
+
+  - challenge: Melange
+    response: ETOUFFOIR
+    verify_condition: engine.mixture < 0.1
+
+  - challenge: Magnetos
+    response: ARRET
+    verify_condition: null
+
+  - challenge: Maitre batterie
+    response: ARRET
+    verify_condition: electrical.master == OFF
+
+  - challenge: Selecteur carburant
+    response: FERME
+    verify_condition: fuel.selector == OFF
+
+  - challenge: Blocage commandes
+    response: INSTALLE
+    verify_condition: null
+
+  - challenge: Verriere
+    response: OUVERTE OU VENTILEE
+    verify_condition: null
+
+  - challenge: Cales
+    response: EN PLACE
+    verify_condition: null
+
+  - challenge: Amarres
+    response: ATTACHEES
+    verify_condition: null

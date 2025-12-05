@@ -1,0 +1,38 @@
+# Robin DR-400 Checklist Avant Atterrissage (Francais)
+# Procedures d'approche selon manuel Robin
+# Terminologie DGAC/aero-club francais
+
+id: dr400_before_landing_fr
+name: Avant Atterrissage
+description: Checklist avant atterrissage pour Robin DR-400
+
+items:
+  - challenge: Selecteur carburant
+    response: LES DEUX
+    verify_condition: fuel.selector == BOTH
+
+  - challenge: Melange
+    response: PLEIN RICHE
+    verify_condition: engine.mixture >= 0.9
+
+  - challenge: Rechauffage carburateur
+    response: SELON BESOIN
+    verify_condition: null
+
+  - challenge: Sieges et harnais
+    response: ATTACHES
+    verify_condition: null
+
+  - challenge: Vitesse d'approche
+    response: ETABLIE
+    verify_condition: null
+    note: "1.3 Vso + correction vent"
+
+  - challenge: Volets
+    response: SELON BESOIN
+    verify_condition: null
+    note: "T/O en base, FULL en finale"
+
+  - challenge: Verriere
+    response: FERMEE ET VERROUILLEE
+    verify_condition: canopy == CLOSED

@@ -1,0 +1,60 @@
+# Robin DR-400 Checklist Avant Mise en Route (Francais)
+# Procedures standard basees sur le manuel de vol Robin
+# Terminologie DGAC/aero-club francais
+
+id: dr400_before_start_fr
+name: Avant Mise en Route
+description: Checklist avant demarrage pour Robin DR-400
+
+items:
+  - challenge: Visite pre-vol
+    response: EFFECTUEE
+    verify_condition: null
+
+  - challenge: Briefing passagers
+    response: EFFECTUE
+    verify_condition: null
+
+  - challenge: Sieges et harnais
+    response: REGLES ET VERROUILLES
+    verify_condition: null
+
+  - challenge: Verriere
+    response: FERMEE ET VERROUILLEE
+    verify_condition: canopy == CLOSED
+
+  - challenge: Quantite carburant
+    response: VERIFIEE
+    verify_condition: null
+
+  - challenge: Selecteur carburant
+    response: LES DEUX
+    verify_condition: fuel.selector == BOTH
+
+  - challenge: Disjoncteurs
+    response: ENFONCES
+    verify_condition: null
+
+  - challenge: Equipements electriques
+    response: ARRET
+    verify_condition: null
+
+  - challenge: Maitre avionique
+    response: ARRET
+    verify_condition: electrical.avionics_master == OFF
+
+  - challenge: Maitre batterie
+    response: MARCHE
+    verify_condition: electrical.master == ON
+
+  - challenge: Jauges carburant
+    response: VERIFIEES
+    verify_condition: null
+
+  - challenge: Maitre batterie
+    response: ARRET
+    verify_condition: electrical.master == OFF
+
+  - challenge: Frein de parc
+    response: SERRE
+    verify_condition: null
