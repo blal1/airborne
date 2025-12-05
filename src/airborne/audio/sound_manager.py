@@ -583,11 +583,12 @@ class SoundManager:
         except FileNotFoundError:
             logger.warning(f"Brakes sound not found: {path}")
 
-    def play_switch_sound(self, switch_on: bool) -> None:
+    def play_switch_sound(self, switch_on: bool = True, control_name: str | None = None) -> None:
         """Play switch click sound.
 
         Args:
             switch_on: True for switch on, False for switch off.
+            control_name: Optional control name for 3D positioning.
         """
         if switch_on:
             path = str(get_resource_path("assets/sounds/aircraft/switch_on.wav"))
@@ -595,25 +596,46 @@ class SoundManager:
             path = str(get_resource_path("assets/sounds/aircraft/switch_off.wav"))
 
         try:
-            self.play_sound_2d(path, volume=0.5)
+            # Use 3D positioning if spatial manager is available
+            if control_name and self._spatial_manager:
+                pos = self._spatial_manager.get_control_position(control_name)
+                self.play_sound_3d(path, pos, volume=0.5)
+            else:
+                self.play_sound_2d(path, volume=0.5)
         except FileNotFoundError:
             logger.warning(f"Switch sound not found: {path}")
 
-    def play_button_sound(self) -> None:
-        """Play button press sound."""
+    def play_button_sound(self, control_name: str | None = None) -> None:
+        """Play button press sound.
+
+        Args:
+            control_name: Optional control name for 3D positioning.
+        """
         path = str(get_resource_path("assets/sounds/aircraft/button_press.wav"))
 
         try:
-            self.play_sound_2d(path, volume=0.5)
+            if control_name and self._spatial_manager:
+                pos = self._spatial_manager.get_control_position(control_name)
+                self.play_sound_3d(path, pos, volume=0.5)
+            else:
+                self.play_sound_2d(path, volume=0.5)
         except FileNotFoundError:
             logger.warning(f"Button sound not found: {path}")
 
-    def play_knob_sound(self) -> None:
-        """Play knob turn sound."""
+    def play_knob_sound(self, control_name: str | None = None) -> None:
+        """Play knob turn sound.
+
+        Args:
+            control_name: Optional control name for 3D positioning.
+        """
         path = str(get_resource_path("assets/sounds/aircraft/knob_turn.wav"))
 
         try:
-            self.play_sound_2d(path, volume=0.4)
+            if control_name and self._spatial_manager:
+                pos = self._spatial_manager.get_control_position(control_name)
+                self.play_sound_3d(path, pos, volume=0.4)
+            else:
+                self.play_sound_2d(path, volume=0.4)
         except FileNotFoundError:
             logger.warning(f"Knob sound not found: {path}")
 
