@@ -1,0 +1,264 @@
+# Robin DR-400 Cockpit 3D Sound Positions
+# Coordinates relative to pilot's head position (0, 0, 0)
+# X: Right (+) / Left (-)
+# Y: Up (+) / Down (-)
+# Z: Forward (+) / Back (-)
+# Units: meters
+#
+# DR-400 characteristics:
+# - Bubble canopy (more reflective, brighter reverb)
+# - Wood/fabric construction (warmer, more absorptive than metal)
+# - Compact cockpit (shorter reverb decay)
+
+aircraft: "dr400"
+aircraft_family: "robin_single_engine"
+base_preset: "default"
+
+# Listener (pilot head) is at origin
+listener:
+  position: [0.0, 0.0, 0.0]
+
+# Radio speaker - center top of panel
+radio_speaker:
+  position: [0.0, 0.12, 0.50]
+
+# Engine sound sources - Lycoming horizontal 4
+engine:
+  # Primary engine - through firewall
+  primary:
+    position: [0.0, -0.05, 1.8]
+    volume_scale: 1.0
+  # Floor vibration - wood structure transmits differently
+  vibration:
+    position: [0.0, -0.45, 0.25]
+    volume_scale: 0.35
+  # Cabin resonance - wood dampens more
+  resonance:
+    position: [0.0, 0.0, 0.0]
+    volume_scale: 0.20
+
+# Wind noise - bubble canopy characteristics
+wind:
+  # Primary wind from canopy seals
+  primary:
+    position: [0.0, 0.25, 0.4]
+  # Canopy edge leakage (typical DR-400 characteristic)
+  canopy_left:
+    position: [-0.35, 0.2, 0.0]
+  canopy_right:
+    position: [0.35, 0.2, 0.0]
+
+# Panel zones
+panel_zones:
+  left_panel:
+    center: [-0.30, 0.0, 0.45]
+  center_panel:
+    center: [0.0, 0.0, 0.48]
+  right_panel:
+    center: [0.30, 0.0, 0.45]
+  overhead:
+    center: [0.0, 0.35, 0.15]
+  pedestal:
+    center: [0.08, -0.18, 0.28]
+  lower_left:
+    center: [-0.35, -0.25, 0.38]
+
+# Individual control positions (DR-400 specific layout)
+controls:
+  # === LEFT PANEL ===
+  master_switch:
+    position: [-0.38, 0.05, 0.42]
+    zone: left_panel
+  alternator_switch:
+    position: [-0.35, 0.05, 0.42]
+    zone: left_panel
+  battery_switch:
+    position: [-0.41, 0.05, 0.42]
+    zone: left_panel
+  avionics_master:
+    position: [-0.32, 0.0, 0.42]
+    zone: left_panel
+  avionics_master_switch:
+    position: [-0.32, 0.0, 0.42]
+    zone: left_panel
+
+  # Light switches
+  nav_lights:
+    position: [-0.28, 0.08, 0.44]
+    zone: left_panel
+  nav_lights_switch:
+    position: [-0.28, 0.08, 0.44]
+    zone: left_panel
+  beacon_switch:
+    position: [-0.25, 0.08, 0.44]
+    zone: left_panel
+  strobe_switch:
+    position: [-0.22, 0.08, 0.44]
+    zone: left_panel
+  landing_light_switch:
+    position: [-0.19, 0.08, 0.44]
+    zone: left_panel
+
+  # Fuel pump
+  fuel_pump_switch:
+    position: [-0.35, -0.05, 0.42]
+    zone: left_panel
+
+  # === CENTER PANEL ===
+  magneto_switch:
+    position: [0.08, -0.08, 0.46]
+    zone: center_panel
+  starter_button:
+    position: [0.12, -0.08, 0.46]
+    zone: center_panel
+  altimeter_knob:
+    position: [0.12, 0.02, 0.48]
+    zone: center_panel
+
+  # === PEDESTAL/THROTTLE QUADRANT ===
+  # DR-400 has throttle/mixture/prop (if CS) on center console
+  throttle:
+    position: [0.05, -0.15, 0.32]
+    zone: pedestal
+  throttle_lever:
+    position: [0.05, -0.15, 0.32]
+    zone: pedestal
+  mixture:
+    position: [0.10, -0.15, 0.32]
+    zone: pedestal
+  mixture_lever:
+    position: [0.10, -0.15, 0.32]
+    zone: pedestal
+  carb_heat:
+    position: [0.15, -0.15, 0.32]
+    zone: pedestal
+  carburetor_heat_lever:
+    position: [0.15, -0.15, 0.32]
+    zone: pedestal
+
+  # Flaps lever - DR-400 style
+  flaps_lever:
+    position: [0.20, -0.20, 0.28]
+    zone: pedestal
+
+  # Trim wheel
+  trim_wheel:
+    position: [0.15, -0.30, 0.22]
+    zone: pedestal
+  elevator_trim_wheel:
+    position: [0.15, -0.30, 0.22]
+    zone: pedestal
+
+  # Primer
+  primer_pump:
+    position: [-0.05, -0.25, 0.35]
+    zone: pedestal
+
+  # === RADIO STACK ===
+  com1_knob:
+    position: [0.0, -0.02, 0.48]
+    zone: center_panel
+  com2_knob:
+    position: [0.0, -0.07, 0.48]
+    zone: center_panel
+  nav1_knob:
+    position: [0.0, -0.12, 0.48]
+    zone: center_panel
+  transponder_knob:
+    position: [0.0, -0.17, 0.48]
+    zone: center_panel
+
+  # === FLIGHT CONTROLS ===
+  parking_brake:
+    position: [-0.25, -0.35, 0.28]
+    zone: lower_left
+  parking_brake_lever:
+    position: [-0.25, -0.35, 0.28]
+    zone: lower_left
+
+  # Fuel selector - floor mounted
+  fuel_selector:
+    position: [0.0, -0.40, 0.22]
+    zone: pedestal
+  fuel_selector_valve:
+    position: [0.0, -0.40, 0.22]
+    zone: pedestal
+
+  # Canopy latch
+  canopy_latch:
+    position: [0.0, 0.30, 0.10]
+    zone: overhead
+
+  # === YOKE/STICK ===
+  ptt_button:
+    position: [0.0, -0.08, 0.12]
+    zone: center_panel
+  trim_button:
+    position: [0.02, -0.06, 0.12]
+    zone: center_panel
+
+  # === CIRCUIT BREAKERS ===
+  circuit_breaker:
+    position: [-0.35, -0.30, 0.38]
+    zone: lower_left
+
+# Ground contact points
+wheels:
+  nose_wheel:
+    position: [0.0, -1.0, 1.6]
+  left_main:
+    position: [-0.9, -0.9, -0.2]
+  right_main:
+    position: [0.9, -0.9, -0.2]
+
+# Reverb settings - DR-400 bubble canopy characteristics
+# The plexiglass canopy creates more high-frequency reflections
+# Wood/fabric interior absorbs mid frequencies
+reverb:
+  enabled: true
+  type: "fmod_reverb"
+
+  # FMOD reverb parameters tuned for DR-400 bubble canopy
+  fmod_params:
+    decay_time: 0.08          # Very short - tiny cockpit
+    early_delay: 0.002        # 2ms - close reflections from canopy
+    late_delay: 0.005         # 5ms
+    hf_reference: 6000.0      # Higher HF ref - plexiglass reflects highs
+    hf_decay_ratio: 0.65      # HF lasts longer (hard canopy surface)
+    diffusion: 55.0           # Medium diffusion
+    density: 75.0             # Medium density
+    low_shelf_frequency: 200.0
+    low_shelf_gain: -2.0      # Wood absorbs some bass
+    high_cut: 8000.0          # Let more highs through (bright canopy)
+    early_late_mix: 75.0      # More early reflections
+    wet_level: -10.0          # Slightly more reverb (reflective canopy)
+    dry_level: 0.0
+
+  # Convolution reverb - use general cockpit IR with adjusted mix
+  convolution:
+    ir_file: "data/audio/effects/cockpit_ir.wav"
+    wet_level: 0.18           # Slightly more reverb
+    dry_level: 0.82
+
+# Canopy state affects reverb
+canopy_states:
+  closed:
+    reverb_wet_adjust: 0.0    # Normal reverb
+    wind_volume: 0.3          # Some wind noise
+  open:
+    reverb_wet_adjust: -6.0   # Much less reverb when open
+    wind_volume: 1.0          # Full wind noise
+
+# Sound categories with reverb
+reverb_categories:
+  - switches
+  - buttons
+  - knobs
+  - mechanical
+  - canopy
+
+no_reverb_categories:
+  - radio
+  - engine
+  - wind
+  - warnings
