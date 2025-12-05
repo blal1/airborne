@@ -1,0 +1,59 @@
+# Robin DR-400 Before Engine Start Checklist (English)
+# Standard pre-start procedures based on Robin POH
+
+id: dr400_before_start_en
+name: Before Engine Start
+description: Pre-start checklist for Robin DR-400 series
+
+items:
+  - challenge: Preflight Inspection
+    response: COMPLETE
+    verify_condition: null
+
+  - challenge: Passenger Briefing
+    response: COMPLETE
+    verify_condition: null
+
+  - challenge: Seats and Harnesses
+    response: ADJUSTED AND LOCKED
+    verify_condition: null
+
+  - challenge: Canopy
+    response: CLOSED AND LOCKED
+    verify_condition: canopy == CLOSED
+
+  - challenge: Fuel Quantity
+    response: CHECK
+    verify_condition: null
+
+  - challenge: Fuel Selector
+    response: BOTH
+    verify_condition: fuel.selector == BOTH
+
+  - challenge: Circuit Breakers
+    response: CHECK IN
+    verify_condition: null
+
+  - challenge: Electrical Equipment
+    response: "OFF"
+    verify_condition: null
+
+  - challenge: Avionics Master
+    response: "OFF"
+    verify_condition: electrical.avionics_master == OFF
+
+  - challenge: Master Switch
+    response: "ON"
+    verify_condition: electrical.master == ON
+
+  - challenge: Fuel Quantity Gauges
+    response: CHECK
+    verify_condition: null
+
+  - challenge: Master Switch
+    response: "OFF"
+    verify_condition: electrical.master == OFF
+
+  - challenge: Parking Brake
+    response: SET
+    verify_condition: null

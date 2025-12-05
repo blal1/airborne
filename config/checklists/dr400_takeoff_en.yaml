@@ -1,0 +1,42 @@
+# Robin DR-400 Takeoff Checklist (English)
+# Takeoff procedures based on Robin POH
+
+id: dr400_takeoff_en
+name: Takeoff
+description: Takeoff checklist for Robin DR-400 series
+
+items:
+  - challenge: Flaps
+    response: SET
+    verify_condition: null
+    note: "UP for normal, T/O for short field"
+
+  - challenge: Brakes
+    response: RELEASE
+    verify_condition: null
+
+  - challenge: Throttle
+    response: FULL FORWARD
+    verify_condition: engine.throttle >= 0.95
+
+  - challenge: Engine Instruments
+    response: CHECK
+    verify_condition: null
+
+  - challenge: Airspeed
+    response: ALIVE
+    verify_condition: null
+
+  - challenge: Rotate
+    response: AT Vr
+    verify_condition: null
+    note: "DR-400/120: 54 kts, /140B: 59 kts, /180: 62 kts"
+
+  - challenge: Climb Speed
+    response: ESTABLISH Vy
+    verify_condition: null
+    note: "DR-400/120: 70 kts, /140B: 76 kts, /180: 81 kts"
+
+  - challenge: Flaps
+    response: RETRACT ABOVE 300 FT AGL
+    verify_condition: null

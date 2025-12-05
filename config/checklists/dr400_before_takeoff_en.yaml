@@ -1,0 +1,84 @@
+# Robin DR-400 Before Takeoff Checklist (English)
+# Run-up and pre-takeoff procedures based on Robin POH
+
+id: dr400_before_takeoff_en
+name: Before Takeoff
+description: Before takeoff checklist for Robin DR-400 series
+
+items:
+  - challenge: Parking Brake
+    response: SET
+    verify_condition: null
+
+  - challenge: Canopy
+    response: CLOSED AND LOCKED
+    verify_condition: canopy == CLOSED
+
+  - challenge: Seats and Harnesses
+    response: SECURE
+    verify_condition: null
+
+  - challenge: Flight Controls
+    response: FREE AND CORRECT
+    verify_condition: null
+
+  - challenge: Flight Instruments
+    response: CHECK
+    verify_condition: null
+
+  - challenge: Fuel Selector
+    response: BOTH
+    verify_condition: fuel.selector == BOTH
+
+  - challenge: Fuel Quantity
+    response: CHECK
+    verify_condition: null
+
+  - challenge: Mixture
+    response: RICH
+    verify_condition: engine.mixture >= 0.9
+
+  - challenge: Throttle
+    response: 1800 RPM
+    verify_condition: null
+
+  - challenge: Magnetos
+    response: CHECK (max drop 175 RPM)
+    verify_condition: null
+
+  - challenge: Carburetor Heat
+    response: CHECK
+    verify_condition: null
+
+  - challenge: Engine Instruments
+    response: GREEN
+    verify_condition: null
+
+  - challenge: Throttle
+    response: IDLE CHECK
+    verify_condition: null
+
+  - challenge: Flaps
+    response: SET FOR TAKEOFF
+    verify_condition: null
+    note: "T/O position (15 degrees) for short field"
+
+  - challenge: Trim
+    response: SET FOR TAKEOFF
+    verify_condition: null
+
+  - challenge: Altimeter
+    response: SET
+    verify_condition: null
+
+  - challenge: Transponder
+    response: SET
+    verify_condition: null
+
+  - challenge: Lights
+    response: AS REQUIRED
+    verify_condition: null
+
+  - challenge: Doors and Canopy
+    response: SECURE
+    verify_condition: canopy == CLOSED

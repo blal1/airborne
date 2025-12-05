@@ -1,0 +1,27 @@
+# Robin DR-400 After Landing Checklist (English)
+# Post-landing procedures based on Robin POH
+
+id: dr400_after_landing_en
+name: After Landing
+description: After landing checklist for Robin DR-400 series
+
+items:
+  - challenge: Flaps
+    response: UP
+    verify_condition: null
+
+  - challenge: Carburetor Heat
+    response: COLD
+    verify_condition: null
+
+  - challenge: Transponder
+    response: STANDBY
+    verify_condition: null
+
+  - challenge: Lights
+    response: AS REQUIRED
+    verify_condition: null
+
+  - challenge: Pitot Heat
+    response: "OFF"
+    verify_condition: null

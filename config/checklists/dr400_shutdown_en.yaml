@@ -1,0 +1,55 @@
+# Robin DR-400 Shutdown Checklist (English)
+# Engine shutdown procedures based on Robin POH
+
+id: dr400_shutdown_en
+name: Shutdown
+description: Shutdown checklist for Robin DR-400 series
+
+items:
+  - challenge: Parking Brake
+    response: SET
+    verify_condition: null
+
+  - challenge: Throttle
+    response: IDLE
+    verify_condition: engine.throttle < 0.1
+
+  - challenge: Electrical Equipment
+    response: "OFF"
+    verify_condition: null
+
+  - challenge: Avionics Master
+    response: "OFF"
+    verify_condition: electrical.avionics_master == OFF
+
+  - challenge: Mixture
+    response: IDLE CUT-OFF
+    verify_condition: engine.mixture < 0.1
+
+  - challenge: Magnetos
+    response: "OFF"
+    verify_condition: null
+
+  - challenge: Master Switch
+    response: "OFF"
+    verify_condition: electrical.master == OFF
+
+  - challenge: Fuel Selector
+    response: "OFF"
+    verify_condition: fuel.selector == OFF
+
+  - challenge: Control Lock
+    response: INSTALL
+    verify_condition: null
+
+  - challenge: Canopy
+    response: OPEN OR VENTILATE
+    verify_condition: null
+
+  - challenge: Chocks
+    response: IN PLACE
+    verify_condition: null
+
+  - challenge: Tie-Downs
+    response: SECURE
+    verify_condition: null

@@ -1,0 +1,64 @@
+# Robin DR-400 Engine Start Checklist (English)
+# Standard engine start procedures based on Robin POH
+
+id: dr400_engine_start_en
+name: Engine Start
+description: Engine start checklist for Robin DR-400 series
+
+items:
+  - challenge: Parking Brake
+    response: SET
+    verify_condition: null
+
+  - challenge: Fuel Selector
+    response: BOTH
+    verify_condition: fuel.selector == BOTH
+
+  - challenge: Mixture
+    response: RICH
+    verify_condition: engine.mixture >= 0.9
+
+  - challenge: Carburetor Heat
+    response: COLD
+    verify_condition: null
+
+  - challenge: Throttle
+    response: CRACKED OPEN
+    verify_condition: engine.throttle > 0.0
+
+  - challenge: Master Switch
+    response: "ON"
+    verify_condition: electrical.master == ON
+
+  - challenge: Fuel Pump
+    response: "ON"
+    verify_condition: null
+
+  - challenge: Prime
+    response: AS REQUIRED
+    verify_condition: null
+    note: "Cold: 3-5 strokes, Warm: 0-2 strokes"
+
+  - challenge: Fuel Pump
+    response: "OFF"
+    verify_condition: null
+
+  - challenge: Propeller Area
+    response: CLEAR
+    verify_condition: null
+
+  - challenge: Magnetos
+    response: BOTH
+    verify_condition: null
+
+  - challenge: Starter
+    response: ENGAGE
+    verify_condition: engine.running == true
+
+  - challenge: Oil Pressure
+    response: CHECK GREEN
+    verify_condition: null
+
+  - challenge: Alternator
+    response: "ON"
+    verify_condition: null
