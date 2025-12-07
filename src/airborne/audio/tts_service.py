@@ -515,8 +515,12 @@ class TTSService:
                         break
 
                     # Check for context change
-                    if request.text.startswith("__SET_CONTEXT__:"):
-                        context = request.text.split(":", 1)[1]
+                    # Ensure text is a string (may be bytes if something goes wrong)
+                    text = request.text
+                    if isinstance(text, bytes):
+                        text = text.decode("utf-8", errors="replace")
+                    if text.startswith("__SET_CONTEXT__:"):
+                        context = text.split(":", 1)[1]
                         voices = eval(request.voice) if request.voice else None  # noqa: S307
                         try:
                             await self._client.set_context(context, voices)
@@ -527,7 +531,7 @@ class TTSService:
                     # Generate audio
                     try:
                         audio = await self._client.generate(
-                            text=request.text,
+                            text=text,
                             voice=request.voice,
                             rate=request.rate,
                             voice_name=request.voice_name,
@@ -542,7 +546,7 @@ class TTSService:
                                 self._pending_callbacks.pop(request.request_id, None)
                             logger.warning(
                                 "TTSService generation returned no audio: %s",
-                                request.text[:30],
+                                text[:30],
                             )
 
                     except Exception as e:
