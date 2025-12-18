@@ -121,6 +121,10 @@ class MenuRunner:
 
         # Shared TTS service (from main)
         self._tts_service = tts_service
+        
+        # Direct TTS cache fallback (used if WebSocket service fails)
+        self._direct_tts_cache: Any | None = None
+        self._tts_service_failed = False
 
         # Audio
         self._audio: AudioFacade | None = None
@@ -175,9 +179,13 @@ class MenuRunner:
 
         pygame.init()
         pygame.display.set_caption("AirBorne - Main Menu")
-        self._screen = pygame.display.set_mode((800, 600), pygame.RESIZABLE)
+        self._screen = pygame.display.set_mode((800, 600), pygame.RESIZABLE | pygame.SHOWN)
         self._clock = pygame.time.Clock()
         self._font = pygame.font.SysFont("monospace", 24)
+        
+        # Ensure window has focus and is ready for input
+        pygame.event.pump()  # Process pending events
+        pygame.display.flip()  # Update display
 
         # Initialize FMOD for click sounds
         self._initialize_audio()
@@ -203,6 +211,13 @@ class MenuRunner:
 
         # Start menu music
         self._start_menu_music()
+        
+        # Play startup sound to confirm menu is ready (even if TTS fails)
+        self._play_startup_sound()
+        
+        # Test TTS immediately to detect if it's really working
+        # This forces fallback activation if WebSocket failed
+        self._test_tts_on_startup()
 
         self._running = True
         logger.info("Menu runner initialized")
@@ -279,12 +294,190 @@ class MenuRunner:
 
         # Check if music is still playing (it will stop after fade completes)
         return self._audio.music.is_playing()
+    
+    def _initialize_direct_tts_fallback(self) -> None:
+        """Initialize direct TTS cache as fallback when WebSocket service fails.
+        
+        This loads cached TTS files directly from disk, bypassing the service.
+        """
+        try:
+            from airborne.audio.direct_tts_cache import DirectTTSCache
+            
+            self._direct_tts_cache = DirectTTSCache()
+            
+            if self._direct_tts_cache.has_cache():
+                logger.info(
+                    "DirectTTSCache fallback initialized - will use cached TTS files"
+                )
+            else:
+                logger.warning("No cached TTS files found - menu will be silent")
+        except Exception as e:
+            logger.error("Failed to initialize direct TTS cache: %s", e)
+            self._direct_tts_cache = None
+    
+    def _try_direct_tts_cache(self, text: str) -> bytes | None:
+        """Try to load audio from direct TTS cache.
+        
+        Args:
+            text: Text to look up in cache.
+            
+        Returns:
+            WAV audio bytes if found in cache, None otherwise.
+        """
+        if not self._direct_tts_cache:
+            return None
+        
+        try:
+            return self._direct_tts_cache.get_cached_audio(
+                text=text,
+                voice_name=self._ui_voice_name,
+                rate=self._ui_rate,
+                language=self._ui_language
+            )
+        except Exception as e:
+            logger.error("Direct TTS cache lookup failed: %s", e)
+            return None
+    
+    def _generate_with_kokoro(self, text: str) -> bytes | None:
+        """Generate TTS audio directly using KokoroTTS (bypass WebSocket service).
+        
+        This is used as a fallback when the WebSocket TTS service is unavailable.
+        
+        Args:
+            text: Text to synthesize.
+            
+        Returns:
+            WAV audio bytes if successful, None otherwise.
+        """
+        try:
+            from kokoro_onnx import Kokoro
+            import soundfile as sf
+            import tempfile
+            from pathlib import Path
+            from airborne.core.resource_path import get_resource_path
+            
+            # Initialize Kokoro once (cached)
+            if not hasattr(self, '_kokoro_instance'):
+                model_path = get_resource_path("assets/models/kokoro-v1.0.onnx")
+                voices_path = get_resource_path("assets/models/voices-v1.0.bin")
+                
+                logger.info("Initializing KokoroTTS for direct generation...")
+                self._kokoro_instance = Kokoro(
+                    model_path=str(model_path),
+                    voices_path=str(voices_path)
+                )
+                logger.info("KokoroTTS initialized successfully")
+            
+            # Map voice name to Kokoro voice
+            voice_map = {
+                "Samantha": "af_bella",  # Clear, professional (UI)
+                "Karen": "af_sarah",     # Professional (cockpit)
+                "Daniel": "am_adam",     # Professional (ATC)
+                "Thomas": "am_michael",  # Warm (ground)
+            }
+            
+            kokoro_voice = voice_map.get(self._ui_voice_name, "af_bella")
+            
+            # Calculate speed from WPM rate
+            # Normal speaking is around 150-180 WPM
+            speed = 1.0
+            if self._ui_rate:
+                speed = 0.5 + (self._ui_rate / 180.0) * 0.6
+                speed = max(0.7, min(1.3, speed))
+            
+            logger.debug(
+                "Generating TTS with Kokoro: voice=%s, speed=%.2f, text=%s",
+                kokoro_voice,
+                speed,
+                text[:30]
+            )
+            
+            # Generate speech
+            samples, sample_rate = self._kokoro_instance.create(
+                text=text,
+                voice=kokoro_voice,
+                lang='en-us',
+                speed=speed
+            )
+            
+            # Write to temporary WAV file
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+                temp_path = Path(f.name)
+            
+            sf.write(str(temp_path), samples, sample_rate)
+            
+            # Read WAV bytes
+            audio_bytes = temp_path.read_bytes()
+            
+            # Clean up temp file
+            temp_path.unlink(missing_ok=True)
+            
+            logger.debug("KokoroTTS generated %d bytes", len(audio_bytes))
+            return audio_bytes
+            
+        except ImportError as e:
+            logger.error("KokoroTTS not available: %s. Install with: pip install kokoro-onnx soundfile", e)
+            return None
+        except Exception as e:
+            logger.error("KokoroTTS generation failed: %s", e)
+            return None
+    
+    def _test_tts_on_startup(self) -> None:
+        """Test TTS service at startup to detect failures early.
+        
+        Even if TTSService claims to be running, the WebSocket client
+        might have failed. This test forces an actual TTS call to detect
+        failures and activate fallback immediately.
+        """
+        if not self._tts_service or self._tts_service_failed:
+            return
+        
+        # Try a silent test - just queue and see if it fails
+        test_text = "test"
+        try:
+            priority = TTSPriority.LOW
+            self._tts_service.speak(
+                text=test_text,
+                voice="ui",
+                priority=priority,
+                interrupt=False,
+                on_audio=lambda audio: None,  # Discard result
+            )
+            logger.debug("TTS service test successful")
+        except Exception as e:
+            # Service failed - activate fallback immediately
+            logger.warning("TTS service test failed (%s), activating fallback NOW", e)
+            self._tts_service_failed = True
+            self._initialize_direct_tts_fallback()
 
     def _stop_menu_music(self) -> None:
         """Stop menu music immediately."""
         if self._audio:
             self._audio.music.stop()
             logger.debug("Menu music stopped")
+    
+    def _play_startup_sound(self) -> None:
+        """Play a startup sound to confirm menu is ready.
+        
+        This provides audio feedback even if TTS fails, so the user
+        knows the menu is ready for interaction.
+        """
+        if not self._audio:
+            logger.debug("No audio available for startup sound")
+            return
+        
+        try:
+            # Play button click sound to signal readiness
+            sounds_dir = get_resource_path("assets/sounds/aircraft")
+            click_path = sounds_dir / "click_button.mp3"
+            
+            if click_path.exists():
+                self._audio.sfx.play(str(click_path), category="ui", volume=0.8, loop=False)
+                logger.info("Menu startup sound played")
+            else:
+                logger.warning("Startup sound file not found: %s", click_path)
+        except Exception as e:
+            logger.error("Failed to play startup sound: %s", e)
 
     def _initialize_tts(self) -> None:
         """Initialize TTS settings from configuration.
@@ -318,7 +511,9 @@ class MenuRunner:
         if self._tts_service and self._tts_service.is_running:
             logger.info("Using shared TTSService for menu TTS")
         else:
-            logger.warning("TTSService not available, TTS will be disabled")
+            logger.warning("TTSService not available or failed to start")
+            self._tts_service_failed = True
+            self._initialize_direct_tts_fallback()
 
     def _run_loop(self) -> None:
         """Run the main menu event loop."""
@@ -440,6 +635,9 @@ class MenuRunner:
 
         Queues the text for generation via TTSService. Audio will be
         delivered via callback and played when update() is called.
+        
+        If TTSService has failed, attempts to load from direct cache,
+        then generates with KokoroTTS if not cached.
 
         Args:
             text: Text to speak.
@@ -448,25 +646,73 @@ class MenuRunner:
         if not text:
             return
 
-        if not self._tts_service:
-            logger.debug("TTSService not available, skipping: %s", text[:30])
+        # If TTS service failed, use direct generation
+        if self._tts_service_failed:
+            # Try cache first (fastest)
+            audio = self._try_direct_tts_cache(text)
+            
+            # If not in cache, generate with KokoroTTS
+            if not audio:
+                logger.debug("Not in cache, generating with KokoroTTS: %s", text[:30])
+                audio = self._generate_with_kokoro(text)
+            else:
+                logger.debug("Playing from cache: %s", text[:30])
+            
+            # Play if we got audio (from cache or generation)
+            if audio:
+                if interrupt:
+                    self._stop_current_tts()
+                self._play_tts_audio_sync(audio)
+            else:
+                logger.warning("No TTS audio available for: %s", text[:30])
             return
 
-        # Stop any currently playing TTS if interrupting
-        if interrupt:
-            self._stop_current_tts()
+        if not self._tts_service:
+            logger.debug("TTSService not available, skipping: %s", text[:30])
+            # Activate fallback if not already done
+            if not self._tts_service_failed and not self._direct_tts_cache:
+                logger.info("TTSService unavailable, activating direct generation fallback")
+                self._tts_service_failed = True
+                self._initialize_direct_tts_fallback()
+            return
 
-        # Queue via TTSService with callback for audio playback
-        # Use NORMAL priority for UI speech (can be flushed by CRITICAL)
-        priority = TTSPriority.HIGH if interrupt else TTSPriority.NORMAL
-        self._tts_service.speak(
-            text=text,
-            voice="ui",
-            priority=priority,
-            interrupt=interrupt,
-            on_audio=self._play_tts_audio_sync,
-        )
-        logger.debug("TTS queued via TTSService: %s", text[:30])
+        try:
+            # Stop any currently playing TTS if interrupting
+            if interrupt:
+                self._stop_current_tts()
+
+            # Queue via TTSService with callback for audio playback
+            # Use NORMAL priority for UI speech (can be flushed by CRITICAL)
+            priority = TTSPriority.HIGH if interrupt else TTSPriority.NORMAL
+            self._tts_service.speak(
+                text=text,
+                voice="ui",
+                priority=priority,
+                interrupt=interrupt,
+                on_audio=self._play_tts_audio_sync,
+            )
+            logger.debug("TTS queued via TTSService: %s", text[:30])
+        except Exception as e:
+            # TTS service failed - activate direct generation fallback
+            logger.warning("TTS speak failed (%s), activating direct generation fallback", e)
+            
+            if not self._tts_service_failed:
+                self._tts_service_failed = True
+                self._initialize_direct_tts_fallback()
+            
+            # Try cache first, then generate
+            audio = self._try_direct_tts_cache(text)
+            if not audio:
+                logger.debug("Generating with KokoroTTS after service failure: %s", text[:30])
+                audio = self._generate_with_kokoro(text)
+            
+            if audio:
+                logger.debug("Recovered with TTS: %s", text[:30])
+                if interrupt:
+                    self._stop_current_tts()
+                self._play_tts_audio_sync(audio)
+            else:
+                logger.warning("Unable to generate TTS for: %s", text[:30])
 
     def _play_tts_audio_sync(self, audio_data: bytes) -> None:
         """Play TTS audio data synchronously.

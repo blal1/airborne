@@ -82,6 +82,10 @@ class TTSDiskCache:
     DEFAULT_CACHE_BASE = Path.home() / ".airborne" / "tts_cache"
     MANIFEST_FILE = "manifest.json"
     SETTINGS_FILE = "settings.json"
+    
+    # Class-level flag to track if pyttsx3 has permanently failed (e.g., broken SAPI5)
+    _pyttsx3_disabled = False
+    _pyttsx3_disable_logged = False
 
     def __init__(
         self,
@@ -360,7 +364,7 @@ class TTSDiskCache:
         return best_id
 
     def generate(self, text: str) -> bytes | None:
-        """Generate TTS audio using pyttsx3.
+        """Generate TTS audio using KokoroTTS.
 
         Args:
             text: Text to synthesize.
@@ -368,65 +372,126 @@ class TTSDiskCache:
         Returns:
             WAV audio bytes, or None if failed.
         """
+        # Check if generation has been permanently disabled
+        if TTSDiskCache._pyttsx3_disabled:
+            return None
+        
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
-            aiff_path = temp_path / "output.aiff"
             wav_path = temp_path / "output.wav"
 
             try:
-                import pyttsx3
+                # Import KokoroTTS (instead of pyttsx3)
+                from kokoro_onnx import Kokoro
+                import soundfile as sf
+                from airborne.core.resource_path import get_resource_path
 
-                engine = pyttsx3.init()
-                engine.setProperty("rate", self.settings.rate)
-
-                if self.settings.voice_name:
-                    voice_id = self._find_voice_id(engine, self.settings.voice_name)
-                    if voice_id:
-                        engine.setProperty("voice", voice_id)
-                        logger.debug("Using voice ID: %s", voice_id)
-
-                engine.save_to_file(text, str(aiff_path))
-                engine.runAndWait()
-                engine.stop()
-                del engine
-
-            except Exception as e:
-                logger.error("pyttsx3 generation failed: %s", e)
-                return None
-
-            if not aiff_path.exists() or aiff_path.stat().st_size < 100:
-                logger.error("pyttsx3 produced no output for: %s", text[:30])
-                return None
-
-            # Convert AIFF to WAV
-            try:
-                subprocess.run(
-                    [
-                        "ffmpeg",
-                        "-y",
-                        "-i",
-                        str(aiff_path),
-                        "-acodec",
-                        "pcm_s16le",
-                        "-ar",
-                        "22050",
-                        "-ac",
-                        "1",
-                        str(wav_path),
-                    ],
-                    capture_output=True,
-                    check=True,
+                # Initialize Kokoro (cached after first init)
+                if not hasattr(TTSDiskCache, '_kokoro_instance'):
+                    model_path = get_resource_path("assets/models/kokoro-v1.0.onnx")
+                    voices_path = get_resource_path("assets/models/voices-v1.0.bin")
+                    
+                    logger.info("Initializing KokoroTTS (first time)...")
+                    TTSDiskCache._kokoro_instance = Kokoro(
+                        model_path=str(model_path),
+                        voices_path=str(voices_path)
+                    )
+                    logger.info("KokoroTTS initialized successfully")
+                
+                kokoro = TTSDiskCache._kokoro_instance
+                
+                # Map voice name to Kokoro voice
+                # Default mapping for common voices
+                voice_map = {
+                    "Samantha": "af_bella",  # Clear, professional (UI)
+                    "Karen": "af_sarah",      # Professional (cockpit)
+                    "Daniel": "am_adam",      # Professional (ATC)
+                    "Thomas": "am_michael",   # Warm (ground)
+                    "default": "af_bella",
+                }
+                
+                kokoro_voice = voice_map.get(
+                    self.settings.voice_name or "default",
+                    "af_bella"  # Default fallback
                 )
-            except subprocess.CalledProcessError as e:
-                logger.error("ffmpeg failed: %s", e.stderr.decode()[:200])
+                
+                # Calculate speed from rate (WPM to speed multiplier)
+                # Normal speaking is around 150-180 WPM
+                # KokoroTTS speed: 1.0 = normal, 0.8 = slower, 1.2 = faster
+                speed = 1.0
+                if self.settings.rate:
+                    # Map 150-200 WPM to 0.9-1.1 speed
+                    speed = 0.5 + (self.settings.rate / 180.0) * 0.6
+                    speed = max(0.7, min(1.3, speed))  # Clamp to reasonable range
+                
+                # Generate speech with Kokoro
+                logger.debug(
+                    "Generating with Kokoro: voice=%s, speed=%.2f, text=%s",
+                    kokoro_voice,
+                    speed,
+                    text[:30]
+                )
+                
+                samples, sample_rate = kokoro.create(
+                    text=text,
+                    voice=kokoro_voice,
+                    lang='en-us',  # TODO: Support other languages
+                    speed=speed
+                )
+                
+                # Save as WAV
+                sf.write(str(wav_path), samples, sample_rate)
+                
+                logger.debug("Kokoro generated %d samples at %d Hz", len(samples), sample_rate)
+
+            except ImportError as e:
+                # KokoroTTS not installed
+                error_msg = str(e).lower()
+                TTSDiskCache._pyttsx3_disabled = True
+                if not TTSDiskCache._pyttsx3_disable_logged:
+                    logger.warning(
+                        "KokoroTTS not available: %s. "
+                        "TTS will only use cached files. "
+                        "Install with: pip install kokoro-onnx soundfile",
+                        e
+                    )
+                    TTSDiskCache._pyttsx3_disable_logged = True
                 return None
-            except FileNotFoundError:
-                logger.error("ffmpeg not found")
+                
+            except Exception as e:
+                # Other errors (model not found, etc.)
+                error_msg = str(e).lower()
+                is_fatal_error = any(
+                    keyword in error_msg
+                    for keyword in [
+                        "model",
+                        "onnx",
+                        "voices",
+                        "not found",
+                        "filenotfounderror",
+                    ]
+                )
+                
+                if is_fatal_error:
+                    # Permanently disable if models are missing
+                    TTSDiskCache._pyttsx3_disabled = True
+                    if not TTSDiskCache._pyttsx3_disable_logged:
+                        logger.warning(
+                            "KokoroTTS permanently disabled: %s. "
+                            "TTS will only use cached files.",
+                            e
+                        )
+                        TTSDiskCache._pyttsx3_disable_logged = True
+                else:
+                    # Other errors - just log and continue
+                    logger.error("KokoroTTS generation failed: %s", e)
                 return None
 
-            if not wav_path.exists():
+            if not wav_path.exists() or wav_path.stat().st_size < 100:
+                logger.error("KokoroTTS produced no output for: %s", text[:30])
                 return None
 
+            # Read WAV file
             audio_bytes = wav_path.read_bytes()
 
             if len(audio_bytes) < 500:
